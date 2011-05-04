@@ -45,9 +45,11 @@ void myFactory::FreeObjects() {
 	}
 #if defined (_WIN32)
 #pragma warning( disable : 4552) //disable warning from os portable DYNLIB macro
+#endif
 	for (i=0;i<svDlls.size();i++) {
 		DYNLIB_UNLOAD(svDlls[i]);
 	}
+#if defined (_WIN32)
 #pragma warning( default : 4552)
 #endif
 }
