@@ -1,5 +1,8 @@
 #include "palFactory.h"
 #include <memory.h>
+#ifdef INTERNAL_DEBUG	
+#include <iostream>
+#endif
 /*
 	Abstract:
 		PAL - Physics Abstraction Layer. 
@@ -140,6 +143,9 @@ void palSphereGeometry::GenericInit(const palMatrix4x4& pos, const void *param_a
 }
 
 void palBoxGeometry::GenericInit(const palMatrix4x4& pos, const void *param_array) {
+#ifdef INTERNAL_DEBUG	
+	std::cout << "palBoxGeometry::GenericInit: pos=" << pos << std::endl;
+#endif
 	Float *p = (Float *)param_array;
 	Init(pos,p[0],p[1],p[2],p[3]);
 }

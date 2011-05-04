@@ -24,6 +24,9 @@
 // Windows has strtok_r, they just call it strtok_s for some reason (strtok_r is in POSIX.1-2001)
 #define strtok_r strtok_s
 #endif
+#ifdef INTERNAL_DEBUG	
+#include <iostream>
+#endif
 
 palFactory *palFactory::GetInstance() {
   if (!m_pInstance)
@@ -31,6 +34,7 @@ palFactory *palFactory::GetInstance() {
   palFactory* result = (palFactory *)myFactory::GetInstance();
 #ifdef INTERNAL_DEBUG
   printf("palFactory::GetInstance: instance = %p\n", result);
+  std::cout.precision(20);
 #endif
   return result;
 }

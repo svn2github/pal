@@ -25,7 +25,9 @@
 #include "BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h"
 #include "BulletSoftBody/btSoftBodyHelpers.h"
 
-//#include <iostream>
+#ifdef INTERNAL_DEBUG	
+#include <iostream>
+#endif
 
 #ifdef USE_PARALLEL_DISPATCHER
 #include <BulletMultiThreaded/SpuGatheringCollisionDispatcher.h>
@@ -982,6 +984,9 @@ void palBulletBodyBase::BuildBody(const palMatrix4x4& pos, Float mass,
 
 	m_pbtBody->setCollisionFlags(btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK | m_pbtBody->getCollisionFlags());
 	dynamic_cast<palBulletPhysics*>(palFactory::GetInstance()->GetActivePhysics())->AddRigidBody(this);
+#ifdef INTERNAL_DEBUG	
+	std::cout << "palBulletBodyBase::BuildBody: created body: " << m_pbtBody << std::endl;
+#endif
 }
 
 void palBulletBodyBase::AssignDynamicsType(palDynamicsType dynType, Float mass, const btVector3& inertia) {

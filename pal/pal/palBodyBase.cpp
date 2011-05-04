@@ -3,6 +3,9 @@
 #include "palFactory.h"
 #include <memory.h>
 #include <sstream>
+#ifdef INTERNAL_DEBUG	
+#include <iostream>
+#endif
 
 /*
 	Abstract:
@@ -86,6 +89,9 @@ void palBodyBase::GetPosition(palVector3& res) const {
 	res.x=loc._41;
 	res.y=loc._42;
 	res.z=loc._43;
+#ifdef INTERNAL_DEBUG
+	std::cout << "palBodyBase::GetPosition: position=" << res << std::endl;
+#endif
 }
 
 void palBodyBase::SetPosition(const palMatrix4x4 &location) {
@@ -110,6 +116,9 @@ std::string palBodyBase::toString() const {
 ////////////////////////////////////////
 
 void palBoxBase::Init(const palMatrix4x4 &pos, Float width, Float height, Float depth, Float mass) {
+#ifdef INTERNAL_DEBUG	
+	std::cout << "palBoxBase::Init: pos=" << pos << std::endl;
+#endif
 	SetPosition(pos);
 
 	//create the geom
