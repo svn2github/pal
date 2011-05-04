@@ -31,6 +31,8 @@ TEST_F(palLinkFeedbackTest, prismaticTest) {
 
 	palLinkFeedback* feedback = revoluteLink->GetFeedback();
 	ASSERT_NE((void*) 0, feedback);
+	feedback->SetEnabled(true);
+
 
 	for (int i = 0; i < 10; i++) {
 		float force = feedback->GetValue();

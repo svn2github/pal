@@ -37,6 +37,7 @@ ENDFUNCTION()
 IF(PAL_CONFIG_HAS_BEEN_RUN_BEFORE)
     CONFIGURE_TEST(bulletRigidLinkTest.cpp bulletRigidLinkTest BULLET libpal_bullet)
     CONFIGURE_TEST(palBodyTest.cpp palBodyTest "" "")
+    CONFIGURE_TEST(palGenericBodyTest.cpp palGenericBodyTest "" "")
     CONFIGURE_TEST(palActivationTest.cpp palActivationTest "" "")
     CONFIGURE_TEST(palAngularMotorTest.cpp palAngularMotorTest "" "")
 # enable this test when spherical links work

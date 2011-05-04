@@ -34,7 +34,6 @@ static std::vector<Float> createMesh(float x, float y, float z, float radius, fl
 	int i,j;
 
 	std::vector<float> verts;
-	verts.reserve(hstrip * vslice * 6 * 3);
 	// Loop around our sphere
 	for (i=0; i<hstrip; i++)
 	{
@@ -68,12 +67,12 @@ static std::vector<Float> createMesh(float x, float y, float z, float radius, fl
 			fY4 = cosf((fAngle+fAngleAdd) * DEG2RAD) * radius * sinf((fSineAngle + fSineAdd) * DEG2RAD);
 			fAngle += fAngleAdd;
 
-			push_back3<Float>(verts, fX1, fY    , fY1);
-			push_back3<Float>(verts, fX4, fYNext, fY4);
-			push_back3<Float>(verts, fX2, fY    , fY2);
-			push_back3<Float>(verts, fX1, fY    , fY1);
-			push_back3<Float>(verts, fX3, fYNext, fY3);
-			push_back3<Float>(verts, fX4, fYNext, fY4);
+		push_back3<Float>(verts, fX1, fY    , fY1);
+		push_back3<Float>(verts, fX4, fYNext, fY4);
+		push_back3<Float>(verts, fX2, fY    , fY2);
+		push_back3<Float>(verts, fX1, fY    , fY1);
+		push_back3<Float>(verts, fX3, fYNext, fY3);
+		push_back3<Float>(verts, fX4, fYNext, fY4);
 
 		}
 
@@ -90,10 +89,9 @@ TEST_F(palGenericBodyTest, testConvexGeometry) {
 	mat_identity(&position);
 	float mass = 10.0f;
 
-	palConvexGeometry* geometry = PF->CreateConvexGeometry(position, &verts.front(), verts.size() / 3, mass);
+	palConvexGeometry* geometry = PF->CreateConvexGeometry(position, verts.data(), verts.size(), mass);
 
 	palGenericBody* body = PF->CreateGenericBody(position);
 	body->ConnectGeometry(geometry);
 
-	delete body;
 }
