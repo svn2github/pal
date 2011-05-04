@@ -52,6 +52,7 @@ public:
 
 	// This way we don't have to override and delegate.
 	using palBodyBase::SetPosition;
+	using palBodyBase::toString;
 
 	/** Sets the position and orientation of the body
 	\param x The x-coordinate of the body (world)
