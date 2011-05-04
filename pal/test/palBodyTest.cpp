@@ -50,6 +50,8 @@ int main(int argc, char* argv[])
 	assert(pos.y == y);
 	assert(pos.z == z);
 
+	delete box;
+	
 	pp->Cleanup();
 	std::cout << "success" << std::endl;
 	return 0;
