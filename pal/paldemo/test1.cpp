@@ -217,6 +217,9 @@ void Test_1::Input(SDL_Event E) {
 				bodies.erase(bodies.begin());
 				}
 				break;
+			default:
+				// don't care about other events
+				break;
 			} 
 			if (pb) {
 				bodies.push_back(pb);

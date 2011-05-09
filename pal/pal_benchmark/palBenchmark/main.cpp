@@ -272,7 +272,9 @@ public:
 					im->drop();
 					g_ssname++;
 				}
-			return true;
+				return true;
+			default:
+				break;
 			}
 		}
 		return false;

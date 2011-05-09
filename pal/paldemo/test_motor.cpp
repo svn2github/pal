@@ -192,18 +192,19 @@ void Test_Motor::Update()
 		motors[i]->Update(pid_out);
 		motors[i]->Apply();
 	}
-	if (g_drive)
-	if (desired.size()>0)
-	if (fmodf(PF->GetActivePhysics()->GetTime(),40)>20) {
-		desired[0] = 0.25f; if (desired.size()>2) {
-		desired[1] = -0.75f;
-		desired[2] = 1.5f;}
-	} else {
-		desired[0] =-0.25f; if (desired.size()>2) {
-		desired[1] = 0.0f;
-		desired[2] = 0.0f; }
+	if (g_drive) {
+		if (desired.size()>0) {
+			if (fmodf(PF->GetActivePhysics()->GetTime(),40)>20) {
+				desired[0] = 0.25f; if (desired.size()>2) {
+					desired[1] = -0.75f;
+					desired[2] = 1.5f;}
+			} else {
+				desired[0] =-0.25f; if (desired.size()>2) {
+					desired[1] = 0.0f;
+					desired[2] = 0.0f; }
+			}
+		}
 	}
-
 };	
 
 void Test_Motor::Input(SDL_Event E) {
@@ -236,7 +237,8 @@ void Test_Motor::Input(SDL_Event E) {
 				pb->ApplyImpulse(0,0,-35);
 				BuildGraphics(pb);		
 				break;
-			
+			default:
+				break;
 			} 
 		break;
 	}

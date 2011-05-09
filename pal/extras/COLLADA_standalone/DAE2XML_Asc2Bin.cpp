@@ -385,6 +385,8 @@ void * Asc2Bin(const char *source,const int count,const char *spec,void *dest)
 						dst+=sizeof(unsigned int);
 					}
 					break;
+			default:
+				break;
 			}
 		}
 	}
@@ -533,6 +535,8 @@ void * Asc2Bin(const char *source,int &count,const char *spec)
 						dst+=sizeof(unsigned int);
 					}
 					break;
+			default:
+				break;
 			}
 		}
     count++;

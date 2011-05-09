@@ -1,4 +1,5 @@
 #include "graphics.h"
+#include <iostream>
 
 //(c) Adrian Boeing 2004, see liscence.txt (BSD liscence)
 //the graphics object class
@@ -76,6 +77,11 @@ GraphicsObject* BuildGraphics(palBodyBase *pb)
 				pSGp->Create(0,0,0,&pgc->m_vfVertices[0],((int)pgc->m_vfVertices.size())/3);
 #endif
 				psg =  pSGp;
+				break;
+			case PAL_GEOM_CONCAVE:
+				std::cerr << "WARNING: concave objects are not handled" << std::endl;
+				break;
+			case PAL_GEOM_NONE:
 				break;
 			}
 			if ((pg)&&(psg)) {

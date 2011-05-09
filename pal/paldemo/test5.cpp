@@ -29,7 +29,6 @@ void Test_5::AdditionalRender() {
 palBody *gpb;
 
 void Test_5::Input(SDL_Event E) {
-		int i,j;
 		palBody *pb= NULL;
 		switch(E.type) {
 		case SDL_KEYDOWN:
@@ -98,6 +97,8 @@ void Test_5::Input(SDL_Event E) {
 				pcs->Init(pb);
 				contacts.push_back(pcs);
 				gpb=pb;
+				break;
+			default:
 				break;
 			} 
 			break;

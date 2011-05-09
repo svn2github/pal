@@ -105,7 +105,7 @@ std::vector<palBodyBase *> ScythePhysics::loadScythePhysics(const char * fileNam
 
 			
 					// if mass is zero, use density to get scythe examples running
-					if (pBox)
+					if (pBox) {
 					if (physEntity->actors[j].primitives[i].mass == 0) {
 						pBox->Init(
 								physEntity->actors[j].primitives[i].pos.x,		// pos x
@@ -126,8 +126,8 @@ std::vector<palBodyBase *> ScythePhysics::loadScythePhysics(const char * fileNam
 							physEntity->actors[j].primitives[i].size.z,		// height
 							physEntity->actors[j].primitives[i].mass);		// mass
 					}
-					
-					if (!pBox) {
+					}
+					else {
 						palStaticBox *psBox = dynamic_cast<palStaticBox *>(pbBox);
 						psBox->Init(
 								physEntity->actors[j].primitives[i].pos.x,		// pos x

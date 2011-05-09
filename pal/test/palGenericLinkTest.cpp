@@ -60,9 +60,9 @@ TEST_F(palGenericLinkTest, testXAxis)
 	palVector3 linearUpperLimits(-linearLowerLimits);
 	palVector3 angularLowerLimits(-M_PI_2, 0.f, 0.f);
 	palVector3 angularUpperLimits(-angularLowerLimits);
-	palGenericLink* genericLink = PF->CreateGenericLink(anchor, floater,
-					anchorFrame, floaterFrame, linearLowerLimits,
-					linearUpperLimits, angularLowerLimits, angularUpperLimits);
+	PF->CreateGenericLink(anchor, floater,
+						  anchorFrame, floaterFrame, linearLowerLimits,
+						  linearUpperLimits, angularLowerLimits, angularUpperLimits);
 	palVector3 pos;
 	for (int i = 0; i < 100; i++) {
 

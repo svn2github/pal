@@ -63,9 +63,9 @@ void Test_6::Create_palRagDoll(float *pos) {
 			leg4 = dynamic_cast<palCapsule *>(PF->CreateObject("palCapsule"));
 
 			
-			//float pos[3];
-			int i;
 /*
+            float pos[3];
+			int i;
 			for (i=0;i<3;i++)
 				pos[i]=sfrand()*3;
 				pos[1]+=3.0f;
@@ -216,8 +216,6 @@ void Test_6::Update() {
 palBody *t6_gpb;
 
 void Test_6::Input(SDL_Event E) {
-		int i,j;
-		palBody *pb= NULL;
 		switch(E.type) {
 		case SDL_KEYDOWN:
 			switch (E.key.keysym.sym) {
@@ -262,6 +260,8 @@ void Test_6::Input(SDL_Event E) {
 				} else {
 					printf("Error: Could not create a cylinder\n");
 				} 
+				break;
+			default:
 				break;
 			} 
 			break;

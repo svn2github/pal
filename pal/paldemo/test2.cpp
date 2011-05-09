@@ -283,6 +283,8 @@ void Test_2::Input(SDL_Event E)
 				}
 				break;
 			}
+			default:
+				break;
 		}
 	}
 }

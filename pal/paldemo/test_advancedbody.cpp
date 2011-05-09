@@ -302,6 +302,8 @@ void Test_AdvancedBody::Input(SDL_Event E) {
 				bodies.erase(bodies.begin());
 				}
 				break;
+			default:
+				break;
 			} 
 			if (pb) {
 				bodies.push_back(pb);

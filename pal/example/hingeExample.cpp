@@ -42,7 +42,7 @@ void EventLoop(palPhysics* physics) {
 		g_eng->Clear();
 		for (unsigned int i = 0; i < g_Graphics.size(); i++) {
 			g_Graphics[i]->Display();
-			palBodyBase* body = g_Graphics[i]->m_pBody;
+			/*palBodyBase* body = */g_Graphics[i]->m_pBody;
 			/*
 			if (body) {
 				std::cout << i << ":\t" << *(g_Graphics[i]->m_pBody)
@@ -96,14 +96,14 @@ int main(int argc, char* argv[]) {
 	
 	boxA = PF->CreateBox();
 	boxA->Init(0, altitude, 6, 1, 1, 10, 10);
-	GraphicsObject* gObjectA = BuildGraphics(boxA);
+	/*GraphicsObject* gObjectA =*/ BuildGraphics(boxA);
 
 	boxB = PF->CreateBox();
 	boxB->Init(6, altitude, 0, 10, 1, 1, 10);
-	GraphicsObject* gObjectB = BuildGraphics(boxB);
+	/*GraphicsObject* gObjectB =*/ BuildGraphics(boxB);
 
 	palRevoluteLink* link = PF->CreateRevoluteLink(boxA, boxB, 0, altitude, 0, 0, 1, 0);
-	GraphicsObject* gObjectLink = BuildGraphics(link);
+	/*GraphicsObject* gObjectLink =*/ BuildGraphics(link);
 
 	link->SetLimits(-M_PI, M_PI);
 	palAngularMotor* motor = PF->CreateAngularMotor(link, 10);
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 
 	palBox* block = PF->CreateBox();
 	block->Init(5, altitude, 5, 1, 1, 1, 5);
-	GraphicsObject* blockGraphics = BuildGraphics(block);
+	/*GraphicsObject* blockGraphics =*/ BuildGraphics(block);
     
 	EventLoop(pp);
 

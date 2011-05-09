@@ -143,34 +143,37 @@ void Test_3::Input(SDL_Event E) {
 					printf("Error: Could not create a box\n");
 					return;
 				}
-				palMaterial *pmu=NULL;
-				pmu=pm->GetMaterial("Stubborn");
-				if (pmu==NULL) {
-					printf("could not get material\n");
-					return;
-				}
-				printf("pmu stubborn is %f %f %f\n",pmu->m_fStatic,pmu->m_fKinetic,pmu->m_fRestitution);
+				{
+					palMaterial *pmu=NULL;
+					pmu=pm->GetMaterial("Stubborn");
+					if (pmu==NULL) {
+						printf("could not get material\n");
+						return;
+					}
+					printf("pmu stubborn is %f %f %f\n",pmu->m_fStatic,pmu->m_fKinetic,pmu->m_fRestitution);
 					
-				pb->SetMaterial(pmu);
+					pb->SetMaterial(pmu);
 
-				pb = CreateBody("palBox",0,3,0,1,1,1,1);
-				pmu=pm->GetMaterial("LittleR");
-				if (pmu==NULL) {
-					printf("could not get material\n");
-					return;
-				}
-				printf("pmu littleR is %f %f %f\n",pmu->m_fStatic,pmu->m_fKinetic,pmu->m_fRestitution);
-				pb->SetMaterial(pmu);
+					pb = CreateBody("palBox",0,3,0,1,1,1,1);
+					pmu=pm->GetMaterial("LittleR");
+					if (pmu==NULL) {
+						printf("could not get material\n");
+						return;
+					}
+					printf("pmu littleR is %f %f %f\n",pmu->m_fStatic,pmu->m_fKinetic,pmu->m_fRestitution);
+					pb->SetMaterial(pmu);
 
-				pb = CreateBody("palBox",2,3,0,1,1,1,1);
-				pmu=pm->GetMaterial("Jumpy");
-				if (pmu==NULL) {
-					printf("could not get material\n");
-					return;
+					pb = CreateBody("palBox",2,3,0,1,1,1,1);
+					pmu=pm->GetMaterial("Jumpy");
+					if (pmu==NULL) {
+						printf("could not get material\n");
+						return;
+					}
+					pb->SetMaterial(pmu);
 				}
-				pb->SetMaterial(pmu);
-				
 				break;			
+			default:
+				break;
 			} 
 			break;
 		}

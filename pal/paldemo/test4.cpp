@@ -179,6 +179,8 @@ void Test_4::Input(SDL_Event E) {
 				pb->ApplyImpulse(0,0,-35);
 				BuildGraphics(pb);		
 				break;
+			default:
+				break;
 			}
 			break;
 		}

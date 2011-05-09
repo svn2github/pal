@@ -938,65 +938,6 @@ public:
 
 };
 
-static TiXmlNode * getElement(const char *name,TiXmlNode *root)
-{
-  TiXmlNode *ret = 0;
-
-  TiXmlNode *node = root->NextSibling();
-
-  while ( node )
-    {
-      if ( node->Type() == TiXmlNode::ELEMENT )
-	{
-	  if ( strcmp(node->Value(), name) == 0 )
-	    {
-	      ret = node;
-	      break;
-	    }
-	}
-
-      if ( node->NoChildren() )
-	{
-	  assert( node );
-	  while ( node->NextSibling() == NULL && node != root )
-	    {
-	      node = node->Parent();
-	    }
-	  if ( node == root )
-	    {
-	      break;
-	    }
-	  assert(node);
-	  node = node->NextSibling();
-	}
-      else
-	{
-	  assert(node);
-	  node = node->FirstChild();
-	}
-
-    }
-
-  return ret;
-}
-
-
-static const char * getElementText(TiXmlElement *element,const char *name)
-{
-  const char *ret = 0;
-
-  TiXmlNode *node = getElement(name,element);
-  if ( node )
-    {
-      TiXmlNode *child = node->FirstChild();
-      if ( child && child->Type() == TiXmlNode::TEXT )
-	{
-	  ret = child->Value();
-  	}
-    }
-
-  return ret;
-}
 
 class C_TriangleMesh
 {
@@ -1293,6 +1234,9 @@ public:
 	else
 	  mAngularSpring.mTargetValue = getFloat(data);
 	break;
+	  default:
+		  // we don't handle any of the others
+		  break;
       }
   }
 
@@ -1910,7 +1854,7 @@ public:
 					mCount = mVcount.size();
 			}
 
-      for (int i=0; i<mCount; i++)
+      for (unsigned int i=0; i<mCount; i++)
       {
       	if ( mInputType == IT_POLYGONS || mInputType == IT_POLYLIST )
       	{
@@ -2189,6 +2133,9 @@ public:
 			case CE_HALF_EXTENTS:
 				setHalfExtents(svalue);
 				break;
+		default:
+			// we don't handle any others
+			break;
 		}
   }
 
@@ -2372,6 +2319,9 @@ public:
 			case CE_INERTIA:
 				setInertia(svalue);
 				break;
+		default:
+			// we don't handle any of the others
+			break;
 		}
   }
 
@@ -3631,6 +3581,9 @@ public:
 	    						mRigidBody->mInstancePhysicsMaterial = url;
 	    					}
 	    					break;
+					default:
+						// we don't handle any of the others
+						break;
 	    			}
 	    		}
 	    	}
@@ -3877,6 +3830,9 @@ public:
 		  case CE_GEAR_RATIO:
 				mOperation = etype;
 				break;
+		default:
+			// we don't handle any of the others
+			break;
 	  }
 	}
 
@@ -3954,6 +3910,9 @@ public:
 								case CE_TIME_STEP:
 									mPhysicsScene->setTimeStep(svalue);
 									break;
+							default:
+								// we don't handle any of the others
+								break;
 							}
 						}
 						break;
@@ -3968,6 +3927,9 @@ public:
 								case CE_ANGULAR_VELOCITY:
 								  mInstanceRigidBody->setAngularVelocity(svalue);
 								  break;
+							default:
+								// we don't handle any of the others
+								break;
 							}
 						}
 						break;
@@ -3992,6 +3954,9 @@ public:
 								case CE_MATRIX:
 									mRigidBody->setMassFrame(svalue);
 									break;
+							default:
+								// we don't handle any of the others
+								break;
 							}
 						}
 						break;
@@ -4015,6 +3980,9 @@ public:
       					case CE_ROTATE:
       						mNode->rotate(svalue);
       						break;
+							default:
+								// we don't handle any of the others
+								break;
       				}
   					}
   					break;
@@ -4033,9 +4001,15 @@ public:
 								case CE_RESTITUTION:
 									mPhysicsMaterial->mRestitution = v;
 									break;
+							default:
+								// we don't handle any of the others
+								break;
 							}
 						}
 						break;
+				default:
+					// we don't handle any of the others
+					break;
   			}
 
   			break;
@@ -4049,7 +4023,7 @@ public:
   			Display(depth,"Node(UNKNOWN): %s\n", value);
   			break;
   		default:
-  			Display(depth,"Node(?????): %s\n", value);
+  			Display(depth,"Node(\?\?\?\?\?): %s\n", value);
   			break;
   	}
   }
@@ -4503,6 +4477,9 @@ private:
       case CE_RIGID_CONSTRAINT:
     		ret = true;
     		break;
+	default:
+		// we don't handle any of the others
+		break;
   	}
 		return ret;
   }
@@ -4730,11 +4707,6 @@ static const char * getMotion(float a,float b,bool &limit)
 	return ret;
 }
 
-static	float getMeanRad(float a,float b)
-{
-	return fabsf((a-b)*0.5f+b)*DEG_TO_RAD;
-}
-
 void C_RigidConstraint::saveXML(FILE *fph,C_Query *q,C_PhysicsModel *pmodel)
 {
 
@@ -4872,7 +4844,6 @@ const std::vector<palBodyBase *>& palGetAllColladaBodies()
 }
 
 static palBodyBase *SafeGetBody(unsigned int index) {
-	if (index<0) return 0;
 	if (index>=g_bodies.size()) return 0;
 	return g_bodies[index];
 }
@@ -5150,6 +5121,9 @@ void C_Shape::saveXML(FILE *fph,C_Query *query,unsigned int index)
 			fprintf(fph,"         <type>NX_SHAPE_CONVEX</type>\r\n");
 			fprintf(fph,"         <mConvexMeshDesc>%d</mConvexMeshDesc>\r\n",gindex);
 			break;
+	default:
+		// we don't handle any of the others
+		break;
 	}
 
 
@@ -5439,7 +5413,6 @@ void C_RigidBody::loadPAL(C_Query *q,const C_Matrix34 &mat,const C_Vec3 &velocit
 #ifndef NDEBUG
 			printf("creating convex mesh id:%d\n",gindex);
 #endif
-			if (gindex<0) break;
 			if (gindex>g_mesh_data.size()) break;
 
 			Make4x4(s->mTransform,m_shape);

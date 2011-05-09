@@ -296,6 +296,8 @@ int main (int argc, char **argv)
 					case SDLK_KP0:
 						transparent=!transparent;
 						break;
+					default:
+						break;
 					}
 				}
 				t->Input(E);

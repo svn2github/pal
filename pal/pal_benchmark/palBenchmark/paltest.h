@@ -149,6 +149,10 @@ public:
 				PAL_TERRAIN_HEIGHTMAP = 2, //!< Heightmap terrain type
 				PAL_TERRAIN_MESH = 3, //!< Mesh terrain type - functionality determind by implementation
 				*/
+		default:
+			std::cerr << "WARNING: this should never happen, at: "
+					  << __FILE__ << ": " << __LINE__ << std::endl;
+			break;
 		}
 		ApplyMaterialToNode(node);
 		if (pt->GetType() == PAL_TERRAIN_PLANE) {
@@ -193,6 +197,11 @@ public:
 				vector3df size = bb.getExtent();
 				node->setScale(vector3df(2*pCylG->m_fRadius/size.X,2*pCylG->m_fLength/size.Y,2*pCylG->m_fRadius/size.Z));
 				}
+		case PAL_GEOM_NONE:
+			break;
+		default:
+			std::cerr << "WARNING: unhandled geometry type " << pg->m_Type << std::endl;
+			break;
 		}
 
 		ApplyMaterialToNode(node);

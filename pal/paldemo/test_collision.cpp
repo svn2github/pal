@@ -290,6 +290,8 @@ void Test_Collision::Input(SDL_Event E) {
 				bodies.erase(bodies.begin());
 				}
 				break;
+			default:
+				break;
 			} 
 			if (pb) {
 				bodies.push_back(dynamic_cast<palBody*>(pb));
