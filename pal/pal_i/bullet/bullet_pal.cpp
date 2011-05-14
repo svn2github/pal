@@ -12,6 +12,7 @@
 #include "bullet_palCharacter.h"
 #include "LinearMath/btScalar.h"
 #include "LinearMath/btIDebugDraw.h"
+#include <iostream>
 
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
@@ -2081,6 +2082,9 @@ void palBulletRevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float 
 
 	convertPalMatToBtTransform(frameA, m_frameA);
 	convertPalMatToBtTransform(frameB, m_frameB);
+	// DEBUG
+	std::cout << "pal frame A: " << m_frameA << "\tpal frame B: " << m_frameB << std::endl;
+	std::cout << "bullet frame A: " << frameA << "\tbullet frame B: " << frameB << std::endl;
 	m_btHinge = new palHingeConstraint(*(body0->BulletGetRigidBody()),*(body1->BulletGetRigidBody()), frameA, frameB, false);
 	palBulletPhysics::GetInstance()->AddBulletConstraint(m_btHinge);
 
@@ -2664,6 +2668,25 @@ void palBulletTetrahedralSoftBody::Init(const Float *pParticles, const Float *pM
 
 std::ostream& operator<<(std::ostream& out, const btVector3& v) {
 	out << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
+	return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const btMatrix3x3& matrix) {
+	out << matrix.getRow(0) << "; " << matrix.getRow(1) << "; " << matrix.getRow(2);
+	return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const btTransform& xform) {
+    // btTransform returns references, so copy it
+    btVector3 origin = xform.getOrigin();
+    btQuaternion rot = xform.getRotation();
+	out << "[basis=" << xform.getBasis() << ", orig=" << origin << ", rot=" << rot << "]";
+	return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const btQuaternion& quat) {
+	double degrees = quat.getAngle() / M_PI * 180;
+	out << "[angle=" << degrees << "\370, axis=" << quat.getAxis() << "]";
 	return out;
 }
 

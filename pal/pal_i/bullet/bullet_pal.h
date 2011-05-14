@@ -771,7 +771,9 @@ inline palGroup convert_to_pal_group(short int v)
 }
 
 // convenient for debugging
-std::ostream& operator<<(std::ostream& out, const btVector3& v);
+extern std::ostream& operator<<(std::ostream& out, const btVector3& v);
+extern std::ostream& operator<<(std::ostream& out, const btTransform& xform);
+extern std::ostream& operator<<(std::ostream& out, const btQuaternion& quat);
 
 inline void convertPalMatToBtTransform(btTransform& xform, const palMatrix4x4& palMat)
 {
