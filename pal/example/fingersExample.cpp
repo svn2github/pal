@@ -8,6 +8,11 @@
 
 palBox* boxA;
 palBox* boxB;
+palRevoluteLink* linkA;
+palRevoluteLink* linkB;
+palAngularMotor* motorA;
+palAngularMotor* motorB;
+
 using namespace std;
 
 bool handleInput() {
@@ -30,8 +35,7 @@ static int degrees(float a, float b) {
 void EventLoop(palPhysics* physics) {
 	bool done = false;
 	while (!(done = handleInput())) {
-		physics->Update(0.05);
-
+#ifdef SIMPLE_OUTPUT
 		palVector3 aPos, bPos;
 		boxA->GetPosition(aPos);
         aPos.y -= 0.5;
@@ -39,6 +43,16 @@ void EventLoop(palPhysics* physics) {
         bPos.y -= 0.5;
 		cout << "A: " << aPos << " r=" << vec_mag(&aPos) << " a=" << degrees(aPos.x, aPos.z) << "\t"
 			 << "B: " << bPos << " r=" << vec_mag(&bPos) << " a=" << degrees(bPos.x, bPos.z) << endl;
+#else
+        PF->DumpObjects();
+#endif
+
+        motorA->Init(linkA, 100);
+        motorB->Init(linkB, 100);
+        motorA->Update(-30);
+        motorB->Update(30);
+		physics->Update(0.01);
+
 		g_eng->Clear();
 		for (unsigned int i = 0; i < g_Graphics.size(); i++) {
 			g_Graphics[i]->Display();
@@ -88,27 +102,27 @@ int main(int argc, char* argv[]) {
 	float altitude = 0.5f;
 
 	palBox* hand = PF->CreateBox();
-	hand->Init(0, altitude, 0, 1, 1, 6, 1000);
+	hand->Init(0, altitude, 0, 1, 1, 6, 10);
 	BuildGraphics(hand);
     
 	boxA = PF->CreateBox();
-	boxA->Init(6, altitude, 2, 10, 1, 1, 2);
+	boxA->Init(6, altitude, 2, 10, 1, 1, 2.0f);
 	BuildGraphics(boxA);
 
-	palRevoluteLink* linkA = PF->CreateRevoluteLink(hand, boxA, 0, altitude, 2, 0, 1, 0);
+	linkA = PF->CreateRevoluteLink(hand, boxA, 0, altitude, 2, 0, 1, 0);
 	linkA->SetLimits(-M_PI, M_PI);
-	palAngularMotor* motorA = PF->CreateAngularMotor(linkA, 100);
-	motorA->Update(-2);
+	motorA = PF->CreateAngularMotor(linkA, 100);
+	motorA->Update(-30);
 	BuildGraphics(linkA);
 
 	boxB = PF->CreateBox();
-	boxB->Init(6, altitude, -2, 10, 1, 1, 2);
+	boxB->Init(6, altitude, -2, 10, 1, 1, 2.0f);
 	GraphicsObject* gObjectB = BuildGraphics(boxB);
 
-	palRevoluteLink* linkB = PF->CreateRevoluteLink(hand, boxB, 0, altitude, -2, 0, 1, 0);
+	linkB = PF->CreateRevoluteLink(hand, boxB, 0, altitude, -2, 0, 1, 0);
 	linkB->SetLimits(-M_PI, M_PI);
-	palAngularMotor* motorB = PF->CreateAngularMotor(linkB, 100);
-	motorB->Update(2);
+	motorB = PF->CreateAngularMotor(linkB, 100);
+	motorB->Update(30);
 	BuildGraphics(linkB);
 
 	EventLoop(pp);
