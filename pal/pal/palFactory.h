@@ -2,6 +2,7 @@
 #define PALFACTORY_H
 //(c) Adrian Boeing 2004, see liscence.txt (BSD liscence)
 #include "pal.h"
+#include <iosfwd>
 
 /** \file palFactory.h
 	\brief
@@ -292,6 +293,9 @@ public:
 	 * @param dirName where to look for physics engine libraries
 	 */
 	void LoadPhysicsEngines(const char* dirName = NULL);
+
+    void DumpObjects(PAL_STRING separator = "\n");
+    void DumpObjects(std::ostream& out, PAL_STRING separator = "\n");
 private:
 	palPhysics *m_active;
 public:

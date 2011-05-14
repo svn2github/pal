@@ -1,6 +1,7 @@
 //#include "pal.h"
 #include "palFactory.h"
 #include <algorithm>
+#include <iostream>
 /*
 	Abstract:
 		PAL - Physics Abstraction Layer.
@@ -394,6 +395,9 @@ palPhysics::palPhysics()
 }
 
 void palPhysics::Update(Float timestep) {
+#ifdef INTERNAL_DEBUG
+	std::cout << "palPhysics::Update: timestep = " << timestep << " (==0.02? " << (timestep == 0.02f) << ")" << std::endl;
+#endif
 	if (GetDebugDraw() != NULL) {
 		GetDebugDraw()->Clear();
 	}

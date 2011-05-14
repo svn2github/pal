@@ -17,6 +17,8 @@
 #include <crtdbg.h>
 #define new new(_NORMAL_BLOCK,__FILE__, __LINE__)
 #endif
+#include <iostream>
+
 ////////////////////////////////////////
 palBody::palBody()
 : m_fForceX(0.0)
@@ -215,6 +217,10 @@ void palCompoundBody::SumInertia() {
 
 
 void palBox::Init(Float x, Float y, Float z, Float width, Float height, Float depth, Float mass) {
+#ifdef INTERNAL_DEBUG
+    std::cout.precision(10);
+    std::cout << "palBox::Init: pos=(" << x << ", " << y << ", " << z << ")" << std::endl;
+#endif
 	palMatrix4x4 m;
 	mat_identity(&m);
 	mat_translate(&m,x,y,z);

@@ -20,6 +20,7 @@
 #include "framework/osfs.h"
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
 #ifdef _WIN32
 // Windows has strtok_r, they just call it strtok_s for some reason (strtok_r is in POSIX.1-2001)
 #define strtok_r strtok_s
@@ -593,6 +594,20 @@ void palFactory::LoadPALfromDLL(const char *szPath) {
   printf("palFactory::LoadPALfromDLL: back from LoadObjects\n");
 #endif
 }
+
+void palFactory::DumpObjects(PAL_STRING separator) {
+    DumpObjects(std::cout, separator);
+}
+
+void palFactory::DumpObjects(std::ostream& out, PAL_STRING separator) {
+    for (std::list<myFactoryBase *>::iterator iter = pMMO.begin();
+         iter != pMMO.end();
+         iter++) {
+		myFactoryBase* objPtr = *iter;
+        out << objPtr->toString() << separator;
+    }
+}
+
 /*
 #ifdef SINGLETON
 palFactory* palFactory::m_pInstance=NULL;
