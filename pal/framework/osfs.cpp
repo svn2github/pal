@@ -27,7 +27,7 @@ void GetCurrentDir(const int buffersize, char *szDirectory) {
 	GetCurrentDirectory(buffersize,szDirectory);
 }
 
-void SetCurrentDir(const char *szDirectory) {
+void SetCurrentDir(const char *szDirectory) throw(palException) {
 	SetCurrentDirectory(szDirectory);
 }
 
@@ -83,7 +83,7 @@ void GetCurrentDir(const int buffersize, char *szDirectory) {
 	getcwd(szDirectory, buffersize);
 }
 
-void SetCurrentDir(const char *szDirectory) {
+void SetCurrentDir(const char *szDirectory) throw(palException) {
 	int retval = chdir(szDirectory);
     if (retval != 0) {
         int errorNum = errno;

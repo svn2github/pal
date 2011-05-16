@@ -2,6 +2,7 @@
 #define PALFACTORY_H
 //(c) Adrian Boeing 2004, see liscence.txt (BSD liscence)
 #include "pal.h"
+#include "palException.h"
 #include <iosfwd>
 
 /** \file palFactory.h
@@ -285,7 +286,7 @@ public:
 
 	palPhysics *GetActivePhysics();
 	void SetActivePhysics(palPhysics *physics);
-	void LoadPALfromDLL(const char *szPath = NULL);
+	void LoadPALfromDLL(const char *szPath = NULL) throw(palException);
 
 	static const char* PAL_PLUGIN_PATH;
 	/**

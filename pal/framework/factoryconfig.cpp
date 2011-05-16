@@ -54,7 +54,7 @@ void myFactory::FreeObjects() {
 #endif
 }
 
-void myFactory::LoadObjects(const char *szPath , void * factoryPointer, void *factoryInfoPointer) {
+void myFactory::LoadObjects(const char *szPath , void * factoryPointer, void *factoryInfoPointer) throw(palException) {
 #ifdef INTERNAL_DEBUG
   printf("myFactory::LoadObjects: szPath = '%s', factory = %p, sinfo = %p\n", 
 	  szPath, factoryPointer, factoryInfoPointer);
@@ -62,8 +62,8 @@ void myFactory::LoadObjects(const char *szPath , void * factoryPointer, void *fa
 
 	char current_directory[4096];
 	if (szPath != NULL) {
-	GetCurrentDir(4096,current_directory);
-	SetCurrentDir(szPath);
+		GetCurrentDir(4096,current_directory);
+		SetCurrentDir(szPath);
 	}
 	PAL_VECTOR<PAL_STRING> filesfound;
 

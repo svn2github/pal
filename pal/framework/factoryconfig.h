@@ -26,6 +26,7 @@
 #include "factory.h"
 #include "statusobject.h"
 #include "managedmemoryobject.h"
+#include "pal/palException.h"
 //#include "serialize.h" //need this to support dynamic loading of serializable objects (jic)
 
 typedef ManagedMemoryObject<StatusObject> myFactoryBase;
@@ -38,7 +39,7 @@ typedef PluggableFactory<myFactoryBase> myPluggableFactory;
 
 class myFactory : public myPluggableFactory, public MemoryObjectManager<StatusObject> {
 public:
-	static void LoadObjects(const char *szPath = NULL, void *factoryPointer = 0, void *factoryInfoPointer=0);
+	static void LoadObjects(const char *szPath = NULL, void *factoryPointer = 0, void *factoryInfoPointer=0) throw(palException);
 	virtual void FreeObjects(void);
 	myFactoryObject *Construct(PAL_STRING ClassName);
 #ifdef INTERNAL_DEBUG

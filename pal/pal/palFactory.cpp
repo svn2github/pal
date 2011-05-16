@@ -573,7 +573,7 @@ void palFactory::LoadPhysicsEngines(const char* dirName) {
 	}
 }
 
-void palFactory::LoadPALfromDLL(const char *szPath) {
+void palFactory::LoadPALfromDLL(const char *szPath) throw(palException) {
 #ifdef INTERNAL_DEBUG
   printf("palFactory::LoadPALfromDLL: path = '%s'. about to get palFactory\n",
 	  szPath);
