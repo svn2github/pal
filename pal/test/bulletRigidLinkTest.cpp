@@ -53,6 +53,6 @@ int main(int argc, char* argv[])
 				<< brLink->m_fLowerLimit << "\t" << brLink->m_fUpperLimit << std::endl;
 		pp->Update(0.05);
 	}
-	pp->Cleanup();
+	PF->Cleanup();
 	return 0;
 }

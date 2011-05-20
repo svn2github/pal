@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 	assert(angularMotor != 0);
 	std::cout << "angularMotor = " << angularMotor << std::endl;
 	
-	pp->Cleanup();
+	PF->Cleanup();
 	std::cout << "success" << std::endl;
 	return 0;
 }

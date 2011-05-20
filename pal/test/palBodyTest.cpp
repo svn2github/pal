@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
 
 	delete box;
 	
-	pp->Cleanup();
+	PF->Cleanup();
 	std::cout << "success" << std::endl;
 	return 0;
 }

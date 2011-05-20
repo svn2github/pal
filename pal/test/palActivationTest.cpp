@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 	activationSettings->SetActivationAngularVelocityThreshold(angular);
 	assert(fabsf(angular - activationSettings->GetActivationAngularVelocityThreshold()) < EPSILON);
 
-	pp->Cleanup();
+	PF->Cleanup();
 	std::cout << "success" << std::endl;
 	return 0;
 }
