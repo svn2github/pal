@@ -67,8 +67,8 @@ void palFactory::Cleanup() {
 		myFactoryBase* objPtr = *it;
 		palFactoryObject* factoryObj = dynamic_cast<palLink *>(objPtr);
 		if (factoryObj) {
+			it = pMMO.erase(it);
 			delete factoryObj;
-			it=pMMO.begin();
 		} else {
 			it++;
 		}
@@ -85,8 +85,10 @@ void palFactory::Cleanup() {
 		} else {
 			palFactoryObject* factoryObj = dynamic_cast<palFactoryObject*>(*it);
 			if (factoryObj) {
+				it = pMMO.erase(it);
 				delete factoryObj;
-				it=pMMO.begin();
+			} else {
+				it++;
 			}
 		}
 	}
@@ -96,9 +98,9 @@ void palFactory::Cleanup() {
 	while (it != pMMO.end() ) {
 		palPhysics * pPhysics = dynamic_cast<palPhysics *>(*it);
 		if (pPhysics) {
+			it = pMMO.erase(it);
 			pPhysics->Cleanup();
 			delete pPhysics;
-			it=pMMO.begin();
 		}
 	}
 
