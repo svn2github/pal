@@ -64,8 +64,9 @@ public:
 	If the call was succesfull then subsequent create calls should succeed, else, they will return null.
 
 	\param name The name of the physics engine to be used
+	\return whether the requested engine was able to be selected
 	*/
-	void SelectEngine(PAL_STRING name);
+	bool SelectEngine(PAL_STRING name);
 
 	/**
 	Removes all the objects created - regardless of which engine they were constructed with.

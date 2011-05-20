@@ -88,6 +88,8 @@ int main(int argc, char* argv[]) {
 	g_eng->SetViewMatrix(20.0f, 20.0f, 20.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
 					0.0f);
 
+	pp->SetDebugDraw(new palDebugDraw(50.0f));
+
 	// make our objects
 	palTerrainPlane *pt = PF->CreateTerrainPlane(); //create the ground
 	pt->Init(0, 0, 0, 50.0f); //initialize it, set its location to 0,0,0 and minimum size to 50
@@ -117,7 +119,7 @@ int main(int argc, char* argv[]) {
 
 	boxB = PF->CreateBox();
 	boxB->Init(6, altitude, -2, 10, 1, 1, 2.0f);
-	GraphicsObject* gObjectB = BuildGraphics(boxB);
+	/*GraphicsObject* gObjectB =*/ BuildGraphics(boxB);
 
 	linkB = PF->CreateRevoluteLink(hand, boxB, 0, altitude, -2, 0, 1, 0);
 	linkB->SetLimits(-M_PI, M_PI);

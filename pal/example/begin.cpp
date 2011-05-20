@@ -2,14 +2,21 @@
 #include "pal/palFactory.h"
 #include "pal/ConfigStatic.h"
 
+const unsigned int NUM_ENGINES = 3;
+const char* ENGINES[NUM_ENGINES] = { "Bullet", "ODE", "Novodex" };
+
 int main(int argc, char *argv[]) {
 #ifndef PAL_STATIC
-	PF->LoadPALfromDLL(); //use this if you wish to load PAL from .dll or .so
+	PF->LoadPhysicsEngines(); //use this if you wish to load PAL from .dll or .so
 	//otherwise, we can staticly link in an implementation by include the pal_i files
 	//eg: tokamak_pal.cpp and tokamak_pal.h
 #endif
 
-	PF->SelectEngine(DEFAULT_ENGINE);		 // Here is the name of the physics engine you wish to use. You could replace DEFAULT_ENGINE with "Tokamak", "ODE", etc...
+	for (int i = 0; i < NUM_ENGINES; i++) {
+		if (PF->SelectEngine(ENGINES[i])) {
+			break;
+		}
+	}
 	palPhysics *pp = PF->CreatePhysics(); //create the main physics class
 	if (pp == NULL) {
 		printf("Failed to create the physics engine. Check to see if you spelt the engine name correctly, or that the engine DLL is in the right location\n");

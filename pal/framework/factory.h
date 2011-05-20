@@ -118,7 +118,7 @@ public:
 #endif
 	}
 	FactoryObject<FactoryBase> *newObject(const PAL_STRING& ClassName);
-
+	bool isClassRegistered(const PAL_STRING& ClassName);
 	void UpdateRegistry(typename PAL_VECTOR<RegistrationInfo<FactoryBase> >::iterator Entry);
 
 	void RebuildRegistry();
@@ -250,6 +250,10 @@ template <typename FactoryBase> FactoryObject<FactoryBase> *PluggableFactory<Fac
 	printf("Found %s!\n",ClassName.c_str());
 #endif
 	return maker->Create();
+}
+
+template <typename FactoryBase> bool PluggableFactory<FactoryBase>::isClassRegistered(const PAL_STRING& ClassName) {
+	return mRegistry.find(ClassName) != mRegistry.end();
 }
 
 template <typename FactoryBase> void PluggableFactory<FactoryBase>::RebuildRegistry() {

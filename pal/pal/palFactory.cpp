@@ -48,12 +48,12 @@ palFactory::palFactory() {
 	m_active=NULL;
 }
 
-void palFactory::SelectEngine(PAL_STRING name) {
+bool palFactory::SelectEngine(PAL_STRING name) {
 #ifdef INTERNAL_DEBUG
-  printf("palFactory::SelectEngine: this = %p\n", this);
+	printf("palFactory::SelectEngine: this = %p\n", this);
 #endif
-	SetActiveGroup(name);
-	RebuildRegistry(); //lets just make sure the factory information is up to date.
+	SetActiveGroup(name); // also calls RebuildRegistry
+	return isClassRegistered("palPhysics");
 }
 
 void palFactory::Cleanup() {
