@@ -213,7 +213,6 @@ private:
 	palDebugDraw *m_pPalDebugDraw;
 };
 
-static btDiscreteDynamicsWorld* g_DynamicsWorld = NULL;
 static bool g_bEnableCustomMaterials = false;
 
 static bool CustomMaterialCombinerCallback(btManifoldPoint& cp, const btCollisionObject* colObj0,int partId0,int index0,const btCollisionObject* colObj1,int partId1,int index1)
@@ -346,8 +345,8 @@ void palBulletPhysics::SetGroupCollision(palGroup a, palGroup b, bool enabled) {
 
 	CleanPairForGroupCallback callback(a, b);
 
-	g_DynamicsWorld->getBroadphase()->getOverlappingPairCache()->processAllOverlappingPairs(&callback,
-				g_DynamicsWorld->getDispatcher());
+	m_dynamicsWorld->getBroadphase()->getOverlappingPairCache()->processAllOverlappingPairs(&callback,
+				m_dynamicsWorld->getDispatcher());
 
 }
 
@@ -365,7 +364,7 @@ void palBulletPhysics::RayCast(Float x, Float y, Float z, Float dx, Float dy, Fl
 	rayCallback.m_collisionFilterGroup = ~0;
 	rayCallback.m_collisionFilterMask = ~0;
 
-	g_DynamicsWorld->rayTest(from, to, rayCallback);
+	m_dynamicsWorld->rayTest(from, to, rayCallback);
 	if (rayCallback.hasHit())
 	{
 		hit.Clear();
@@ -452,20 +451,20 @@ void palBulletPhysics::RayCast(Float x, Float y, Float z,
 
    palBulletCustomResultCallback rayCallback(from, to, range, callback, groupFilter);
 
-   g_DynamicsWorld->rayTest(from, to, rayCallback);
+   m_dynamicsWorld->rayTest(from, to, rayCallback);
 }
 
 void palBulletPhysics::AddRigidBody(palBulletBodyBase* body) {
 	if (body && body->m_pbtBody != NULL) {
 		//reset the group to get rid of the default groups.
 		palGroup group = body->GetGroup();
-		g_DynamicsWorld->addRigidBody(body->m_pbtBody, convert_group(group), m_CollisionMasks[group]);
+		m_dynamicsWorld->addRigidBody(body->m_pbtBody, convert_group(group), m_CollisionMasks[group]);
 	}
 }
 
 void palBulletPhysics::RemoveRigidBody(palBulletBodyBase* body) {
 	if (body && body->m_pbtBody) {
-		g_DynamicsWorld->removeRigidBody(body->m_pbtBody);
+		m_dynamicsWorld->removeRigidBody(body->m_pbtBody);
 		body->m_pbtBody->setBroadphaseHandle(NULL);
 	}
 }
@@ -474,22 +473,22 @@ void palBulletPhysics::ClearBroadPhaseCachePairs(palBulletBodyBase *body) {
 	btBroadphaseProxy *proxy = body->BulletGetRigidBody()->getBroadphaseProxy();
 	if (proxy != NULL) {
 		proxy->m_collisionFilterMask = m_CollisionMasks[body->GetGroup()];
-		g_DynamicsWorld->getBroadphase()->getOverlappingPairCache()->cleanProxyFromPairs(proxy,
-					g_DynamicsWorld->getDispatcher());
+		m_dynamicsWorld->getBroadphase()->getOverlappingPairCache()->cleanProxyFromPairs(proxy,
+					m_dynamicsWorld->getDispatcher());
 	}
 }
 
 void palBulletPhysics::AddBulletConstraint(btTypedConstraint* constraint)
 {
 	if (constraint != NULL) {
-		g_DynamicsWorld->addConstraint(constraint, true);
+		m_dynamicsWorld->addConstraint(constraint, true);
 	}
 }
 
 void palBulletPhysics::RemoveBulletConstraint(btTypedConstraint* constraint)
 {
 	if (constraint != NULL && constraint->getUserConstraintId() != INT_MIN) {
-		g_DynamicsWorld->removeConstraint(constraint);
+		m_dynamicsWorld->removeConstraint(constraint);
 		constraint->setUserConstraintId(INT_MIN);
 	}
 }
@@ -498,7 +497,7 @@ void palBulletPhysics::AddAction(palAction *action) {
 	if (action != NULL) {
 		palBulletAction* bulletAction = new palBulletAction(*action);
 		m_BulletActions[action] = bulletAction;
-		g_DynamicsWorld->addAction(bulletAction);
+		m_dynamicsWorld->addAction(bulletAction);
 	}
 }
 
@@ -508,7 +507,7 @@ void palBulletPhysics::RemoveAction(palAction *action) {
 		if (item != m_BulletActions.end()) {
 			btActionInterface* bulletAction = item->second;
 			if (bulletAction != NULL) {
-				g_DynamicsWorld->removeAction(bulletAction);
+				m_dynamicsWorld->removeAction(bulletAction);
 				delete bulletAction;
 				bulletAction = NULL;
 			}
@@ -720,8 +719,9 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 														  createCollisionLocalStoreMemory,
 														  maxNumOutstandingTasks));
 #else
+	const char* threadName = "collision";
 	PosixThreadSupport::ThreadConstructionInfo tcInfo(
-		"collision",
+		strdup(threadName),
 		processCollisionTask,
 		createCollisionLocalStoreMemory,
 		maxNumOutstandingTasks);
@@ -755,7 +755,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_softBodyWorldInfo.m_sparsesdf.Initialize();
 
 	m_pbtDebugDraw = new palBulletDebugDraw;
-	g_DynamicsWorld = m_dynamicsWorld;
+	m_dynamicsWorld = m_dynamicsWorld;
 
 	m_CollisionMasks.resize(32U, ~0);
 
@@ -779,10 +779,11 @@ void palBulletPhysics::Cleanup() {
 	m_dynamicsWorld = NULL;
 	m_dispatcher = NULL;
 	m_pbtDebugDraw = NULL;
-	g_DynamicsWorld = NULL;
 	m_solver = NULL;
 	m_softBodyWorldInfo.m_broadphase = NULL;
 	m_collisionConfiguration = NULL;
+	m_overlapCallback = NULL;
+	m_ghostPairCallback = NULL;
 
 	PAL_MAP<palAction*, btActionInterface*>::iterator i, iend;
 	i = m_BulletActions.begin();
@@ -2415,8 +2416,8 @@ void palBulletPSDSensor::Init(palBody *body, Float x, Float y, Float z, Float dx
 #pragma comment (lib, "opengl32.lib")
 #endif
 Float palBulletPSDSensor::GetDistance() const {
+// TODO simplify this by using vec_mat_mul instead of mat_multiply
 	btVector3 from;
-	btVector3 to;
 	palMatrix4x4 m;
 	palMatrix4x4 bodypos = m_pBody->GetLocationMatrix();
 	palMatrix4x4 out;
@@ -2438,14 +2439,28 @@ Float palBulletPSDSensor::GetDistance() const {
 	newaxis.z=out._43-bodypos._43;
 	vec_norm(&newaxis);
 
-
+	
+	palRayHit hit;
+	palBulletPhysics::GetInstance()->RayCast(from.x(), from.y(), from.z(),
+											 newaxis.x, newaxis.y, newaxis.z,
+											 m_fRange, hit);
+	/*
+	 * Checking hit position and not just hit since if the hit
+	 * position isn't available, it's hard to see how the distance
+	 * could be meaningful.
+	 */
+	if (hit.m_bHitPosition && hit.m_pBody) {
+		return hit.m_fDistance;
+	}
+#if 0
+	btVector3 to;
 	to.setX(from.x()+newaxis.x*m_fRange);
 	to.setY(from.y()+newaxis.y*m_fRange);
 	to.setZ(from.z()+newaxis.z*m_fRange);
 
 	btCollisionWorld::ClosestRayResultCallback rayCallback(from,to);
 
-	g_DynamicsWorld->rayTest(from, to, rayCallback);
+	palBulletPhysics::GetInstance()->m_dynamicsWorld->rayTest(from, to, rayCallback);
 	if (rayCallback.hasHit())
 		{
 			btRigidBody* body = btRigidBody::upcast(rayCallback.m_collisionObject);
@@ -2454,6 +2469,7 @@ Float palBulletPSDSensor::GetDistance() const {
 					return m_fRange*rayCallback.m_closestHitFraction;
 				}
 		}
+#endif
 	return m_fRange;
 }
 
