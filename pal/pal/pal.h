@@ -80,7 +80,6 @@ struct palPhysicsDesc {
 class palPhysics : public palFactoryObject {
 	friend class palFactory;
 public:
-	palPhysics();
 	/**
 	Initializes the physics engine.
 	\param desc The description object defining the settings for this physics instance.
@@ -93,10 +92,6 @@ public:
 	\param timestep The increment in time since the last update
 	*/
 	virtual void Update(Float timestep);
-	/**
-	This removes all objects and frees all memory used by the physics engine. Any further uses of existing phyiscics object references will have an undefined effect.
-	*/
-	virtual void Cleanup() = 0;
 
 	/**
 	This returns the PAL version information.
@@ -161,6 +156,17 @@ protected:
 	Float m_fTime; //dodgy?
 	palAxis m_nUpAxis;
 	PAL_MAP<PAL_STRING, PAL_STRING> m_Properties;
+
+	/** Construction, destruction, and Cleanup should only be done by
+	 * the palFactory. */
+	palPhysics();
+	virtual ~palPhysics();
+	/**
+	This removes all objects and frees all memory used by the physics
+	engine. Any further uses of existing physics object references
+	will have an undefined effect.
+	*/
+	virtual void Cleanup() = 0;
 
 	virtual void NotifyGeometryAdded(palGeometry *pGeom);
 	virtual void NotifyBodyAdded(palBodyBase *pBody);

@@ -394,6 +394,9 @@ palPhysics::palPhysics()
 //	m_pSolver = 0;
 }
 
+palPhysics::~palPhysics() {
+}
+
 void palPhysics::Update(Float timestep) {
 #ifdef INTERNAL_DEBUG
 	std::cout << "palPhysics::Update: timestep = " << timestep << " (==0.02? " << (timestep == 0.02f) << ")" << std::endl;
