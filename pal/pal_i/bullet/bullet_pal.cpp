@@ -2084,8 +2084,8 @@ void palBulletRevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float 
 	convertPalMatToBtTransform(frameA, m_frameA);
 	convertPalMatToBtTransform(frameB, m_frameB);
 	// DEBUG
-	std::cout << "pal frame A: " << m_frameA << "\tpal frame B: " << m_frameB << std::endl;
-	std::cout << "bullet frame A: " << frameA << "\tbullet frame B: " << frameB << std::endl;
+	//std::cout << "pal frame A: " << m_frameA << "\tpal frame B: " << m_frameB << std::endl;
+	//std::cout << "bullet frame A: " << frameA << "\tbullet frame B: " << frameB << std::endl;
 	m_btHinge = new palHingeConstraint(*(body0->BulletGetRigidBody()),*(body1->BulletGetRigidBody()), frameA, frameB, false);
 	palBulletPhysics::GetInstance()->AddBulletConstraint(m_btHinge);
 
