@@ -8,23 +8,22 @@ palBulletVehicle::palBulletVehicle()
 , m_vehicleRayCaster(NULL)
 , m_vehicle(NULL)
 , m_dynamicsWorld(NULL)
-, m_multiSteppedAction(NULL)
+, m_iSubstepCount(1U)
+, m_vGravity(0.0, 0.0, 0.0)
 {
 }
 
 palBulletVehicle::~palBulletVehicle() {
 
-	if (m_dynamicsWorld != NULL && m_multiSteppedAction != NULL)
+	if (m_dynamicsWorld != NULL)
 	{
-		m_dynamicsWorld->removeVehicle(m_multiSteppedAction);
+		m_dynamicsWorld->removeVehicle(this);
 	}
 
 	delete m_vehicleRayCaster;
 	m_vehicleRayCaster = NULL;
 	delete m_vehicle;
 	m_vehicle = NULL;
-	delete m_multiSteppedAction;
-	m_multiSteppedAction = NULL;
 }
 
 
@@ -54,9 +53,7 @@ void palBulletVehicle::Init(palBody *chassis, Float MotorForce, Float BrakeForce
 	///never deactivate the vehicle
 	m_carChassis->setActivationState(DISABLE_DEACTIVATION);
 
-	m_multiSteppedAction = new MultiSteppedAction(m_vehicle);
-	m_multiSteppedAction->SetSubStepCount(1);
-	m_dynamicsWorld->addVehicle(m_multiSteppedAction);
+	m_dynamicsWorld->addVehicle(this);
 
 	unsigned int upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
 
@@ -144,6 +141,56 @@ palWheel* palBulletVehicle::AddWheel() {
 btRaycastVehicle::btVehicleTuning& palBulletVehicle::BulletGetTuning()
 {
    return m_tuning;
+}
+
+void palBulletVehicle::updateAction( btCollisionWorld* collisionWorld, btScalar deltaTimeStep)
+{
+	btVector3 gravity = m_carChassis->getGravity();
+	int upAxis = m_vehicle->getUpAxis();
+	// Gravity is active on the m_carChassis, so set it to really SIMD_EPSILON so it's not zero, but won't
+	// do anything and remember the gravity
+	if (gravity[upAxis] < -SIMD_EPSILON)
+	{
+		btVector3 smallGravity(0.0, 0.0, 0.0);
+		smallGravity[upAxis] = -SIMD_EPSILON;
+		m_carChassis->setGravity(smallGravity);
+		m_vGravity = gravity;
+	}
+
+	// gravity is zero on the m_carChassis, so it's disabled, so clear the saved gravity
+	if (gravity[upAxis] == btScalar(0.0))
+	{
+		m_vGravity = gravity;
+	}
+
+	for (int i=0; i<m_vehicle->getNumWheels(); i++) {
+		btWheelInfo& wheel = m_vehicle->getWheelInfo(i);
+
+		float speed2 = m_carChassis->getLinearVelocity().length2() - 0.5f;
+		if (speed2 > 1.0f)
+		{
+			speed2 = 1.0f;
+		}
+		else if (speed2 < 0.0f)
+		{
+			speed2 = 0.0f;
+		}
+
+		// scale the roll influence back up once the speed goes below 1.
+		// the roll influence should be 1.0 at 0 speed and the configured value at a speed of 1.
+		//wheel.m_rollInfluence = 1.0f - ((speed2) * (1.0f - m_vWheels[i]->m_WheelInfo.m_fRoll_Influence));
+		//printf("palVehicle roll influence per wheel %d %f\n", i, wheel.m_rollInfluence);
+	}
+
+
+	btScalar timestep = deltaTimeStep / btScalar(m_iSubstepCount);
+
+	btVector3 gravityImpulse = m_vGravity * timestep / m_carChassis->getInvMass() ;
+	for (unsigned i = 0; i < m_iSubstepCount; ++i)
+	{
+		m_carChassis->applyCentralImpulse(gravityImpulse);
+		m_vehicle->updateAction(collisionWorld, timestep);
+	}
 }
 
 

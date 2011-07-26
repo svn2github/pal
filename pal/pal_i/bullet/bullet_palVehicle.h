@@ -28,9 +28,7 @@ public:
 	int m_WheelIndex;
 };
 
-class MultiSteppedAction;
-
-class palBulletVehicle : public palVehicle {
+class palBulletVehicle : public palVehicle , public btActionInterface {
 public:
 	palBulletVehicle();
 	virtual ~palBulletVehicle();
@@ -52,6 +50,17 @@ public:
 	virtual Float GetVehicleSteering() const { return m_cVehicleSteering; };
 
 	virtual btRaycastVehicle::btVehicleTuning& BulletGetTuning();
+
+	virtual void updateAction( btCollisionWorld* collisionWorld, btScalar deltaTimeStep);
+
+   virtual void debugDraw(btIDebugDraw* debugDrawer)
+   {
+      m_vehicle->debugDraw(debugDrawer);
+   }
+
+   virtual unsigned GetSubStepCount() const { return m_iSubstepCount; }
+   virtual void SetSubStepCount(unsigned steps) { m_iSubstepCount = steps; }
+
 private:
 	Float	m_cEngineForce;
 	Float	m_cBreakingForce;
@@ -63,71 +72,10 @@ private:
 	btRaycastVehicle*	m_vehicle;
 	btDynamicsWorld* m_dynamicsWorld;
 
-	MultiSteppedAction* m_multiSteppedAction;
+	unsigned m_iSubstepCount;
+   btVector3 m_vGravity;
 
 	FACTORY_CLASS(palBulletVehicle,palVehicle,Bullet,1)
 };
-
-class MultiSteppedAction: public btActionInterface
-{
-public:
-   MultiSteppedAction(btRaycastVehicle* internalAction)
-   : m_pInternalAction(internalAction)
-   , m_iSubstepCount(1U)
-   , m_vGravity(0.0, 0.0, 0.0)
-   {
-
-   }
-
-   virtual ~MultiSteppedAction()
-   {
-   }
-
-   virtual void updateAction( btCollisionWorld* collisionWorld, btScalar deltaTimeStep)
-   {
-      btRigidBody* body = m_pInternalAction->getRigidBody();
-      btVector3 gravity = body->getGravity();
-      int upAxis = m_pInternalAction->getUpAxis();
-      // Gravity is active on the body, so set it to really SIMD_EPSILON so it's not zero, but won't
-      // do anything and remember the gravity
-      if (gravity[upAxis] < -SIMD_EPSILON)
-      {
-         btVector3 smallGravity(0.0, 0.0, 0.0);
-         smallGravity[upAxis] = -SIMD_EPSILON;
-         body->setGravity(smallGravity);
-         m_vGravity = gravity;
-      }
-
-      // gravity is zero on the body, so it's disabled, so clear the saved gravity
-      if (gravity[upAxis] == btScalar(0.0))
-      {
-         m_vGravity = gravity;
-      }
-
-      btScalar timestep = deltaTimeStep / btScalar(m_iSubstepCount);
-
-      btVector3 gravityImpulse = m_vGravity * timestep / body->getInvMass() ;
-      for (unsigned i = 0; i < m_iSubstepCount; ++i)
-      {
-         body->applyCentralImpulse(gravityImpulse);
-         m_pInternalAction->updateAction(collisionWorld, timestep);
-      }
-   }
-
-   virtual void debugDraw(btIDebugDraw* debugDrawer)
-   {
-      m_pInternalAction->debugDraw(debugDrawer);
-   }
-
-   virtual unsigned GetSubStepCount() const { return m_iSubstepCount; }
-   virtual void SetSubStepCount(unsigned steps) { m_iSubstepCount = steps; }
-
-private:
-   btRaycastVehicle* m_pInternalAction;
-   unsigned m_iSubstepCount;
-   btVector3 m_vGravity;
-
-};
-
 
 #endif
