@@ -1,8 +1,10 @@
-//#define BULLET_SINGLETHREAD
+#define BULLET_SINGLETHREAD
 #ifndef BULLET_SINGLETHREAD
 #define USE_PARALLEL_DISPATCHER 1
+#define USE_PARALLEL_SOLVER 1
 #else
 #undef USE_PARALLEL_DISPATCHER
+#undef USE_PARALLEL_SOLVER
 #endif
 
 //#define USE_LISTEN_COLLISION
@@ -17,10 +19,7 @@
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
-
-#ifndef OS_WINDOWS
-#define USE_PTHREADS
-#endif
+#include <BulletCollision/CollisionDispatch/btSimulationIslandManager.h>
 
 #include "BulletSoftBody/btSoftRigidDynamicsWorld.h"
 #include "BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h"
@@ -30,7 +29,7 @@
 #include <iostream>
 #endif
 
-#ifdef USE_PARALLEL_DISPATCHER
+#if defined(USE_PARALLEL_DISPATCHER) || defined(USE_PARALLEL_SOLVER)
 #include <BulletMultiThreaded/SpuGatheringCollisionDispatcher.h>
 #include <BulletMultiThreaded/PlatformDefinitions.h>
 
@@ -51,12 +50,9 @@
 #include "BulletMultiThreaded/SpuNarrowPhaseCollisionTask/SpuGatheringCollisionTask.h"
 #endif //USE_LIBSPE2
 
-#ifdef USE_PARALLEL_SOLVER
-#include "BulletMultiThreaded/SpuParallelSolver.h"
-#include "BulletMultiThreaded/SpuSolverTask/SpuParallellSolverTask.h"
-#endif //USE_PARALLEL_SOLVER
+#include "BulletMultiThreaded/btParallelConstraintSolver.h"
 
-#endif//USE_PARALLEL_DISPATCHER
+#endif//USE_PARALLEL_DISPATCHER || USE_PARALLEL_SOLVER
 
 FACTORY_CLASS_IMPLEMENTATION_BEGIN_GROUP;
 FACTORY_CLASS_IMPLEMENTATION(palBulletPhysics);
@@ -704,20 +700,23 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	// so ghosts and the character controller will work.
 	m_ghostPairCallback = new btGhostPairCallback;
 	broadphase->getOverlappingPairCache()->setInternalGhostPairCallback(m_ghostPairCallback);
-	m_collisionConfiguration = //new btDefaultCollisionConfiguration();
-		new btSoftBodyRigidBodyCollisionConfiguration();
+	btDefaultCollisionConstructionInfo cci;
+	cci.m_defaultMaxPersistentManifoldPoolSize = 32768;
+	m_collisionConfiguration = //new btDefaultCollisionConfiguration(cci);
+		new btSoftBodyRigidBodyCollisionConfiguration(cci);
 
+	int maxNumOutstandingTasks = set_pe;
 #ifndef USE_PARALLEL_DISPATCHER
 	m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
 #else
-	int maxNumOutstandingTasks = set_pe;
+	char* collisionName = "collision";
 	btThreadSupportInterface*		m_threadSupportCollision = 0;
 #ifdef OS_WINDOWS
 	m_threadSupportCollision = new Win32ThreadSupport(Win32ThreadSupport::Win32ThreadConstructionInfo(
-														  "collision",
-														  processCollisionTask,
-														  createCollisionLocalStoreMemory,
-														  maxNumOutstandingTasks));
+		collisionName,
+		processCollisionTask,
+		createCollisionLocalStoreMemory,
+		maxNumOutstandingTasks));
 #else
 	const char* threadName = "collision";
 	PosixThreadSupport::ThreadConstructionInfo tcInfo(
@@ -727,10 +726,35 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 		maxNumOutstandingTasks);
 	m_threadSupportCollision = new PosixThreadSupport(tcInfo);
 #endif
+	m_threadSupportCollision->startSPU();
 	m_dispatcher = new	SpuGatheringCollisionDispatcher(m_threadSupportCollision,maxNumOutstandingTasks,m_collisionConfiguration);
 #endif
 
+#ifndef USE_PARALLEL_SOLVER
 	m_solver = new btSequentialImpulseConstraintSolver();
+#else
+	char* solverName = "solver";
+	btThreadSupportInterface*		m_threadSupportSolver = 0;
+#ifdef OS_WINDOWS
+	m_threadSupportSolver = new Win32ThreadSupport(Win32ThreadSupport::Win32ThreadConstructionInfo(
+		solverName,
+		SolverThreadFunc,
+		SolverlsMemoryFunc,
+		maxNumOutstandingTasks));
+#else
+	PosixThreadSupport::ThreadConstructionInfo tcInfoSolver(
+		solverName,
+		SolverThreadFunc,
+		SolverlsMemoryFunc,
+		maxNumOutstandingTasks);
+	m_threadSupportSolver = new PosixThreadSupport(tcInfoSolver);
+#endif
+	m_threadSupportSolver->startSPU();
+	m_solver = new btParallelConstraintSolver(m_threadSupportSolver);
+	//this solver requires the contacts to be in a contiguous pool, so avoid dynamic allocation
+	m_dispatcher->setDispatcherFlags(btCollisionDispatcher::CD_DISABLE_CONTACTPOOL_DYNAMIC_ALLOCATION);
+#endif
+
 
 	if (m_Properties["Bullet_UseInternalEdgeUtility"] == "true") {
 		g_bEnableCustomMaterials = true;
@@ -740,7 +764,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 		gContactAddedCallback = NULL;
 	}
 
-//	m_dynamicsWorld = new btSimpleDynamicsWorld(m_dispatcher,m_overlappingPairCache,m_solver);
+	//m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher,broadphase,m_solver, m_collisionConfiguration);
 
 	btSoftRigidDynamicsWorld* dynamicsWorld = new btSoftRigidDynamicsWorld(m_dispatcher, broadphase, m_solver,m_collisionConfiguration);
 	m_dynamicsWorld = dynamicsWorld;
@@ -762,7 +786,13 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_dynamicsWorld->getSolverInfo().m_solverMode =
 			SOLVER_USE_FRICTION_WARMSTARTING | SOLVER_USE_2_FRICTION_DIRECTIONS
 			| SOLVER_RANDMIZE_ORDER | SOLVER_USE_WARMSTARTING | SOLVER_SIMD;
-	// Reset so it assigns it to the world properly
+
+	//m_dynamicsWorld->getSimulationIslandManager()->setSplitIslands(false);
+#ifdef USE_PARALLEL_DISPATCHER
+	m_dynamicsWorld->getDispatchInfo().m_enableSPU = true;
+#endif
+
+				// Reset so it assigns it to the world properly
 	SetSolverAccuracy(palSolver::GetSolverAccuracy());
 }
 
