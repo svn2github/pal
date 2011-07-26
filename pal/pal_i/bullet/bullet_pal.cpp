@@ -786,6 +786,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_dynamicsWorld->getSolverInfo().m_solverMode =
 			SOLVER_USE_FRICTION_WARMSTARTING | SOLVER_USE_2_FRICTION_DIRECTIONS
 			| SOLVER_RANDMIZE_ORDER | SOLVER_USE_WARMSTARTING | SOLVER_SIMD;
+	m_dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration = btScalar(0.0001);
 
 	//m_dynamicsWorld->getSimulationIslandManager()->setSplitIslands(false);
 #ifdef USE_PARALLEL_DISPATCHER
