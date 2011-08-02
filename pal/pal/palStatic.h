@@ -3,7 +3,7 @@
 //(c) Adrian Boeing 2007, see liscence.txt (BSD liscence)
 /*! \file palBodyBase.h
 	\brief
-		PAL - Physics Abstraction Layer. 
+		PAL - Physics Abstraction Layer.
 		Static body functionality
 	\author
 		Adrian Boeing
@@ -27,6 +27,7 @@
 class palStatic : virtual public palBodyBase {
 public:
 	palStatic() {}
+	virtual ~palStatic() {}
 protected:
 	palStatic(const palStatic& obj) : palBodyBase(obj) {}
 };
@@ -61,7 +62,7 @@ public:
 class palStaticConvex : virtual public palConvexBase, virtual public palStatic {
 public:
 	/**
-	Initializes the convex body. 
+	Initializes the convex body.
 	\param x The position (x)
 	\param y The position (y)
 	\param z The position (z)
@@ -70,9 +71,9 @@ public:
 	\param mass The objects's mass
 	*/
 	virtual void Init(Float x, Float y, Float z, const Float *pVertices, int nVertices);
-	
+
 	/**
-	Initializes the convex body. 
+	Initializes the convex body.
 	\param pos The transformation matrix representing the position and orientation of the convex body
 	\param pVertices The vertices describing the shape
 	\param nVertices The number of vertices (ie: the total number of Floats / 3)
@@ -159,10 +160,10 @@ public:
 	This function must be called after all the desired geometries have been attached to the body.
 	*/
 	virtual void Finalize();
-	
+
 protected:
 	PAL_VECTOR<palStatic *> m_DefaultFinalizeBodies;
-	
+
 	FACTORY_CLASS(palStaticCompoundBody,palStaticCompoundBody,*,1);
 };
 

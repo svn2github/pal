@@ -1,14 +1,16 @@
 #include "palFactory.h"
 #include <memory.h>
-#ifdef INTERNAL_DEBUG	
+#include <cmath>
+
+#ifdef INTERNAL_DEBUG
 #include <iostream>
 #endif
 /*
 	Abstract:
-		PAL - Physics Abstraction Layer. 
+		PAL - Physics Abstraction Layer.
 		Implementation File (geom)
 
-	Author: 
+	Author:
 		Adrian Boeing
 	Revision History:
 		Version 0.1 :19/10/07 split from pal.cpp
@@ -29,7 +31,7 @@ void palGeometry::GetPosition(palVector3& res) const {
 }
 ////////////////////////////////////////
 //step1: set the m_pbody
-//step2: call init -> 
+//step2: call init ->
 //		set type
 //		set position
 //		set properties
@@ -42,7 +44,7 @@ palGeometry::palGeometry() {
 	mat_identity(&m_mOffset);
 	m_nVertices = 0;
 	m_nIndices = 0;
-	
+
 	m_pVertices = 0;
 	m_pIndices = 0;
 
@@ -143,7 +145,7 @@ void palSphereGeometry::GenericInit(const palMatrix4x4& pos, const void *param_a
 }
 
 void palBoxGeometry::GenericInit(const palMatrix4x4& pos, const void *param_array) {
-#ifdef INTERNAL_DEBUG	
+#ifdef INTERNAL_DEBUG
 	std::cout << "palBoxGeometry::GenericInit: pos=" << pos << std::endl;
 #endif
 	Float *p = (Float *)param_array;
@@ -223,10 +225,10 @@ palVector3 palBoxGeometry::GetXYZDimensions() const {
 }
 
 /*
-   float mass = 3.0f; 
-   float Ixx = 0.7f * mass * (y * y + z * z) / 12.0f; 
-   float Iyy = 0.7f * mass * (x * x + z * z) / 12.0f; 
-   float Izz = 0.7f * mass * (x * x + y * y) / 12.0f; 
+   float mass = 3.0f;
+   float Ixx = 0.7f * mass * (y * y + z * z) / 12.0f;
+   float Iyy = 0.7f * mass * (x * x + z * z) / 12.0f;
+   float Izz = 0.7f * mass * (x * x + y * y) / 12.0f;
    NewtonBodySetMassMatrix (body, mass, Ixx, Iyy, Izz);
 */
 
@@ -285,14 +287,14 @@ void palConvexGeometry::SetIndices(const int *pIndices, int nIndices) {
 
 //from http://www.geometrictools.com/Documentation/PolyhedralMassProperties.pdf
 void palConvexGeometry::Subexpressions(Float &w0,Float &w1,Float &w2,Float &f1,Float &f2,Float &f3,Float &g0,Float &g1,Float &g2) {
-	Float temp0 = w0+w1; 
-	f1 = temp0+w2; 
-	Float temp1 = w0*w0; 
+	Float temp0 = w0+w1;
+	f1 = temp0+w2;
+	Float temp1 = w0*w0;
 	Float temp2 = temp1+w1*temp0;
-	f2 = temp2+w2*f1; 
+	f2 = temp2+w2*f1;
 	f3 = w0*temp1+w1*temp2+w2*f2;
-	g0 = f2+w0*(f1+w0); 
-	g1 = f2+w1*(f1+w1); 
+	g0 = f2+w0*(f1+w0);
+	g1 = f2+w1*(f1+w1);
 	g2 = f2+w2*(f1+w2);
 }
 
@@ -489,10 +491,10 @@ int *palBoxGeometry::GenerateMesh_Indices() {
 		4, 5, 6,
 		5, 7, 6,
 		2, 3, 5,
-		5, 3, 7, 
-		0, 6, 3, 
-		3, 6, 7, 
-		1, 2, 4, 
+		5, 3, 7,
+		0, 6, 3,
+		3, 6, 7,
+		1, 2, 4,
 		4, 2, 5
 	};
 	m_nIndices = 12*3;
@@ -515,7 +517,7 @@ palSphereGeometry::palSphereGeometry() {
 
 	m_nVertices = hstrip*vslice*6;
 	m_nIndices = hstrip*vslice*6;
-	
+
 }
 
 void palSphereGeometry::push_back3(Float *v,Float x, Float y, Float z) {
@@ -542,6 +544,7 @@ Float *palSphereGeometry::GenerateMesh_Vertices() {
 	// Loop around our sphere
 	for (i=0; i<hstrip; i++)
 	{
+		using namespace std; // for cosf and sinf
 		// Reset the angle for this slice
 		fAngle = 0;
 
@@ -571,14 +574,14 @@ Float *palSphereGeometry::GenerateMesh_Vertices() {
 			fX4 = sinf((fAngle+fAngleAdd) * (Float)DEG2RAD) * fRadius * sinf((fSineAngle + fSineAdd) * (Float)DEG2RAD);
 			fY4 = cosf((fAngle+fAngleAdd) * (Float)DEG2RAD) * fRadius * sinf((fSineAngle + fSineAdd) * (Float)DEG2RAD);
 			fAngle += fAngleAdd;
-		
+
 		push_back3(verts, fX1, fY    , fY1);
 		push_back3(verts, fX4, fYNext, fY4);
 		push_back3(verts, fX2, fY    , fY2);
 		push_back3(verts, fX1, fY    , fY1);
 		push_back3(verts, fX3, fYNext, fY3);
 		push_back3(verts, fX4, fYNext, fY4);
-		
+
 		}
 
 
@@ -607,7 +610,7 @@ int *palSphereGeometry::GenerateMesh_Indices() {
 		return m_pIndices;
 	m_pIndices = new int[m_nIndices];
 	int i;
-	for (i=0;i<m_nIndices;i++) 
+	for (i=0;i<m_nIndices;i++)
 		m_pIndices[i]=i;
 	return m_pIndices;
 }
@@ -621,7 +624,7 @@ palCapsuleGeometry::palCapsuleGeometry() {
 
 	m_nVertices = hstrip*vslice*6;
 	m_nIndices = hstrip*vslice*6;
-	
+
 }
 
 void palCapsuleGeometry::push_back3(Float *v,Float x, Float y, Float z) {
@@ -693,14 +696,14 @@ Float *palCapsuleGeometry::GenerateMesh_Vertices() {
 			fX4 = sinf((fAngle+fAngleAdd) * (Float)DEG2RAD) * fRadius * sinf((fSineAngle + fSineAdd) * (Float)DEG2RAD);
 			fY4 = cosf((fAngle+fAngleAdd) * (Float)DEG2RAD) * fRadius * sinf((fSineAngle + fSineAdd) * (Float)DEG2RAD);
 			fAngle += fAngleAdd;
-		
+
 		push_back3(verts, fX1, fY    , fY1);
 		push_back3(verts, fX4, fYNext, fY4);
 		push_back3(verts, fX2, fY    , fY2);
 		push_back3(verts, fX1, fY    , fY1);
 		push_back3(verts, fX3, fYNext, fY3);
 		push_back3(verts, fX4, fYNext, fY4);
-		
+
 		}
 
 
@@ -729,7 +732,7 @@ int *palCapsuleGeometry::GenerateMesh_Indices() {
 		return m_pIndices;
 	m_pIndices = new int[m_nIndices];
 	int i;
-	for (i=0;i<m_nIndices;i++) 
+	for (i=0;i<m_nIndices;i++)
 		m_pIndices[i]=i;
 	return m_pIndices;
 }
@@ -788,7 +791,7 @@ void palConvexGeometry::GenerateHull_Indices(const Float *const srcVerts, const 
 int *palConvexGeometry::GenerateMesh_Indices(){
 	if (m_pIndices)
 		return m_pIndices;
-	
+
 	palConvexGeometry::GenerateHull_Indices(&m_vfVertices[0],GetNumberOfVertices(),&m_pIndices,m_nIndices);
 	return m_pIndices;
 }

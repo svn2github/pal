@@ -3,6 +3,7 @@
 #include <memory.h>
 #include <cfloat>
 #include <ostream>
+#include <limits>
 
 //(c) 2004 Adrian Boeing, Some code based from Mesa3d (C) 1999-2003  Brian Paul
 
@@ -160,7 +161,7 @@ void mat_identity( palMatrix4x4 *m) {
 bool mat_is_identity(palMatrix4x4 *m) {
 	bool result = true;
 	for (int i=0;i<16;++i) {
-		if (fabs(m->_mat[i] - Identity[i]) > FLT_EPSILON)
+		if (fabs(m->_mat[i] - Identity[i]) > std::numeric_limits<float>::epsilon())
 		{
 			result = false;
 			break;
@@ -654,9 +655,9 @@ std::ostream& operator<<(std::ostream &os, const palMatrix4x4& m)
         }
         if (r != 3)  {
             os << " ; ";
-        }        
+        }
     }
     os << "]";
     return os;
-    
+
 }

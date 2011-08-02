@@ -309,6 +309,15 @@ public:
 	virtual bool IsDynamic() const;
 	virtual bool IsKinematic() const;
 	virtual bool IsStatic() const;
+
+	//using palBulletBody::GetActive;
+	using palBulletBody::SetActive;
+	using palBulletBody::IsActive;
+	using palBulletBody::SetAngularVelocity;
+	using palBulletBody::GetAngularVelocity;
+	using palBulletBody::GetLinearVelocity;
+	using palBulletBody::SetLinearVelocity;
+	using palBulletBody::GetLocationMatrix;
 protected:
 	FACTORY_CLASS(palBulletGenericBody, palGenericBody, Bullet, 1);
 	void AddShapeToCompound(palGeometry* pGeom);
@@ -329,6 +338,14 @@ public:
 	virtual void SetPosition(const palMatrix4x4& location);
 	virtual const palMatrix4x4& GetLocationMatrix() const;
 	virtual void Finalize(Float finalMass, Float iXX, Float iYY, Float iZZ);
+	//using palBulletBody::GetActive;
+	using palBulletBody::SetActive;
+	using palBulletBody::IsActive;
+	using palBulletBody::SetAngularVelocity;
+	using palBulletBody::GetAngularVelocity;
+	using palBulletBody::GetLinearVelocity;
+	using palBulletBody::SetLinearVelocity;
+	using palBulletBody::GetLocationMatrix;
 protected:
 	FACTORY_CLASS(palBulletCompoundBody,palCompoundBody,Bullet,1)
 };
@@ -366,24 +383,30 @@ class palBulletBoxGeometry : public palBulletGeometry, public palBoxGeometry  {
 public:
 	palBulletBoxGeometry();
 	virtual void Init(const palMatrix4x4 &pos, Float width, Float height, Float depth, Float mass);
+	using palBoxGeometry::GenericInit;
+	using palBoxGeometry::CalculateInertia;
 	btBoxShape *m_pbtBoxShape; // freed by our superclass
 protected:
 	FACTORY_CLASS(palBulletBoxGeometry,palBoxGeometry,Bullet,1)
 };
 
-class palBulletSphereGeometry : public palSphereGeometry , public palBulletGeometry {
+class palBulletSphereGeometry : public palSphereGeometry, public palBulletGeometry {
 public:
 	palBulletSphereGeometry();
 	virtual void Init(const palMatrix4x4 &pos, Float radius, Float mass);
+	using palSphereGeometry::CalculateInertia;
+	using palSphereGeometry::GenericInit;
 	btSphereShape *m_btSphereShape;
 protected:
 	FACTORY_CLASS(palBulletSphereGeometry,palSphereGeometry,Bullet,1)
 };
 
-class palBulletCapsuleGeometry : public palCapsuleGeometry , public palBulletGeometry {
+class palBulletCapsuleGeometry : public palCapsuleGeometry, public palBulletGeometry {
 public:
 	palBulletCapsuleGeometry();
 	virtual void Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass);
+	using palCapsuleGeometry::CalculateInertia;
+	using palCapsuleGeometry::GenericInit;
 	btCylinderShape *m_btCylinderShape;
 protected:
 	FACTORY_CLASS(palBulletCapsuleGeometry,palCapsuleGeometry,Bullet,1)
@@ -393,7 +416,13 @@ class palBulletBox : public palBulletBody, public palBox {
 public:
 	palBulletBox();
 	virtual void Init(Float x, Float y, Float z, Float width, Float height, Float depth, Float mass);
-	//extra methods provided by Bullet abilities:
+	using palBulletBody::GetAngularVelocity;
+	using palBulletBody::SetAngularVelocity;
+	using palBulletBody::GetLinearVelocity;
+	using palBulletBody::SetLinearVelocity;
+	using palBulletBody::IsActive;
+	using palBulletBody::SetActive;
+	using palBulletBody::GetLocationMatrix;
 protected:
 	FACTORY_CLASS(palBulletBox,palBox,Bullet,1)
 };
@@ -402,6 +431,7 @@ class palBulletStaticBox : public palStaticBox, virtual public palBulletBodyBase
 public:
 	palBulletStaticBox();
 	virtual void Init(const palMatrix4x4 &pos, Float width, Float height, Float depth);
+	using palBulletBodyBase::GetLocationMatrix;
 protected:
 	FACTORY_CLASS(palBulletStaticBox,palStaticBox,Bullet,1)
 };
@@ -411,6 +441,13 @@ class palBulletSphere : public palSphere, public palBulletBody {
 public:
 	palBulletSphere();
 	virtual void Init(Float x, Float y, Float z, Float radius, Float mass);
+	using palBulletBody::GetAngularVelocity;
+	using palBulletBody::SetAngularVelocity;
+	using palBulletBody::GetLinearVelocity;
+	using palBulletBody::SetLinearVelocity;
+	using palBulletBody::IsActive;
+	using palBulletBody::SetActive;
+	using palBulletBody::GetLocationMatrix;
 protected:
 	FACTORY_CLASS(palBulletSphere,palSphere,Bullet,1)
 };
@@ -419,6 +456,7 @@ class palBulletStaticSphere : public palStaticSphere, virtual public palBulletBo
 public:
 	palBulletStaticSphere();
 	virtual void Init(const palMatrix4x4 &pos, Float radius);
+	using palBulletBodyBase::GetLocationMatrix;
 protected:
 	FACTORY_CLASS(palBulletStaticSphere,palStaticSphere,Bullet,1)
 };
@@ -427,6 +465,13 @@ class palBulletCapsule : public palCapsule, public palBulletBody {
 public:
 	palBulletCapsule();
 	virtual void Init(Float x, Float y, Float z, Float radius, Float length, Float mass);
+	using palBulletBody::GetAngularVelocity;
+	using palBulletBody::SetAngularVelocity;
+	using palBulletBody::GetLinearVelocity;
+	using palBulletBody::SetLinearVelocity;
+	using palBulletBody::IsActive;
+	using palBulletBody::SetActive;
+	using palBulletBody::GetLocationMatrix;
 
 protected:
 	FACTORY_CLASS(palBulletCapsule,palCapsule,Bullet,1)
@@ -436,7 +481,7 @@ class palBulletStaticCapsule : public palStaticCapsule, public palBulletBodyBase
 public:
 	palBulletStaticCapsule();
 	virtual void Init(Float x, Float y, Float z, Float radius, Float length);
-
+	using palBulletBodyBase::GetLocationMatrix;
 protected:
 	FACTORY_CLASS(palBulletStaticCapsule,palStaticCapsule,Bullet,1)
 };
@@ -445,7 +490,8 @@ class palBulletTerrainPlane : public palTerrainPlane, virtual public palBulletBo
 public:
 	palBulletTerrainPlane();
 	virtual void Init(Float x, Float y, Float z, Float min_size);
-public:
+	using palBulletBodyBase::GetLocationMatrix;
+protected:
 	btBoxShape *m_pbtBoxShape;
 	FACTORY_CLASS(palBulletTerrainPlane,palTerrainPlane,Bullet,1)
 };
@@ -470,6 +516,7 @@ public:
 	palBulletTerrainMesh();
 	virtual ~palBulletTerrainMesh();
 	virtual void Init(Float x, Float y, Float z, const Float *pVertices, int nVertices, const int *pIndices, int nIndices);
+	using palBulletBodyBase::GetLocationMatrix;
 protected:
 	btBvhTriangleMeshShape *m_pbtTriMeshShape;
 	PAL_VECTOR<int> m_Indices;
@@ -481,6 +528,7 @@ class palBulletTerrainHeightmap : public palTerrainHeightmap, private palBulletT
 public:
 	palBulletTerrainHeightmap();
 	virtual void Init(Float x, Float y, Float z, Float width, Float depth, int terrain_data_width, int terrain_data_depth, const Float *pHeightmap);
+	using palBulletBodyBase::GetLocationMatrix;
 protected:
 	FACTORY_CLASS(palBulletTerrainHeightmap,palTerrainHeightmap,Bullet,1)
 };
@@ -525,12 +573,13 @@ protected:
 };
 
 /// Needed to create a subclass because the actual bullet link didn't allow setting the equilibrium point directly
-class SubbtGeneric6DofSpringConstraint : public btGeneric6DofSpringConstraint{
+class SubbtGeneric6DofSpringConstraint : public btGeneric6DofSpringConstraint {
 public:
 	SubbtGeneric6DofSpringConstraint(btRigidBody& rbA, btRigidBody& rbB, const btTransform& frameInA, const btTransform& frameInB ,bool useLinearReferenceFrameA)
 	: btGeneric6DofSpringConstraint(rbA, rbB, frameInA, frameInB, useLinearReferenceFrameA)
 	  {
 	  }
+	virtual ~SubbtGeneric6DofSpringConstraint() {}
 
 	void setEquilibriumPoint(int index, btScalar point) {
 		btAssert((index >= 0) && (index < 6));
@@ -584,8 +633,10 @@ public:
 	virtual ~palBulletConvexGeometry() {};
 	virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, Float mass);
 	virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass);
-	btConvexHullShape *m_pbtConvexShape;
 protected:
+	using palConvexGeometry::GenericInit;
+	using palConvexGeometry::CalculateInertia;
+	btConvexHullShape *m_pbtConvexShape;
 	void InternalInit(const Float *pVertices, unsigned int nVertices);
 	FACTORY_CLASS(palBulletConvexGeometry,palConvexGeometry,Bullet,1)
 };
@@ -599,6 +650,8 @@ public:
 	virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass);
 	btBvhTriangleMeshShape *m_pbtTriMeshShape;
 protected:
+	using palConcaveGeometry::CalculateInertia;
+	using palConcaveGeometry::GenericInit;
 	PAL_VECTOR<int> m_Indices;
 	PAL_VECTOR<Float> m_Vertices;
 	btTriangleInfoMap* m_pInternalEdgeInfo;
@@ -611,7 +664,13 @@ public:
 	palBulletConvex();
 	virtual void Init(Float x, Float y, Float z, const Float *pVertices, int nVertices, Float mass);
 	virtual void Init(Float x, Float y, Float z, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass);
-protected:
+	using palBulletBody::GetAngularVelocity;
+	using palBulletBody::SetAngularVelocity;
+	using palBulletBody::GetLinearVelocity;
+	using palBulletBody::SetLinearVelocity;
+	using palBulletBody::IsActive;
+	using palBulletBody::SetActive;
+	using palBulletBody::GetLocationMatrix;protected:
 	FACTORY_CLASS(palBulletConvex,palConvex,Bullet,1)
 };
 
@@ -621,6 +680,7 @@ public:
 	palBulletStaticConvex();
 	virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices);
 	virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices);
+	using palBulletBodyBase::GetLocationMatrix;
 protected:
 	FACTORY_CLASS(palBulletStaticConvex,palStaticConvex,Bullet,1)
 };
@@ -734,7 +794,17 @@ public:
 	palBulletPatchSoftBody();
 	virtual void Init(const Float *pParticles, const Float *pMass, const int nParticles, const int *pIndices, const int nIndices);
 	virtual void SetIterations(const int nIterations) {};
-
+	void SetAngularVelocity();
+	using palBulletSoftBody::GetAngularVelocity;
+	using palBulletSoftBody::SetAngularVelocity;
+	using palBulletSoftBody::GetParticlePositions;
+	using palBulletSoftBody::GetLinearVelocity;
+	using palBulletSoftBody::SetLinearVelocity;
+	using palBulletSoftBody::GetLocationMatrix;
+	using palBulletSoftBody::GetNumParticles;
+	using palBulletSoftBody::IsActive;
+	using palBulletSoftBody::SetActive;
+protected:
 	FACTORY_CLASS(palBulletPatchSoftBody,palPatchSoftBody,Bullet,1)
 };
 
@@ -743,6 +813,16 @@ class palBulletTetrahedralSoftBody : public palTetrahedralSoftBody, public palBu
 public:
 	palBulletTetrahedralSoftBody();
 	virtual void Init(const Float *pParticles, const Float *pMass, const int nParticles, const int *pIndices, const int nIndices);
+	using palBulletSoftBody::GetAngularVelocity;
+	using palBulletSoftBody::SetAngularVelocity;
+	using palBulletSoftBody::GetParticlePositions;
+	using palBulletSoftBody::GetLinearVelocity;
+	using palBulletSoftBody::SetLinearVelocity;
+	using palBulletSoftBody::GetLocationMatrix;
+	using palBulletSoftBody::GetNumParticles;
+	using palBulletSoftBody::IsActive;
+	using palBulletSoftBody::SetActive;
+protected:
 	FACTORY_CLASS(palBulletTetrahedralSoftBody,palTetrahedralSoftBody,Bullet,1)
 };
 

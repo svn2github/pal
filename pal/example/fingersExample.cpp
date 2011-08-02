@@ -28,9 +28,11 @@ bool handleInput() {
 	return done;
 }
 
+#ifdef SIMPLE_OUTPUT
 static int degrees(float a, float b) {
     return int(atan2f(a, b) / M_PI * 180.0f);
 }
+#endif
 
 void EventLoop(palPhysics* physics) {
 	bool done = false;

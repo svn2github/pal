@@ -1,4 +1,3 @@
-#define BULLET_SINGLETHREAD
 #ifndef BULLET_SINGLETHREAD
 #define USE_PARALLEL_DISPATCHER 1
 #define USE_PARALLEL_SOLVER 1
@@ -9,6 +8,7 @@
 
 //#define USE_LISTEN_COLLISION
 
+#include <limits>
 #include "bullet_pal.h"
 #include "bullet_palVehicle.h"
 #include "bullet_palCharacter.h"
@@ -25,7 +25,7 @@
 #include "BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h"
 #include "BulletSoftBody/btSoftBodyHelpers.h"
 
-#ifdef INTERNAL_DEBUG	
+#ifdef INTERNAL_DEBUG
 #include <iostream>
 #endif
 
@@ -705,10 +705,10 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_collisionConfiguration = //new btDefaultCollisionConfiguration(cci);
 		new btSoftBodyRigidBodyCollisionConfiguration(cci);
 
-	int maxNumOutstandingTasks = set_pe;
 #ifndef USE_PARALLEL_DISPATCHER
 	m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
 #else
+	int maxNumOutstandingTasks = set_pe;
 	char* collisionName = "collision";
 	btThreadSupportInterface*		m_threadSupportCollision = 0;
 #ifdef OS_WINDOWS
@@ -779,7 +779,6 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_softBodyWorldInfo.m_sparsesdf.Initialize();
 
 	m_pbtDebugDraw = new palBulletDebugDraw;
-	m_dynamicsWorld = m_dynamicsWorld;
 
 	m_CollisionMasks.resize(32U, ~0);
 
@@ -1017,7 +1016,7 @@ void palBulletBodyBase::BuildBody(const palMatrix4x4& pos, Float mass,
 
 	m_pbtBody->setCollisionFlags(btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK | m_pbtBody->getCollisionFlags());
 	dynamic_cast<palBulletPhysics*>(palFactory::GetInstance()->GetActivePhysics())->AddRigidBody(this);
-#ifdef INTERNAL_DEBUG	
+#ifdef INTERNAL_DEBUG
 	std::cout << "palBulletBodyBase::BuildBody: created body: " << m_pbtBody << std::endl;
 #endif
 }
@@ -1151,7 +1150,7 @@ palBulletBody::~palBulletBody() {
 * palActivation implementation
 */
 // Bullet supports them all
-const std::bitset<palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE> 
+const std::bitset<palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE>
 	palBulletBody::SUPPORTED_SETTINGS = std::bitset<palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE>(~(0xFFFFFFFF << palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE));
 
 Float palBulletBody::GetActivationLinearVelocityThreshold() const {
@@ -2470,7 +2469,7 @@ Float palBulletPSDSensor::GetDistance() const {
 	newaxis.z=out._43-bodypos._43;
 	vec_norm(&newaxis);
 
-	
+
 	palRayHit hit;
 	palBulletPhysics::GetInstance()->RayCast(from.x(), from.y(), from.z(),
 											 newaxis.x, newaxis.y, newaxis.z,
@@ -2559,7 +2558,7 @@ void palBulletRigidLink::Init(palBodyBase *parent, palBodyBase *child)
 {
 	palRigidLink::Init(parent, child);
 	const float TOLERANCE = 0.01f;
-	
+
 	palBulletRevoluteLink::Init(parent, child, m_fPosX, m_fPosY, m_fPosZ, 1, 0, 0);
 	/* Bullet can get into weird states with angles exactly at its boundaries (PI and -PI)
 	 * if the limits are exactly equal, so perturb them slightly. */
@@ -2752,8 +2751,8 @@ Copyright (c) 2003-2010 Erwin Coumans  http://continuousphysics.com/Bullet/
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
-Permission is granted to anyone to use this software for any purpose, 
-including commercial applications, and to alter it and redistribute it freely, 
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it freely,
 subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.

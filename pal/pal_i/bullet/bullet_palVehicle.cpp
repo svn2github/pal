@@ -164,7 +164,6 @@ void palBulletVehicle::updateAction( btCollisionWorld* collisionWorld, btScalar 
 	}
 
 	for (int i=0; i<m_vehicle->getNumWheels(); i++) {
-		btWheelInfo& wheel = m_vehicle->getWheelInfo(i);
 
 		float speed2 = m_carChassis->getLinearVelocity().length2() - 0.5f;
 		if (speed2 > 1.0f)
@@ -178,6 +177,7 @@ void palBulletVehicle::updateAction( btCollisionWorld* collisionWorld, btScalar 
 
 		// scale the roll influence back up once the speed goes below 1.
 		// the roll influence should be 1.0 at 0 speed and the configured value at a speed of 1.
+		//btWheelInfo& wheel = m_vehicle->getWheelInfo(i);
 		//wheel.m_rollInfluence = 1.0f - ((speed2) * (1.0f - m_vWheels[i]->m_WheelInfo.m_fRoll_Influence));
 		//printf("palVehicle roll influence per wheel %d %f\n", i, wheel.m_rollInfluence);
 	}

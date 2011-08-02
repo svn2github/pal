@@ -1707,6 +1707,7 @@ void palODERevoluteLink::SetLimits(Float lower_limit_rad, Float upper_limit_rad)
 	palRevoluteLink::SetLimits(lower_limit_rad, upper_limit_rad);
 	dJointSetHingeParam(odeJoint, dParamLoStop, m_fLowerLimit);
 	dJointSetHingeParam(odeJoint, dParamHiStop, m_fUpperLimit);
+	dJointSetHingeParam(odeJoint, dParamLoStop, m_fLowerLimit);
 }
 
 void palODERevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
