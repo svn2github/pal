@@ -31,6 +31,9 @@ IF(PAL_CONFIG_HAS_BEEN_RUN_BEFORE)
 	
 	FUNCTION(ADD_DISPLAY_EXAMPLE _EXE _SOURCE)
 		IF(PAL_EXAMPLES_DISPLAY)
+			if (APPLE)
+                           set(_SOURCE ${_SOURCE} ../paldemo/MacOSX/SDLMain.m)
+                        endif()
 			ADD_EXECUTABLE(
 				${_EXE}
 				${_SOURCE}

@@ -33,6 +33,10 @@ SET(SOURCE
 	testmain.cpp
 )
 
+if(APPLE)
+	SET(SOURCE ${SOURCE} MacOSX/SDLMain.m)
+endif()
+
 IF(MSVC)
 	SET(SOURCE ${SOURCE} res.rc)
 ENDIF()
