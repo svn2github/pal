@@ -28,6 +28,7 @@ subject to the following restrictions:
 #include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "LinearMath/btTransformUtil.h"
 #include "LinearMath/btMinMax.h"
+#include "LinearMath/btQuaternion.h"
 #include <new>
 #include "BulletDynamics/ConstraintSolver/btSolverBody.h"
 
@@ -655,7 +656,7 @@ void palHingeConstraint::setMotorTarget(const btQuaternion& qAinB, btScalar dt)
 	btScalar targetAngle = qHinge.getAngle();
 	if (targetAngle > SIMD_PI) // long way around. flip quat and recalculate.
 	{
-		qHinge = operator-(qHinge);
+		qHinge = qHinge.operator-();
 		targetAngle = qHinge.getAngle();
 	}
 	if (qHinge.getZ() < 0)

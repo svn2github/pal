@@ -19,6 +19,10 @@ SET(SOURCE
 	DAE2XML_tinyxmlparser.cpp
 )
 
+if(APPLE)
+        SET(SOURCE ${SOURCE} ../../sdlgl/MacOSX/SDLMain.m)
+endif()
+
 ADD_EXECUTABLE(
 	${EXE_NAME}
 	${HEADERS}
