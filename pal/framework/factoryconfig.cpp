@@ -63,7 +63,15 @@ void myFactory::LoadObjects(const char *szPath , void * factoryPointer, void *fa
 	char current_directory[4096];
 	if (szPath != NULL) {
 		GetCurrentDir(4096,current_directory);
-		SetCurrentDir(szPath);
+		try
+		{
+			SetCurrentDir(szPath);
+		}
+		catch (const palException& ex)
+		{
+			fprintf(stderr, "%s:%d: Unable to change directory to \"%s\" to load plugins because of \"%s\" \n",__FILE__,__LINE__,szPath, ex.what());
+			throw ex;
+		}
 	}
 	PAL_VECTOR<PAL_STRING> filesfound;
 

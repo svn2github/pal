@@ -547,53 +547,63 @@ palPhysics * palFactory::GetActivePhysics() {
 const char* palFactory::PAL_PLUGIN_PATH = "PAL_PLUGIN_PATH";
 
 void palFactory::LoadPhysicsEngines(const char* dirName) {
-	if (dirName) {
-		LoadPALfromDLL(dirName);
-	}
-	else {
-		char* path = getenv(PAL_PLUGIN_PATH);
-		// Why is this not null?
-#ifdef INTERNAL_DEBUG
-		printf("palFactory::LoadPhysicsEngines: PAL_PLUGIN_PATH='%s'\n", path);
-#endif
-        if (path && strlen(path) > 0) {
-            // need to copy the path because strtok_r will modify it
-			path = strdup(path);
-            const char separator[] = { PATH_SEPARATOR_CHAR, '\0' };
-            char* lasts = 0; // for strtok_r
-            for (char* dir = strtok_r(path, separator, &lasts);
-                 dir;
-                 dir = strtok_r(NULL, separator, &lasts)) {
-              LoadPALfromDLL(dir);
-            }
-            free(path);
-        }
-		else {
-          // use compile-time default as fallback
-          LoadPALfromDLL(PAL_DEFAULT_LIBDIR);
+	try
+	{
+		if (dirName) {
+			LoadPALfromDLL(dirName);
 		}
+		else {
+			char* path = getenv(PAL_PLUGIN_PATH);
+			// Why is this not null?
+#ifdef INTERNAL_DEBUG
+			printf("palFactory::LoadPhysicsEngines: PAL_PLUGIN_PATH='%s'\n", path);
+#endif
+			if (path && strlen(path) > 0) {
+				// need to copy the path because strtok_r will modify it
+				path = strdup(path);
+				const char separator[] = { PATH_SEPARATOR_CHAR, '\0' };
+				char* lasts = 0; // for strtok_r
+				for (char* dir = strtok_r(path, separator, &lasts);
+							dir;
+							dir = strtok_r(NULL, separator, &lasts)) {
+					LoadPALfromDLL(dir);
+				}
+				free(path);
+			}
+			else {
+				// use compile-time default as fallback
+				LoadPALfromDLL(PAL_DEFAULT_LIBDIR);
+			}
+		}
+	}
+	catch (const palException& ex)
+	{
+		fprintf(stderr, "%s:%d: Unable to load plugins from dynamic/shared libraries because of \"%s\". "
+					"If the path to plugin libraries is incorrect, try setting or correcting the environment variable PAL_PLUGIN_PATH.\n"
+					,__FILE__,__LINE__, ex.what());
+		throw ex;
 	}
 }
 
 void palFactory::LoadPALfromDLL(const char *szPath) throw(palException) {
 #ifdef INTERNAL_DEBUG
-  printf("palFactory::LoadPALfromDLL: path = '%s'. about to get palFactory\n",
-	  szPath);
+	printf("palFactory::LoadPALfromDLL: path = '%s'. about to get palFactory\n",
+				szPath);
 #endif
-  palFactory* factory = PF;
+	palFactory* factory = PF;
 #ifdef INTERNAL_DEBUG
-  printf("palFactory::LoadPALfromDLL: factory = %p. about to get sInfo from method %p\n",
-         factory, factory->sInfo);
+	printf("palFactory::LoadPALfromDLL: factory = %p. about to get sInfo from method %p\n",
+		factory, factory->sInfo);
 #endif
-  void* info = (void*) &(factory->sInfo());
+	void* info = (void*) &(factory->sInfo());
 #ifdef INTERNAL_DEBUG
-  printf("palFactory::LoadPALfromDLL: this = %p, PF = %p, info = %p\n",
-         this, PF, info);
-  printf("palFactory::LoadPALfromDLL: about to call LoadObjects\n");
+	printf("palFactory::LoadPALfromDLL: this = %p, PF = %p, info = %p\n",
+		this, PF, info);
+	printf("palFactory::LoadPALfromDLL: about to call LoadObjects\n");
 #endif
-  LoadObjects(szPath,PF,info);
+	LoadObjects(szPath,PF,info);
 #ifdef INTERNAL_DEBUG
-  printf("palFactory::LoadPALfromDLL: back from LoadObjects\n");
+		printf("palFactory::LoadPALfromDLL: back from LoadObjects\n");
 #endif
 }
 

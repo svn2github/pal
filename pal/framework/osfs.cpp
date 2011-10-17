@@ -109,7 +109,7 @@ void SetCurrentDir(const char *szDirectory) throw(palException) {
             errorMessage = buf;
         }
 #endif
-        throw new palException(errorMessage);
+        throw palException(errorMessage);
     }
 }
 
