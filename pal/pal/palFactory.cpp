@@ -571,8 +571,27 @@ void palFactory::LoadPhysicsEngines(const char* dirName) {
 				free(path);
 			}
 			else {
-				// use compile-time default as fallback
-				LoadPALfromDLL(PAL_DEFAULT_LIBDIR);
+				try
+				{
+					// use compile-time default as fallback
+					LoadPALfromDLL(PAL_DEFAULT_LIBDIR);
+				}
+				catch (const palException& ex)
+				{
+					// Try to load from the current dir
+#ifdef OS_WINDOWS
+					LoadPALfromDLL(".");
+#else
+					try
+					{
+						LoadPALfromDLL("../lib");
+					}
+					catch (const palException& ex)
+					{
+						LoadPALfromDLL("./lib");
+					}
+#endif
+				}
 			}
 		}
 	}
