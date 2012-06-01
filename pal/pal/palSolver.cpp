@@ -1,10 +1,10 @@
 #include "palSolver.h"
 /*
 	Abstract:
-		PAL - Physics Abstraction Layer. 
+		PAL - Physics Abstraction Layer.
 		Implementation File (solver)
 
-	Author: 
+	Author:
 		Adrian Boeing
 	Revision History:
 		Version 0.1   : 05/07/08 - Original
@@ -13,6 +13,10 @@
 
 palSolver::palSolver()
 : m_fSolverAccuracy(10.0f)
+{
+}
+
+palSolver::~palSolver()
 {
 }
 

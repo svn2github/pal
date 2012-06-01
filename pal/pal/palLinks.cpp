@@ -47,7 +47,7 @@ palLink::~palLink()
 {
 }
  
-void palLink::Init(palBodyBase *parent, palBodyBase *child)
+void palLink::Init(palBodyBase *parent, palBodyBase *child, bool disableCollisionsBetweenLinkedBodies)
 {
     SetBodies(parent, child);
 }
@@ -59,7 +59,7 @@ void palLink::SetBodies(palBodyBase *parent, palBodyBase *child)
 }
 
 void palLink::Init(palBodyBase *parent, palBodyBase *child,
-                   Float x, Float y, Float z) {
+                   Float x, Float y, Float z, bool disableCollisionsBetweenLinkedBodies) {
     SetBodies(parent, child);
 	m_fPosX = x;
 	m_fPosY = y;
@@ -126,8 +126,8 @@ palRevoluteLink::~palRevoluteLink()
 {
 }
 
-void palRevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z) {
-    palLink::Init(parent, child, x, y, z);
+void palRevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies) {
+  palLink::Init(parent, child, x, y, z, disableCollisionsBetweenLinkedBodies);
 
 	if (m_pParent && m_pChild) {
 		//Link_rel with the rotation matrix
@@ -453,8 +453,8 @@ palPrismaticLink::~palPrismaticLink()
 {
 }
 
-void palPrismaticLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z) {
-    palLink::Init(parent, child, x, y, z);
+void palPrismaticLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies) {
+  palLink::Init(parent, child, x, y, z, disableCollisionsBetweenLinkedBodies);
 	m_fAxisX=axis_x;
 	m_fAxisY=axis_y;
 	m_fAxisZ=axis_z;
@@ -478,8 +478,9 @@ void palGenericLink::Init(palBodyBase *parent, palBodyBase *child, const palMatr
 	const palVector3& linearLowerLimits,
 	const palVector3& linearUpperLimits,
 	const palVector3& angularLowerLimits,
-	const palVector3& angularUpperLimits) {
-	palLink::Init(parent, child);
+	const palVector3& angularUpperLimits,
+                          bool disableCollisionsBetweenLinkedBodies) {
+    palLink::Init(parent, child, disableCollisionsBetweenLinkedBodies);
 
 	memcpy(&m_frameA,&parentFrame,sizeof(palMatrix4x4));
 	memcpy(&m_frameB,&childFrame,sizeof(palMatrix4x4));
@@ -490,7 +491,8 @@ void palGenericLink::Init(palBodyBase *parent, palBodyBase *child,
 	const palVector3& linearLowerLimits,
 	const palVector3& linearUpperLimits,
 	const palVector3& angularLowerLimits,
-	const palVector3& angularUpperLimits)
+	const palVector3& angularUpperLimits,
+                          bool disableCollisionsBetweenLinkedBodies)
 {
 	/* Even though we'll only use the location of the pivot and not
 	 * its orientation, we need to account for rotation of the parent
@@ -518,7 +520,7 @@ void palGenericLink::Init(palBodyBase *parent, palBodyBase *child,
 	mat_set_translation(&frameInParent, pivotInParent.x, pivotInParent.y, pivotInParent.z);
 	mat_set_translation(&frameInChild, pivotInChild.x, pivotInChild.y, pivotInChild.z);
 
-	Init(parent, child, frameInParent, frameInChild, linearLowerLimits, linearUpperLimits, angularLowerLimits, angularUpperLimits);
+	Init(parent, child, frameInParent, frameInChild, linearLowerLimits, linearUpperLimits, angularLowerLimits, angularUpperLimits, disableCollisionsBetweenLinkedBodies);
 }
 
 
@@ -531,13 +533,13 @@ palRigidLink::~palRigidLink()
 {
 }
 
-void palRigidLink::Init(palBodyBase *parent, palBodyBase *child)
+void palRigidLink::Init(palBodyBase *parent, palBodyBase *child, bool disableCollisionsBetweenLinkedBodies)
 {
     palVector3 parentPos, childPos;
 	parent->GetPosition(parentPos);
 	child->GetPosition(childPos);
 	palVector3 center = (parentPos + childPos) / 2;
-	palLink::Init(parent, child, center.x, center.y, center.z);
+	palLink::Init(parent, child, center.x, center.y, center.z, disableCollisionsBetweenLinkedBodies);
 }
 
 #if 0

@@ -94,7 +94,7 @@ void Test_2::Input(SDL_Event E)
 						printf("Error: Could not create a Revolute link\n");
 						return;
 					}
-					prl->Init(pb1,pb2,pos[0]+dim1[0]*0.5f,pos[1],pos[2],0,0,1);
+					prl->Init(pb1,pb2,pos[0]+dim1[0]*0.5f,pos[1],pos[2],0,0,1,true);
 					if (limits)
 						prl->SetLimits(-ufrand()*M_PI*0.3f,ufrand()*M_PI*0.3f);
 					break;
@@ -137,7 +137,7 @@ void Test_2::Input(SDL_Event E)
 						printf("Error: Could not create a spherical link\n");
 						return;
 					}
-					psl->Init(pb1,pb2,pos[0]+dim1[0]*0.5f,pos[1],pos[2]);
+					psl->Init(pb1,pb2,pos[0]+dim1[0]*0.5f,pos[1],pos[2],true);
 					if (limits)
 						psl->SetLimits(ufrand()*M_PI*0.3,ufrand()*M_PI*0.3);
 					break;
@@ -172,7 +172,7 @@ void Test_2::Input(SDL_Event E)
 										 dim2[1],
 										 dim2[2],
 										 1);
-						ppl->Init(pb1,pb2,pos[0]+dim1[0]*0.5f,pos[1],pos[2],1,0,0);
+						ppl->Init(pb1,pb2,pos[0]+dim1[0]*0.5f,pos[1],pos[2],1,0,0,true);
 					} else {
 						pb2 = CreateBody(m_BodyType2.c_str(),
 										 pos[0],
@@ -182,7 +182,7 @@ void Test_2::Input(SDL_Event E)
 										 dim2[1],
 										 dim2[2],
 										 1);
-						ppl->Init(pb1,pb2,pos[0],pos[1],pos[2]+dim1[2]*0.5f,0,0,1);
+						ppl->Init(pb1,pb2,pos[0],pos[1],pos[2]+dim1[2]*0.5f,0,0,1,true);
 					}
 					break;
 				case SDLK_9:
@@ -235,7 +235,7 @@ void Test_2::Input(SDL_Event E)
 						vec_set(&Angular_maxlimits, 1e30, 1e30, 1e30);
 #endif
 						
-						pgl->Init(pb1,pb2,frameA,frameB,Linear_minlimits,Linear_maxlimits,Angular_minlimits,Angular_maxlimits);
+						pgl->Init(pb1,pb2,frameA,frameB,Linear_minlimits,Linear_maxlimits,Angular_minlimits,Angular_maxlimits,true);
 					}
 					break;
 				case SDLK_o:
@@ -274,7 +274,8 @@ void Test_2::Input(SDL_Event E)
 						psl->Init(pb1,pb2,
 								  nswap_xy ? pos[0]+dim1[0]*(0.5f+i-1) : pos[1],
 								  nswap_xy ? pos[1] : pos[0]+dim1[0]*(0.5f+i-1),
-								  pos[2]);
+								  pos[2],
+                                  true);
 						//pb1->SetGroup(1);
 						pb2->SetGroup(1);
 						pb1=pb2;

@@ -297,9 +297,9 @@ palSphericalLink *palFactory::CreateSphericalLink() {
 }
 
 palSphericalLink *palFactory::CreateSphericalLink(palBodyBase *parent, palBodyBase *child,
-												  Float x, Float y, Float z) {
+												  Float x, Float y, Float z, bool disableCollisionsBetweenLinkedBodies) {
 	palSphericalLink* sphericalLink = CreateSphericalLink();
-	sphericalLink->Init(parent, child, x, y, z);
+	sphericalLink->Init(parent, child, x, y, z, disableCollisionsBetweenLinkedBodies);
 	return sphericalLink;
 }
 
@@ -311,9 +311,10 @@ palRevoluteLink *palFactory::CreateRevoluteLink() {
 }
 palRevoluteLink *palFactory::CreateRevoluteLink(palBodyBase *parent, palBodyBase *child,
 												Float x, Float y, Float z,
-												Float axis_x, Float axis_y, Float axis_z) {
+												Float axis_x, Float axis_y, Float axis_z,
+                                                bool disableCollisionsBetweenLinkedBodies) {
 	palRevoluteLink* link = CreateRevoluteLink();
-	link->Init(parent, child, x, y, z, axis_x, axis_y, axis_z);
+	link->Init(parent, child, x, y, z, axis_x, axis_y, axis_z, disableCollisionsBetweenLinkedBodies);
 	return link;
 }
 
@@ -325,10 +326,11 @@ palRevoluteSpringLink *palFactory::CreateRevoluteSpringLink() {
 }
 
 palRevoluteSpringLink *palFactory::CreateRevoluteSpringLink(palBodyBase *parent, palBodyBase *child,
-												Float x, Float y, Float z,
-												Float axis_x, Float axis_y, Float axis_z) {
+                                                            Float x, Float y, Float z,
+                                                            Float axis_x, Float axis_y, Float axis_z,
+                                                            bool disableCollisionsBetweenLinkedBodies) {
 	palRevoluteSpringLink* link = CreateRevoluteSpringLink();
-	link->Init(parent, child, x, y, z, axis_x, axis_y, axis_z);
+	link->Init(parent, child, x, y, z, axis_x, axis_y, axis_z, disableCollisionsBetweenLinkedBodies);
 	return link;
 }
 
@@ -346,9 +348,10 @@ palPrismaticLink *palFactory::CreatePrismaticLink() {
 
 palPrismaticLink *palFactory::CreatePrismaticLink(palBodyBase *parent, palBodyBase *child,
 												  Float x, Float y, Float z,
-												  Float axis_x, Float axis_y, Float axis_z) {
+												  Float axis_x, Float axis_y, Float axis_z,
+                                                  bool disableCollisionsBetweenLinkedBodies) {
 	palPrismaticLink* prismaticLink = CreatePrismaticLink();
-	prismaticLink->Init(parent, child, x, y, z, axis_x, axis_y, axis_z);
+	prismaticLink->Init(parent, child, x, y, z, axis_x, axis_y, axis_z, disableCollisionsBetweenLinkedBodies);
 	return prismaticLink;
 }
 
@@ -364,11 +367,12 @@ palGenericLink* palFactory::CreateGenericLink(palBodyBase *parent,
 												const palVector3& linearLowerLimits,
 												const palVector3& linearUpperLimits,
 												const palVector3& angularLowerLimits,
-												const palVector3& angularUpperLimits) {
+												const palVector3& angularUpperLimits,
+                                              bool disableCollisionsBetweenLinkedBodies) {
 	palGenericLink* link = CreateGenericLink();
 	if (link) {
 		link->Init(parent, child, parentFrame, childFrame, linearLowerLimits,
-				linearUpperLimits, angularLowerLimits, angularUpperLimits);
+                   linearUpperLimits, angularLowerLimits, angularUpperLimits, disableCollisionsBetweenLinkedBodies);
 	}
 	return link;
 }
@@ -378,11 +382,12 @@ palGenericLink * palFactory::CreateGenericLink(palBodyBase *parent, palBodyBase 
 	const palVector3& linearLowerLimits,
 	const palVector3& linearUpperLimits,
 	const palVector3& angularLowerLimits,
-	const palVector3& angularUpperLimits) {
+	const palVector3& angularUpperLimits,
+    bool disableCollisionsBetweenLinkedBodies) {
 	palGenericLink* link = CreateGenericLink();
 	if (link) {
 		link->Init(parent, child, pivotLocation, linearLowerLimits,
-				linearUpperLimits, angularLowerLimits, angularUpperLimits);
+                   linearUpperLimits, angularLowerLimits, angularUpperLimits, disableCollisionsBetweenLinkedBodies);
 	}
 	return link;
 
@@ -393,10 +398,11 @@ palRigidLink *palFactory::CreateRigidLink() {
 	return Cast<palLink *,palRigidLink *>(pmFO);
 }
 
-palRigidLink* palFactory::CreateRigidLink(palBodyBase *parent, palBodyBase *child) {
+palRigidLink* palFactory::CreateRigidLink(palBodyBase *parent, palBodyBase *child,
+                                          bool disableCollisionsBetweenLinkedBodies) {
 	palRigidLink* link = CreateRigidLink();
 	if (link) {
-		link->Init(parent, child);
+      link->Init(parent, child, disableCollisionsBetweenLinkedBodies);
 	}
 	return link;
 }

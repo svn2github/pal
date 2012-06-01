@@ -33,13 +33,13 @@ void Test_Motor::CreateChain(int xyz) {
 		}
 		switch (xyz) {
 			case 0:
-				prl->Init(pb_last,pb,i*1.5f - 1,2,0,0,0,1);
+				prl->Init(pb_last,pb,i*1.5f - 1,2,0,0,0,1, true);
 				break;
 			case 1:
-				prl->Init(pb_last,pb,0,i*1.5f - 1 + 2,0,0,0,1);
+				prl->Init(pb_last,pb,0,i*1.5f - 1 + 2,0,0,0,1, true);
 				break;
 			case 2:
-				prl->Init(pb_last,pb,0,2,i*1.5f - 1,1,0,0);
+				prl->Init(pb_last,pb,0,2,i*1.5f - 1,1,0,0, true);
 				break;
 		}
 
@@ -108,7 +108,7 @@ void Test_Motor::CreateSet() {
 		printf("Error: Could not create a Revolute link\n");
 		return;
 	}
-	prl->Init(pb1,pb2,pos[0]+dim1[0]*0.5f,pos[1],pos[2],0,0,1);
+	prl->Init(pb1,pb2,pos[0]+dim1[0]*0.5f,pos[1],pos[2],0,0,1, true);
 	
 #if 1
 	palAngularMotor *pam = dynamic_cast<palAngularMotor *>(PF->CreateObject("palAngularMotor"));
@@ -152,9 +152,9 @@ void Test_Motor::CreateRobot() {
 		}
 
 		if (i==0)
-			prl->Init(pb_last,pb,0,1,0,0,1,0);
+			prl->Init(pb_last,pb,0,1,0,0,1,0, true);
 		else
-			prl->Init(pb_last,pb,i-0.5f,1.5,0,0,0,1);
+			prl->Init(pb_last,pb,i-0.5f,1.5,0,0,0,1, true);
 
 #if 1
 		palAngularMotor *pam = dynamic_cast<palAngularMotor *>(PF->CreateObject("palAngularMotor"));

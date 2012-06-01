@@ -474,10 +474,10 @@ void palBulletPhysics::ClearBroadPhaseCachePairs(palBulletBodyBase *body) {
 	}
 }
 
-void palBulletPhysics::AddBulletConstraint(btTypedConstraint* constraint)
+void palBulletPhysics::AddBulletConstraint(btTypedConstraint* constraint, bool disableCollisionsBetweenLinkedBodies)
 {
 	if (constraint != NULL) {
-		m_dynamicsWorld->addConstraint(constraint, true);
+		m_dynamicsWorld->addConstraint(constraint, disableCollisionsBetweenLinkedBodies);
 	}
 }
 
@@ -2008,8 +2008,9 @@ palBulletSphericalLink::~palBulletSphericalLink() {
 }
 
 
-void palBulletSphericalLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z) {
-	palSphericalLink::Init(parent,child,x,y,z);
+void palBulletSphericalLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
+                                  bool disableCollisionsBetweenLinkedBodies) {
+    palSphericalLink::Init(parent,child,x,y,z, disableCollisionsBetweenLinkedBodies);
 	const palBulletBodyBase *parentBodyBase = dynamic_cast<palBulletBodyBase *> (parent);
 	const palBulletBodyBase *childBodyBase = dynamic_cast<palBulletBodyBase *> (child);
 	btRigidBody* parentBulletBody = parentBodyBase->m_pbtBody;
@@ -2046,7 +2047,7 @@ void palBulletSphericalLink::Init(palBodyBase *parent, palBodyBase *child, Float
 	p2p->setLinearUpperLimit(btVector3(epsilon, epsilon, epsilon));
 
 	m_btp2p = p2p;
-	palBulletPhysics::GetInstance()->AddBulletConstraint(m_btp2p);
+	palBulletPhysics::GetInstance()->AddBulletConstraint(m_btp2p, disableCollisionsBetweenLinkedBodies);
 }
 
 void palBulletSphericalLink::SetLimits(Float cone_limit_rad, Float twist_limit_rad) {
@@ -2104,8 +2105,8 @@ palBulletRevoluteLink::~palBulletRevoluteLink() {
 	}
 }
 
-void palBulletRevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z) {
-	palRevoluteLink::Init(parent,child,x,y,z,axis_x,axis_y,axis_z);
+void palBulletRevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies) {
+    palRevoluteLink::Init(parent,child,x,y,z,axis_x,axis_y,axis_z, disableCollisionsBetweenLinkedBodies);
 	palBulletBodyBase *body0 = dynamic_cast<palBulletBodyBase *> (parent);
 	palBulletBodyBase *body1 = dynamic_cast<palBulletBodyBase *> (child);
 
@@ -2117,7 +2118,7 @@ void palBulletRevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float 
 	//std::cout << "pal frame A: " << m_frameA << "\tpal frame B: " << m_frameB << std::endl;
 	//std::cout << "bullet frame A: " << frameA << "\tbullet frame B: " << frameB << std::endl;
 	m_btHinge = new palHingeConstraint(*(body0->BulletGetRigidBody()),*(body1->BulletGetRigidBody()), frameA, frameB, false);
-	palBulletPhysics::GetInstance()->AddBulletConstraint(m_btHinge);
+	palBulletPhysics::GetInstance()->AddBulletConstraint(m_btHinge, disableCollisionsBetweenLinkedBodies);
 
 }
 
@@ -2197,8 +2198,9 @@ palBulletRevoluteSpringLink::~palBulletRevoluteSpringLink() {
 
 void palBulletRevoluteSpringLink::Init(palBodyBase *parent, palBodyBase *child,
 									   Float x, Float y, Float z,
-									   Float axis_x, Float axis_y, Float axis_z) {
-	palRevoluteSpringLink::Init(parent,child,x,y,z,axis_x,axis_y,axis_z);
+									   Float axis_x, Float axis_y, Float axis_z,
+                                       bool disableCollisionsBetweenLinkedBodies) {
+	palRevoluteSpringLink::Init(parent,child,x,y,z,axis_x,axis_y,axis_z, disableCollisionsBetweenLinkedBodies);
 	palBulletBodyBase *body0 = dynamic_cast<palBulletBodyBase *> (parent);
 	palBulletBodyBase *body1 = dynamic_cast<palBulletBodyBase *> (child);
 
@@ -2217,7 +2219,7 @@ void palBulletRevoluteSpringLink::Init(palBodyBase *parent, palBodyBase *child,
 	m_bt6Dof->setAngularLowerLimit(btVector3(0.0f, 0.0f, SIMD_PI + 0.1f));
 	m_bt6Dof->setAngularUpperLimit(btVector3(0.0f, 0.0f, SIMD_PI));
 
-	palBulletPhysics::GetInstance()->AddBulletConstraint(m_bt6Dof);
+	palBulletPhysics::GetInstance()->AddBulletConstraint(m_bt6Dof, disableCollisionsBetweenLinkedBodies);
 }
 
 void palBulletRevoluteSpringLink::SetLimits(Float lower_limit_rad, Float upper_limit_rad) {
@@ -2250,8 +2252,8 @@ palBulletPrismaticLink::~palBulletPrismaticLink()
 	delete m_btSlider;
 }
 
-void palBulletPrismaticLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z) {
-	palPrismaticLink::Init(parent,child,x,y,z,axis_x,axis_y,axis_z);
+void palBulletPrismaticLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies) {
+	palPrismaticLink::Init(parent,child,x,y,z,axis_x,axis_y,axis_z, disableCollisionsBetweenLinkedBodies);
 	palBulletBodyBase *body0 = dynamic_cast<palBulletBodyBase *> (parent);
 	palBulletBodyBase *body1 = dynamic_cast<palBulletBodyBase *> (child);
 
@@ -2286,7 +2288,7 @@ void palBulletPrismaticLink::Init(palBodyBase *parent, palBodyBase *child, Float
 	m_btSlider->setLowerAngLimit(0.0f);
 	m_btSlider->setUpperAngLimit(0.0f);
 
-	palBulletPhysics::GetInstance()->AddBulletConstraint(m_btSlider);
+	palBulletPhysics::GetInstance()->AddBulletConstraint(m_btSlider, disableCollisionsBetweenLinkedBodies);
 }
 
 void palBulletPrismaticLink::SetLimits(Float lower_limit, Float upper_limit) {
@@ -2521,9 +2523,10 @@ void palBulletGenericLink::Init(palBodyBase *parent, palBodyBase *child,
 								const palVector3& linearLowerLimits,
 								const palVector3& linearUpperLimits,
 								const palVector3& angularLowerLimits,
-								const palVector3& angularUpperLimits)
+								const palVector3& angularUpperLimits,
+                                bool disableCollisionsBetweenLinkedBodies)
 {
-	palGenericLink::Init(parent,child,parentFrame,childFrame,linearLowerLimits,linearUpperLimits,angularLowerLimits,angularUpperLimits);
+	palGenericLink::Init(parent,child,parentFrame,childFrame,linearLowerLimits,linearUpperLimits,angularLowerLimits,angularUpperLimits, disableCollisionsBetweenLinkedBodies);
 
 	palBulletBodyBase *body0 = dynamic_cast<palBulletBodyBase *> (parent);
 	palBulletBodyBase *body1 = dynamic_cast<palBulletBodyBase *> (child);
@@ -2542,7 +2545,7 @@ void palBulletGenericLink::Init(palBodyBase *parent, palBodyBase *child,
 	genericConstraint->setAngularLowerLimit(btVector3(angularLowerLimits.x,angularLowerLimits.y,angularLowerLimits.z));
 	genericConstraint->setAngularUpperLimit(btVector3(angularUpperLimits.x,angularUpperLimits.y,angularUpperLimits.z));
 
-	palBulletPhysics::GetInstance()->AddBulletConstraint(genericConstraint);
+	palBulletPhysics::GetInstance()->AddBulletConstraint(genericConstraint, disableCollisionsBetweenLinkedBodies);
 }
 
 palBulletRigidLink::palBulletRigidLink()
@@ -2554,12 +2557,12 @@ palBulletRigidLink::~palBulletRigidLink()
 {
 }
 
-void palBulletRigidLink::Init(palBodyBase *parent, palBodyBase *child)
+void palBulletRigidLink::Init(palBodyBase *parent, palBodyBase *child, bool disableCollisionsBetweenLinkedBodies)
 {
-	palRigidLink::Init(parent, child);
+	palRigidLink::Init(parent, child, disableCollisionsBetweenLinkedBodies);
 	const float TOLERANCE = 0.01f;
 
-	palBulletRevoluteLink::Init(parent, child, m_fPosX, m_fPosY, m_fPosZ, 1, 0, 0);
+	palBulletRevoluteLink::Init(parent, child, m_fPosX, m_fPosY, m_fPosZ, 1, 0, 0, disableCollisionsBetweenLinkedBodies);
 	/* Bullet can get into weird states with angles exactly at its boundaries (PI and -PI)
 	 * if the limits are exactly equal, so perturb them slightly. */
 	btScalar angle = m_btHinge->getHingeAngle();
@@ -2592,7 +2595,7 @@ std::ostream& operator<<(std::ostream &os, const palBulletRigidLink& link)
 palBulletAngularMotor::palBulletAngularMotor()
 	: m_bhc(0) {}
 
-void palBulletAngularMotor::Init(palRevoluteLink *pLink, Float Max) {
+void palBulletAngularMotor::Init(palRevoluteLink *pLink, Float Max, bool disableCollisionsBetweenLinkedBodies) {
 	palAngularMotor::Init(pLink,Max);
 	palBulletRevoluteLink *pbrl = dynamic_cast<palBulletRevoluteLink *> (m_link);
 	if (pbrl)
@@ -2619,7 +2622,7 @@ palBulletGenericLinkSpring::palBulletGenericLinkSpring()
 
 }
 
-void palBulletGenericLinkSpring::Init(palGenericLink* link) {
+void palBulletGenericLinkSpring::Init(palGenericLink* link, bool disableCollisionsBetweenLinkedBodies) {
 	BaseClass::Init(link);
 	m_pBulletLink = dynamic_cast<palBulletGenericLink*>(link);
 }

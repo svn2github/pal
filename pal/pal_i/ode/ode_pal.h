@@ -450,7 +450,8 @@ protected:
 class palODESphericalLink : virtual public palSphericalLink, virtual public palODELink {
 public:
 	palODESphericalLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
+                      bool disableCollisionsBetweenLinkedBodies);
 //	void SetLimits(Float lower_limit_rad, Float upper_limit_rad);
 //	void SetTwistLimits(Float lower_limit_rad, Float upper_limit_rad);
 	//extra methods provided by ODE abilities:
@@ -463,7 +464,7 @@ protected:
 class palODERigidLink: virtual public palRigidLink, virtual public palODELink {
 public:
 	palODERigidLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, bool disableCollisionsBetweenLinkedBodies);
 protected:
 	FACTORY_CLASS(palODERigidLink,palRigidLink,ODE,1)
 };
@@ -484,7 +485,7 @@ class palODERevoluteLink: virtual public palRevoluteLink, virtual public palODEL
 public:
 	palODERevoluteLink();
 	virtual ~palODERevoluteLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies);
 	virtual void SetLimits(Float lower_limit_rad, Float upper_limit_rad);
 //	virtual Float GetAngle();
 	virtual void AddTorque(Float torque);
@@ -499,7 +500,7 @@ protected:
 class palODEPrismaticLink: virtual public palPrismaticLink, virtual public palODELink {
 public:
 	palODEPrismaticLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies);
 	//extra methods provided by ODE abilities:
 	void SetAnchorAxis(Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z);
 protected:

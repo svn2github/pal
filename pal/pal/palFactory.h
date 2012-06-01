@@ -175,7 +175,7 @@ public:
 	*/
 	palSphericalLink *CreateSphericalLink();
 	palSphericalLink *CreateSphericalLink(palBodyBase *parent, palBodyBase *child,
-		Float x, Float y, Float z);
+                                          Float x, Float y, Float z, bool disableCollisionsBetweenLinkedBodies = true);
 	/** Creates a revolute link
 	A revolute link has one degree of rotational freedom. It is also know as a hinge joint. (example: door)
 	<img src="../pictures/hinge.jpg">
@@ -184,7 +184,8 @@ public:
 	palRevoluteLink	*CreateRevoluteLink();
 	palRevoluteLink *CreateRevoluteLink(palBodyBase *parent, palBodyBase *child,
 		Float x, Float y, Float z,
-		Float axis_x, Float axis_y, Float axis_z);
+		Float axis_x, Float axis_y, Float axis_z,
+        bool disableCollisionsBetweenLinkedBodies = true);
 
 	/** Creates a revolute spring link
 	A revolute link has one degree of rotational freedom. It is also know as a hinge joint. (example: door)
@@ -195,7 +196,8 @@ public:
 	palRevoluteSpringLink *CreateRevoluteSpringLink();
 	palRevoluteSpringLink *CreateRevoluteSpringLink(palBodyBase *parent, palBodyBase *child,
 		Float x, Float y, Float z,
-		Float axis_x, Float axis_y, Float axis_z);
+		Float axis_x, Float axis_y, Float axis_z,
+        bool disableCollisionsBetweenLinkedBodies = true);
 	/** Creates a prismatic link
 	A prismatic link has one degree of translational freedom. It is also know as a slider joint. (example: slide rule, hydrolic ram)
 	<img src="../pictures/prismatic.jpg">
@@ -204,7 +206,8 @@ public:
 	palPrismaticLink *CreatePrismaticLink();
 	palPrismaticLink *CreatePrismaticLink(palBodyBase *parent, palBodyBase *child,
 		Float x, Float y, Float z,
-		Float axis_x, Float axis_y, Float axis_z);
+		Float axis_x, Float axis_y, Float axis_z,
+        bool disableCollisionsBetweenLinkedBodies = true);
 
 	/** Creates a generic link
 	A generic link may have up to 3 translational and 3 rotational degrees of freedom.
@@ -217,21 +220,24 @@ public:
 		const palVector3& linearLowerLimits,
 		const palVector3& linearUpperLimits,
 		const palVector3& angularLowerLimits,
-		const palVector3& angularUpperLimits);
+		const palVector3& angularUpperLimits,
+        bool disableCollisionsBetweenLinkedBodies = true);
 
 	palGenericLink *CreateGenericLink(palBodyBase *parent, palBodyBase *child,
 		const palVector3& pivotLocation,
 		const palVector3& linearLowerLimits,
 		const palVector3& linearUpperLimits,
 		const palVector3& angularLowerLimits,
-		const palVector3& angularUpperLimits);
+		const palVector3& angularUpperLimits,
+        bool disableCollisionsBetweenLinkedBodies = true);
 
 	/** Creates a rigid link
 	A rigid link may have up to 3 translational and 3 rotational degrees of freedom.
 	\return A newly constructed rigid link
 	*/
 	palRigidLink *CreateRigidLink();
-	palRigidLink *CreateRigidLink(palBodyBase *parent, palBodyBase *child);
+	palRigidLink *CreateRigidLink(palBodyBase *parent, palBodyBase *child,
+                                  bool disableCollisionsBetweenLinkedBodies = true);
 	//
 	/** Creates a PSD sensor
 	This sensor tells you the distance from one object to another. This is also called raycasting.

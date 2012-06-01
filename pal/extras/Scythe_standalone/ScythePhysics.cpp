@@ -430,7 +430,8 @@ std::vector<palBodyBase *> ScythePhysics::loadScythePhysics(const char * fileNam
 					printf("Joint %d: Actor %d and %d (hinge)\n", i, physEntity->joints[i].actors[0], physEntity->joints[i].actors[1]);
 					pRevLink->Init(object[physEntity->joints[i].actors[0]], object[physEntity->joints[i].actors[1]],
 						physEntity->joints[i].pos.x, physEntity->joints[i].pos.y, physEntity->joints[i].pos.z,
-						physEntity->joints[i].axis[1].x, physEntity->joints[i].axis[1].y, physEntity->joints[i].axis[1].z);
+						physEntity->joints[i].axis[1].x, physEntity->joints[i].axis[1].y, physEntity->joints[i].axis[1].z,
+                        true);
 				}
 				break;
 			// ball = 2
@@ -439,7 +440,8 @@ std::vector<palBodyBase *> ScythePhysics::loadScythePhysics(const char * fileNam
 					palSphericalLink * pShereLink = PF->CreateSphericalLink();
 					printf("Joint %d: Actor %d and %d (ball)\n", i, physEntity->joints[i].actors[0], physEntity->joints[i].actors[1]);
 					pShereLink->Init(object[physEntity->joints[i].actors[0]], object[physEntity->joints[i].actors[1]], 
-						physEntity->joints[i].pos.x, physEntity->joints[i].pos.y, physEntity->joints[i].pos.z);
+						physEntity->joints[i].pos.x, physEntity->joints[i].pos.y, physEntity->joints[i].pos.z,
+                        true);
 					//printf("pos x:%f, pos y:%f, pos z:%f\n", physEntity->joints[i].pos.x, physEntity->joints[i].pos.y, physEntity->joints[i].pos.z);
 				}
 				break;

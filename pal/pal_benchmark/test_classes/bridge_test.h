@@ -115,7 +115,7 @@ protected:
 		ps->Init((float)i-num+0.5f,(float)num,0,0.2f,0.1f);
 		if (last) {
 			palSphericalLink *plink = PF->CreateSphericalLink();
-			plink->Init(last,ps,(float)i-num,(float)num,0);
+			plink->Init(last,ps,(float)i-num,(float)num,0,true);
 		}
 		this->BuildGraphics(ps);		
 		vSpheres.push_back(ps);
@@ -123,7 +123,7 @@ protected:
 	}
 
 		palSphericalLink *plink = PF->CreateSphericalLink();
-		plink->Init(pb1,last, (float)num, (float)num,0);
+		plink->Init(pb1,last, (float)num, (float)num, 0, true);
 
 		return 0;
 	}

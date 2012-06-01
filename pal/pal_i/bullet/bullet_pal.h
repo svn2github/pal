@@ -158,7 +158,7 @@ public:
 	void ClearBroadPhaseCachePairs(palBulletBodyBase* body);
 
 	// This is a helper function to keep track of constraints being removed
-	void AddBulletConstraint(btTypedConstraint* constraint);
+	void AddBulletConstraint(btTypedConstraint* constraint, bool disableCollisionsBetweenLinkedBodies);
 	// This is a helper function to keep track of constraints being removed
 	void RemoveBulletConstraint(btTypedConstraint* constraint);
 
@@ -538,7 +538,8 @@ class palBulletSphericalLink : public palSphericalLink {
 public:
 	palBulletSphericalLink();
 	virtual ~palBulletSphericalLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
+                      bool disableCollisionsBetweenLinkedBodies);
 	virtual void SetLimits(Float cone_limit_rad, Float twist_limit_rad);
 
 	btGeneric6DofConstraint *m_btp2p;
@@ -560,7 +561,8 @@ class palBulletRevoluteLink: public palRevoluteLink {
 public:
 	palBulletRevoluteLink();
 	virtual ~palBulletRevoluteLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
+                      Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies);
 	virtual void SetLimits(Float lower_limit_rad, Float upper_limit_rad);
 
 	virtual Float GetAngle() const;
@@ -601,7 +603,8 @@ class palBulletRevoluteSpringLink: public palRevoluteSpringLink {
 public:
 	palBulletRevoluteSpringLink();
 	virtual ~palBulletRevoluteSpringLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
+                      Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies);
 	virtual void SetLimits(Float lower_limit_rad, Float upper_limit_rad);
 
 	virtual void SetSpring(const palSpringDesc& springDesc);
@@ -616,7 +619,8 @@ class palBulletPrismaticLink:  public palPrismaticLink {
 public:
 	palBulletPrismaticLink();
 	virtual ~palBulletPrismaticLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
+                      Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies);
 
 	virtual void SetLimits(Float lower_limit, Float upper_limit);
 
@@ -708,7 +712,8 @@ public:
 					  const palVector3& linearLowerLimits,
 					  const palVector3& linearUpperLimits,
 					  const palVector3& angularLowerLimits,
-					  const palVector3& angularUpperLimits);
+					  const palVector3& angularUpperLimits,
+                      bool disableCollisionsBetweenLinkedBodies);
 	SubbtGeneric6DofSpringConstraint* BulletGetGenericConstraint() { return genericConstraint; }
 protected:
 	SubbtGeneric6DofSpringConstraint* genericConstraint;
@@ -719,7 +724,7 @@ class palBulletRigidLink : public palBulletRevoluteLink, public palRigidLink {
 public:
 	palBulletRigidLink();
 	virtual ~palBulletRigidLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, bool disableCollisionsBetweenLinkedBodies);
 	virtual btScalar GetAppliedImpulse() const { return m_btHinge->getAppliedImpulse(); }
 protected:
 	FACTORY_CLASS(palBulletRigidLink,palRigidLink,Bullet,1)
@@ -729,7 +734,7 @@ class palBulletAngularMotor : public palAngularMotor {
 public:
 	palBulletAngularMotor();
 	virtual ~palBulletAngularMotor() {};
-	virtual void Init(palRevoluteLink *pLink, Float Max);
+	virtual void Init(palRevoluteLink *pLink, Float Max, bool disableCollisionsBetweenLinkedBodies);
 	virtual void Update(Float targetVelocity);
 	virtual void Apply();
 protected:
@@ -743,7 +748,7 @@ public:
 
 	palBulletGenericLinkSpring();
 
-	virtual void Init(palGenericLink* link);
+	virtual void Init(palGenericLink* link, bool disableCollisionsBetweenLinkedBodies);
 
 	virtual void SetLinearSpring(palAxis axis, const palSpringDesc& spring);
 

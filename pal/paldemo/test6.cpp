@@ -173,19 +173,19 @@ void Test_6::Create_palRagDoll(float *pos) {
 					return;
 				}
 
-				neck	 ->Init(body,  head,  pos[0],	  pos[1]+0.4,  pos[2]);
-                shoulder1->Init(body,  arm1,  pos[0]-0.3, pos[1]+0.1,  pos[2]);
-				shoulder2->Init(body,  arm2,  pos[0]+0.3, pos[1]+0.1,  pos[2]);
-				hip1	 ->Init(body,  leg1,  pos[0],	  pos[1]-0.6,  pos[2]);
-				hip2	 ->Init(body,  leg2,  pos[0],	  pos[1]-0.6,  pos[2]);	
-				elbow1	 ->Init(arm1,  arm3,  pos[0]-0.3, pos[1]+0.3,  pos[2],  0, 0, 1);
-				elbow2	 ->Init(arm2,  arm4,  pos[0]+0.3, pos[1]+0.3,  pos[2],  0, 0, 1);
-				knee1	 ->Init(leg1,  leg3,  pos[0]-0.1, pos[1]-0.9,  pos[2],  0, 0, 1);
-				knee2	 ->Init(leg2,  leg4,  pos[0]+0.1, pos[1]-0.9,  pos[2],  0, 0, 1);
-//				wrist1	 ->Init(hand1, arm3,  pos[0]-0.3, pos[1]+0.5,  pos[2],  0, 0, 1);
-//				wrist2	 ->Init(hand2, arm4,  pos[0]+0.3, pos[1]+0.5,  pos[2],  0, 0, 1);
-				ankle1	 ->Init(foot1, leg3,  pos[0]-0.1, pos[1]-1.2,  pos[2],  0, 0, 1);
-				ankle2	 ->Init(foot2, leg4,  pos[0]+0.1, pos[1]-1.2,  pos[2],  0, 0, 1);
+				neck	 ->Init(body,  head,  pos[0],	  pos[1]+0.4,  pos[2], true);
+                shoulder1->Init(body,  arm1,  pos[0]-0.3, pos[1]+0.1,  pos[2], true);
+				shoulder2->Init(body,  arm2,  pos[0]+0.3, pos[1]+0.1,  pos[2], true);
+				hip1	 ->Init(body,  leg1,  pos[0],	  pos[1]-0.6,  pos[2], true);
+				hip2	 ->Init(body,  leg2,  pos[0],	  pos[1]-0.6,  pos[2], true);	
+				elbow1	 ->Init(arm1,  arm3,  pos[0]-0.3, pos[1]+0.3,  pos[2],  0, 0, 1, true);
+				elbow2	 ->Init(arm2,  arm4,  pos[0]+0.3, pos[1]+0.3,  pos[2],  0, 0, 1, true);
+				knee1	 ->Init(leg1,  leg3,  pos[0]-0.1, pos[1]-0.9,  pos[2],  0, 0, 1, true);
+				knee2	 ->Init(leg2,  leg4,  pos[0]+0.1, pos[1]-0.9,  pos[2],  0, 0, 1, true);
+//				wrist1	 ->Init(hand1, arm3,  pos[0]-0.3, pos[1]+0.5,  pos[2],  0, 0, 1, true);
+//				wrist2	 ->Init(hand2, arm4,  pos[0]+0.3, pos[1]+0.5,  pos[2],  0, 0, 1, true);
+				ankle1	 ->Init(foot1, leg3,  pos[0]-0.1, pos[1]-1.2,  pos[2],  0, 0, 1, true);
+				ankle2	 ->Init(foot2, leg4,  pos[0]+0.1, pos[1]-1.2,  pos[2],  0, 0, 1, true);
 
 				BuildGraphics(head);
 				BuildGraphics(body);

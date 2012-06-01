@@ -27,6 +27,7 @@ The performance enhancements and support gained is engine and hardware specific.
 class palSolver {
 public:
 	palSolver();
+	virtual ~palSolver();
 
 	/**	Sets the accuracy of the solver. It defaults to 10 until set otherwise.
 	\param fAccuracy Ranges from 0 to infinity, 0 indicates fast and inaccurate, higher indicates more accurate and slower.

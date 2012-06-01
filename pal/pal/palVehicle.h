@@ -78,6 +78,9 @@ This represents a wheel.
 */
 class palWheel {
 public:
+	virtual ~palWheel() {
+	}
+
 	virtual void Init(const palWheelInfo& wheelInfo) {
 		m_WheelInfo = wheelInfo;
 	}

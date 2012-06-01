@@ -4218,11 +4218,6 @@ public:
 					gravity = p->mGravity;
 				}
 			}
-			unsigned int matcount = 0;
-
-			if ( mLibraryPhysicsMaterials )	{
-				matcount = mLibraryPhysicsMaterials->mPhysicsMaterials.size();
-			}
 
 			palPhysics *pp = PF->GetActivePhysics();
 			palPhysicsDesc desc;
@@ -4894,7 +4889,7 @@ void C_RigidConstraint::loadPAL(C_Query *q,C_PhysicsModel *pmodel)
 				//we are a spherical link! hurrah!
 				printf("spherical link\n");
 				palSphericalLink *psl = PF->CreateSphericalLink();
-				psl->Init(parent,child,0,0,0); //TODO: find origin. :(
+				psl->Init(parent,child,0,0,0,true); //TODO: find origin. :(
 				need_generic = false;
 			}
 	}
@@ -4919,7 +4914,7 @@ void C_RigidConstraint::loadPAL(C_Query *q,C_PhysicsModel *pmodel)
 			palPrismaticLink* ppl = PF->CreatePrismaticLink();
 			palVector3 pos;
 			parent->GetPosition(pos);
-			ppl->Init(parent,child,pos.x,pos.y,pos.z,lmin.x!=0,lmin.y!=0,lmin.z!=0);
+			ppl->Init(parent,child,pos.x,pos.y,pos.z,lmin.x!=0,lmin.y!=0,lmin.z!=0,true);
 			need_generic = false;
 	}
 make_generic:
@@ -4933,7 +4928,7 @@ make_generic:
 	pgl->Init(parent,child,
 		m0,m1,
 		lmin,lmax,
-		amin,amax);
+        amin,amax,true);
 	} else {
 		printf("Could not create generic link\n");
 	}
@@ -5147,11 +5142,15 @@ void C_Shape::saveXML(FILE *fph,C_Query *query,unsigned int index)
 
 void C_Shape::loadPAL(C_Query *query,unsigned int index)
 {
+#if 0
 	int gindex = 0;
+#endif
 	if ( mGeometry )
 	{
 		C_Geometry *g = query->locateGeometry(mGeometry);
+#if 0
 		gindex = g->getIndex();
+#endif
 		if ( g && g->isConvex() )
 		{
 			mShapeType = CST_CONVEX_MESH;

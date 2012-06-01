@@ -1304,7 +1304,6 @@ void palODECompoundBody::Finalize(Float finalMass, Float iXX, Float iYY, Float i
 
 		dReal pos[3];
 		dReal R[12]; //this is 4x3
-		const dReal * previousR; //this is 4x3
 /*		AB: TODO: use 4x4?
 		dReal finalR[12]; //this is also 4x3
 		dReal R44[4*4];
@@ -1313,10 +1312,11 @@ void palODECompoundBody::Finalize(Float finalMass, Float iXX, Float iYY, Float i
 */
 		convODEFromPAL(pos,R,pog->GetOffsetMatrix());
 		if (pog->odeGeom) {
+            //const dReal * previousR; //this is 4x3
 			dGeomSetBody(pog->odeGeom,odeBody);
 			dGeomSetOffsetPosition(pog->odeGeom,pos[0],pos[1],pos[2]);
 
-			previousR = dGeomGetOffsetRotation(pog->odeGeom);
+			//previousR = dGeomGetOffsetRotation(pog->odeGeom);
 			//AB: Need to convert 4x3 to 4x4, do the multiply, and then back to 4x3!
 			//dMultiply0(finalR,previousR,R,4,4,4);
 			//dGeomSetOffsetRotation(pog->odeGeom,finalR);
@@ -1640,8 +1640,9 @@ void palODESphericalLink::InitMotor() {
  dJointSetAMotorParam(odeMotorJoint,dParamHiStop3,m_fUpperTwistLimit);
  }
  */
-void palODESphericalLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z) {
-	palSphericalLink::Init(parent, child, x, y, z);
+void palODESphericalLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
+                               bool disableCollisionsBetweenLinkedBodies) {
+	palSphericalLink::Init(parent, child, x, y, z, disableCollisionsBetweenLinkedBodies);
 	palODEBody *body0 = dynamic_cast<palODEBody *> (parent);
 	palODEBody *body1 = dynamic_cast<palODEBody *> (child);
 	//	printf("%d and %d\n",body0,body1);
@@ -1659,9 +1660,9 @@ void palODESphericalLink::SetAnchor(Float x, Float y, Float z) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 palODERigidLink::palODERigidLink() {}
 
-void palODERigidLink::Init(palBodyBase *parent, palBodyBase *child)
+void palODERigidLink::Init(palBodyBase *parent, palBodyBase *child, bool disableCollisionsBetweenLinkedBodies)
 {
-	palRigidLink::Init(parent, child);
+	palRigidLink::Init(parent, child, disableCollisionsBetweenLinkedBodies);
 	palODEBody *body0 = dynamic_cast<palODEBody *> (parent);
 	palODEBody *body1 = dynamic_cast<palODEBody *> (child);
 	//	printf("%d and %d\n",body0,body1);
@@ -1711,8 +1712,8 @@ void palODERevoluteLink::SetLimits(Float lower_limit_rad, Float upper_limit_rad)
 }
 
 void palODERevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
-			Float axis_x, Float axis_y, Float axis_z) {
-	palRevoluteLink::Init(parent, child, x, y, z, axis_x, axis_y, axis_z);
+			Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies) {
+	palRevoluteLink::Init(parent, child, x, y, z, axis_x, axis_y, axis_z, disableCollisionsBetweenLinkedBodies);
 	palODEBody *body0 = dynamic_cast<palODEBody *> (parent);
 	palODEBody *body1 = dynamic_cast<palODEBody *> (child);
 	//	printf("%d and %d\n",body0,body1);
@@ -1789,7 +1790,7 @@ bool odeRevoluteLinkFeedback::SetEnabled(bool enable) {
 	}
 	return enabled;
 }
-	 
+
 Float odeRevoluteLinkFeedback::GetValue() const {
 	dJointFeedback* currentFeedback = dJointGetFeedback(m_odeJoint);
 	Float value;
@@ -1809,8 +1810,8 @@ palODEPrismaticLink::palODEPrismaticLink() {
 }
 
 void palODEPrismaticLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
-			Float axis_x, Float axis_y, Float axis_z) {
-	palPrismaticLink::Init(parent, child, x, y, z, axis_x, axis_y, axis_z);
+			Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies) {
+	palPrismaticLink::Init(parent, child, x, y, z, axis_x, axis_y, axis_z, disableCollisionsBetweenLinkedBodies);
 	palODEBody *body0 = dynamic_cast<palODEBody *> (parent);
 	palODEBody *body1 = dynamic_cast<palODEBody *> (child);
 	//	printf("%d and %d\n",body0,body1);
@@ -1851,9 +1852,6 @@ const palMatrix4x4& palODETerrain::GetLocationMatrix() const {
 	m_mLoc._22 = 1;
 	m_mLoc._33 = 1;
 	m_mLoc._44 = 1;
-	m_mLoc._41 = m_mLoc._41;
-	m_mLoc._42 = m_mLoc._42;
-	m_mLoc._43 = m_mLoc._43;
 	return m_mLoc;
 }
 

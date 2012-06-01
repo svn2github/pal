@@ -78,7 +78,7 @@ public:
 	\param parent The "parent" body to connect
 	\param child The "child" body to connect
 	*/
-	virtual void Init(palBodyBase *parent, palBodyBase *child);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, bool disableCollisionsBetweenLinkedBodies);
 	/** Initializes the link.
 	\param parent The "parent" body to connect
 	\param child The "child" body to connect
@@ -87,7 +87,7 @@ public:
 	\param z The z position of the link's center
 	*/
 	virtual void Init(palBodyBase *parent, palBodyBase *child,
-					  Float x, Float y, Float z);
+					  Float x, Float y, Float z, bool disableCollisionsBetweenLinkedBodies);
 
 //	virtual void SetTorque(Float tx, Float ty, Float tz);
 //	virtual void GetTorque(palVector3& torque) = 0;
@@ -175,7 +175,7 @@ public:
 	\param axis_y The vector about which the link rotates. (y)
 	\param axis_z The vector about which the link rotates. (z)
 	*/
-	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies);
 	/** Constrains the movement of the revolute link.
 	This limits the ammount of movement of the link.
 	\param lower_limit_rad The lower angular limit of movement. (radians)
@@ -270,7 +270,7 @@ public:
 	\param axis_y The axis vector which the link exteneds from. (y)
 	\param axis_z The axis vector which the link exteneds from. (z)
 	*/
-	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z); //axis is direction of sliding
+	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies); //axis is direction of sliding
 
 	/** Constrains the movement of the prismatic link.
 	This limits the ammount of movement of the link.
@@ -312,14 +312,15 @@ public:
 		const palVector3& linearLowerLimits,
 		const palVector3& linearUpperLimits,
 		const palVector3& angularLowerLimits,
-		const palVector3& angularUpperLimits);
+		const palVector3& angularUpperLimits,
+              bool disableCollisionsBetweenLinkedBodies);
 
 	virtual void Init(palBodyBase *parent, palBodyBase *child,
 					  const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame,
 		const palVector3& linearLowerLimits,
 		const palVector3& linearUpperLimits,
 		const palVector3& angularLowerLimits,
-		const palVector3& angularUpperLimits);
+		const palVector3& angularUpperLimits, bool disableCollisionsBetweenLinkedBodies);
 
 	palMatrix4x4 m_frameA;
 	palMatrix4x4 m_frameB;
@@ -330,7 +331,7 @@ class palRigidLink  : virtual public palLink {
 public:
 	palRigidLink();
 	virtual ~palRigidLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, bool disableCollisionsBetweenLinkedBodies);
 };
 
 #endif
