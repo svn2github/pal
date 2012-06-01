@@ -8,40 +8,49 @@
 
 #include <pal/palException.h>
 #include <string.h>
+#include <malloc.h>
 
 palException::palException() throw()
-	: m_message(0), m_cause(0)
+    : m_message(0), m_cause(0)
+{
+}
+
+palException::palException(const palException& other) throw()
+    : m_message(strdup(other.what())),
+      m_cause(other.GetCause())
 {
 }
 
 palException::palException(const char* message, const std::exception *cause) throw()
-  : m_message(message ? strdup(message) : 0), m_cause(cause)
+    : m_message(strdup(message ? message : "")), m_cause(cause)
 {
 }
 
 palException::~palException() throw() {
-	delete m_message;
-	m_message = 0;
-	delete m_cause;
-	m_cause = 0;
+    if (m_message) {
+        free((void*) m_message);
+        m_message = 0;
+    }
+    delete m_cause;
+    m_cause = 0;
 }
 
 const std::exception *palException::GetCause() const {
-	return m_cause;
+    return m_cause;
 }
 
 const char *palException::what() const throw() {
-	return m_message;
+    return m_message;
 }
 
 void palException::InitMessage(const char *message) {
-	if (!m_message) {
-		m_message = message;
-	}
+    if (!m_message) {
+        m_message = message;
+    }
 }
 
 void palException::InitCause(std::exception *cause) {
-	if (!m_cause) {
-		m_cause = cause;
-	};
+    if (!m_cause) {
+        m_cause = cause;
+    };
 }

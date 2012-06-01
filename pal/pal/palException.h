@@ -14,6 +14,7 @@
 class palException : public std::exception {
 public:
 	palException() throw();
+	palException(const palException& other) throw();
 	palException(const char* message, const std::exception* cause = 0) throw();
 	virtual ~palException() throw();
 	virtual const char* what() const throw();
