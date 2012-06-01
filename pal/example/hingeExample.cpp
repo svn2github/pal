@@ -42,7 +42,7 @@ void EventLoop(palPhysics* physics) {
 		g_eng->Clear();
 		for (unsigned int i = 0; i < g_Graphics.size(); i++) {
 			g_Graphics[i]->Display();
-			/*palBodyBase* body = */g_Graphics[i]->m_pBody;
+			/*palBodyBase* body = g_Graphics[i]->m_pBody;*/
 			/*
 			if (body) {
 				std::cout << i << ":\t" << *(g_Graphics[i]->m_pBody)
@@ -116,4 +116,6 @@ int main(int argc, char* argv[]) {
 	EventLoop(pp);
 
 	PF->Cleanup();
+
+        return 0;
 }

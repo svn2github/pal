@@ -151,6 +151,7 @@ public:
             float fInvNorm = 1.0f/fNorm;
             return Quat(w*fInvNorm,-x*fInvNorm,-y*fInvNorm,-z*fInvNorm);
         }
+        return Quat();
     }
 
 };

@@ -3,7 +3,6 @@
 //#define NEWTON
 
 #include "../pal/palFactory.h"
-#include "../pal/ConfigStatic.h"
 #include "../pal/pal.h"
 #include "../sdlgl/sdlgl.h"
 #include "test.h"

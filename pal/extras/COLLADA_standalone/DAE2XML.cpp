@@ -166,4 +166,6 @@ int  main(int argc,char **argv)
 			g_eng->Flip();
 		}
 	} //end while	
+
+        return 0;
 }
