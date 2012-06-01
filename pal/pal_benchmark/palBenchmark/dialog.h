@@ -26,9 +26,13 @@ public:
 	void DisplayErrorDialogue(const char *cmsg)
 	{
 	#ifdef __APPLE__
-		Str255 msg;
-		c2pstrcpy(msg, cmsg);
-		StandardAlert(kAlertStopAlert, "\pError", (ConstStr255Param)msg, NULL, NULL);
+                printf("ERROR: %s\n", cmsg);
+          // It would be nice to show a dialog box, but I can't figure out how from C++ for Cocoa.
+          /*
+                CFStringRef msg = CFStringCreateWithCString(NULL, cmsg, kCFStringEncodingASCII);
+		
+		StandardAlert(kAlertStopAlert, "Error", (ConstStr255Param)msg, NULL, NULL);
+          */
 	#elif defined _WIN32
 		MessageBox(NULL, cmsg, "Error", MB_ICONERROR | MB_OK);
 	#else
