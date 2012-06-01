@@ -36,14 +36,14 @@ typedef unsigned long DWORD;
 
 
 #ifndef _WIN32
-	#include <SDL/SDL.h>										
+	#include <SDL/SDL.h>
 #else
 	#include <SDL.h>
 #endif
 
 #ifdef __APPLE__
-	#include <OpenGL/gl.h>															
-	#include <OpenGL/glu.h>	
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glu.h>
 #else
 	#include <GL/gl.h>															// We're Including The OpenGL Header
 	#include <GL/glu.h>															// And The GLu Header
@@ -54,7 +54,7 @@ typedef unsigned long DWORD;
 //#pragma comment(lib, "GLu32.lib")											// The GLu32.lib Library...
 //#pragma comment(lib, "SDLmain.lib")											// The SDLmain.lib And
 //#pragma comment(lib, "SDL.lib")												// The SDL.lib Libraries
-//#endif				
+//#endif
 
 class SDLGLEngine {
 public:
@@ -78,9 +78,9 @@ public:
 	}
 	void Wireframe(bool state) {
 		if (state) {
-			 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);	
+			 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		} else {
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 	}
 private:
@@ -90,7 +90,7 @@ private:
 class SDLGLObject {
 public:
 	SDLGLObject();
-	~SDLGLObject();
+	virtual ~SDLGLObject();
 	void SetPosition(const float *transform);
 	void SetPositionX(float x);
 	void SetPositionY(float y);
@@ -178,7 +178,7 @@ public:
 	void Load(char *filename);
 	void SetActive(bool active);
 protected:
-	GLuint m_texture; 
+	GLuint m_texture;
 };
 
 class SDLGLPlane : public SDLGLObject {

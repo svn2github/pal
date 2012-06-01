@@ -1,5 +1,6 @@
 #include "sdlgl.h"
 #include <vector>
+#include <cmath>
 
 //(c) Adrian Boeing 2004, see licence.txt (BSD licence)
 #ifdef _MSC_VER
@@ -21,7 +22,7 @@
 */
 
 void SDLGLEngine::Clear() {
-	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 void SDLGLEngine::SetTitle(char *title) {
 	SDL_WM_SetCaption(title, NULL);										// We're Setting The Window Caption
@@ -106,7 +107,7 @@ void SDLGLEngine::SetViewMatrix(float eye_x, float eye_y, float eye_z, float loo
 
 void SDLGLEngine::SetProjMatrix(float fov,float aspect,float nearcp,float farcp) {
 				glMatrixMode(GL_PROJECTION);
-				glLoadIdentity();										
+				glLoadIdentity();
 				gluPerspective(fov*(180.0f/3.14159265358979323846f),aspect,nearcp,farcp);
 };
 
@@ -117,7 +118,7 @@ void SDLGLEngine::SetViewProj2d(int width, int height) {
         glLoadIdentity();
 		glScalef(2.0f / (float)width, -2.0f / (float)height, 1.0f);
         glTranslatef(-((float)width / 2.0f), -((float)height / 2.0f), 0.0f);
-        glViewport(0, 0, width, height); // viewport size in pixels 
+        glViewport(0, 0, width, height); // viewport size in pixels
 }
 
 
@@ -216,13 +217,13 @@ void SDLGLObject::Render() {
 	glPushMatrix();
 	glMultMatrixf(m_transform);
 	glEnableClientState(GL_VERTEX_ARRAY);
-	GLenum hr;
+	//GLenum hr;
 
 		glInterleavedArrays(m_format , 0, m_data);
-		hr=glGetError();
+		//hr=glGetError();
 		//if (hr!=GL_NO_ERROR) LOG_DEBUG("gl error: 0x%x",hr);
 		glDrawElements(m_mode,m_nIndices,GL_UNSIGNED_INT, m_indices);
-		hr=glGetError();
+		//hr=glGetError();
 		//if (hr!=GL_NO_ERROR) LOG_DEBUG("gl error: 0x%x",hr);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -252,7 +253,7 @@ void SDLGLObject::Construct(bool Color, bool Texture, int nVertices, int nIndice
 			m_format=GL_N3F_V3F;
 		}
 	m_data = new float[m_datasize*nVertices];
-	m_indices = new unsigned int[nIndices];	
+	m_indices = new unsigned int[nIndices];
 }
 
 void SDLGLObject::CleanData() {
@@ -391,7 +392,7 @@ template<typename T> void push_back3(std::vector<T> &v, T x, T y, T z) {
 
 void SDLGLCappedCylinder::CreateMesh(float x, float y, float z, float radius, float length, int hstrip, int vslice) {
 	SDLGLObject::SetPosition(x,y,z);
-		
+
 	m_fRadius=radius;
 	m_fLength=length;
 
@@ -437,14 +438,14 @@ void SDLGLCappedCylinder::CreateMesh(float x, float y, float z, float radius, fl
 			fX4 = sinf((fAngle+fAngleAdd) * DEG2RAD) * fRadius * sinf((fSineAngle + fSineAdd) * DEG2RAD);
 			fY4 = cosf((fAngle+fAngleAdd) * DEG2RAD) * fRadius * sinf((fSineAngle + fSineAdd) * DEG2RAD);
 			fAngle += fAngleAdd;
-		
+
 		push_back3<float>(verts, fX1, fY    , fY1);
 		push_back3<float>(verts, fX4, fYNext, fY4);
 		push_back3<float>(verts, fX2, fY    , fY2);
 		push_back3<float>(verts, fX1, fY    , fY1);
 		push_back3<float>(verts, fX3, fYNext, fY3);
 		push_back3<float>(verts, fX4, fYNext, fY4);
-		
+
 		}
 
 
@@ -461,7 +462,7 @@ void SDLGLCappedCylinder::Create(float x, float y, float z, float radius, float 
 	SDLGLObject::SetPosition(x,y,z);
 	bool color=true;
 	bool tex=false;
-	
+
 	m_fRadius=radius;
 	m_fLength=length;
 
@@ -486,7 +487,7 @@ void SDLGLCappedCylinder::Create(float x, float y, float z, float radius, float 
 		// Reset the angle for this slice
 		fAngle = 0;
 #if 1
-	
+
 		fY = cosf(fSineAngle * DEG2RAD) * fRadius;
 		fYNext = cosf((fSineAngle+fSineAdd) * DEG2RAD) * fRadius;
 
@@ -525,7 +526,7 @@ void SDLGLCappedCylinder::Create(float x, float y, float z, float radius, float 
 			SetData(vcount++, fX2, fY    , fY2);
 			if (color) SetColor(vcount-1,r1,g1,b1);
 //			SetTexture(vcount-1,sinf((fAngle+fAngleAdd) * DEG2RAD),sinf((fSineAngle) * DEG2RAD));
-			
+
 			SetData(vcount++, fX1, fY    , fY1);
 			if (color) SetColor(vcount-1,r2,g2,b2);
 //			SetTexture(vcount-1,sinf(fAngle * DEG2RAD),sinf(fSineAngle * DEG2RAD));
@@ -536,7 +537,7 @@ void SDLGLCappedCylinder::Create(float x, float y, float z, float radius, float 
 			if (color) SetColor(vcount-1,r2,g2,b2);
 //			SetTexture(vcount-1,sinf((fAngle+fAngleAdd) * DEG2RAD),sinf((fSineAngle + fSineAdd) * DEG2RAD));
 
-			
+
 			// Move to the next angle
 			fAngle += fAngleAdd;
 		}
@@ -558,10 +559,10 @@ void SDLGLSphere::Create(float x, float y, float z, float radius, int sphere_hst
 	r2=1;g2=0;b2=0;
 	SDLGLObject::SetPosition(x,y,z);
 	m_fRadius=radius;
-	
+
 	Construct(color,tex,
 		(sphere_hstrips) * sphere_vslices * 6,sphere_hstrips*sphere_vslices*6);
-	
+
 	int i,j;
 	// Calculate the angle to add each time as we divide the cylined into the appropriate number of strips
 	float fAngleAdd = 360.0f / (float)sphere_vslices;
@@ -570,7 +571,7 @@ void SDLGLSphere::Create(float x, float y, float z, float radius, int sphere_hst
 	float fX1, fY1, fX2, fY2, fX3, fY3, fX4, fY4;	// The vertex positions around each quad we calculate
 	float fAngle,fY,fYNext;
 	float fRadius=m_fRadius;
-	
+
 	int vcount = 0;
 
 	// Loop around our sphere
@@ -603,7 +604,7 @@ void SDLGLSphere::Create(float x, float y, float z, float radius, int sphere_hst
 			SetData(vcount++, fX2, fY    , fY2);
 			if (tex) SetTexture(vcount-1,sinf((fAngle+fAngleAdd) * DEG2RAD),sinf((fSineAngle) * DEG2RAD));
 			if (color) SetColor(vcount-1,r1,g1,b1);
-			
+
 			SetData(vcount++, fX1, fY    , fY1);
 			if (tex) SetTexture(vcount-1,sinf(fAngle * DEG2RAD),sinf(fSineAngle * DEG2RAD));
 			if (color) SetColor(vcount-1,r2,g2,b2);
@@ -638,7 +639,7 @@ void SDLGLPlane::Create(float x, float y, float z, float width, float depth) {
 	SetColor(3,1,1,1);
 	SetIndex(0,0,1,2);
 	SetIndex(1,2,0,3);
-	
+
 }
 
 void SDLGLPlane::Create(float px, float py, float pz, float width, float depth, int divisions_w, int divisions_d, const float *heightmap) {
@@ -648,7 +649,7 @@ void SDLGLPlane::Create(float px, float py, float pz, float width, float depth, 
 	float r1,g1,b1,r2,g2,b2;
 	r1=0;g1=1;b1=1;
 	r2=1;g2=1;b2=0;
-	
+
 	SDLGLObject::SetPosition(px,py,pz);
 	m_fWidth = width;
 	m_fDepth = depth;
@@ -662,7 +663,7 @@ void SDLGLPlane::Create(float px, float py, float pz, float width, float depth, 
 	float hsy=depth/2;
 
 	int x,y;
-	
+
 	for (y=0;y < yDim;y++)
 	for (x=0;x < xDim;x++) {
 		if (heightmap)
@@ -707,19 +708,19 @@ void SDLGLBox::Create(float x, float y, float z, float width, float height, floa
 	Construct(true,false,12,12*3);
 
 	float verts[]={
-0,0,0, 
-1,0,0, 
-1,1,0, 
-0,1,0, 
-1,0,1, 
-1,1,1, 
-0,1,1, 
-0,0,1, 
-0,1,1, 
-0,1,0, 
-1,0,1, 
+0,0,0,
+1,0,0,
+1,1,0,
+0,1,0,
+1,0,1,
+1,1,1,
+0,1,1,
+0,0,1,
+0,1,1,
+0,1,0,
+1,0,1,
 1,0,0};
-	int inds[36] = {   0,2,1,   0,3,2,   1,5,4,   1,2,5,   4,6,7,   4,5,6, 
+	int inds[36] = {   0,2,1,   0,3,2,   1,5,4,   1,2,5,   4,6,7,   4,5,6,
             7,3,0,   7,6,3,   9,5,2,   9,8,5,   0,11,10,   0,10,7};
 	int i;
 	for (i=0;i<12;i++) {
@@ -738,7 +739,7 @@ void SDLGLBox::Create(float x, float y, float z, float width, float height, floa
 	SetData(5, 0.5f*width,-0.5f*height, 0.5f*depth);
 	SetData(6, 0.5f*width, 0.5f*height, 0.5f*depth);
 	SetData(7,-0.5f*width, 0.5f*height, 0.5f*depth);
-	
+
 	SetColor(0,1,0,0);
 	SetColor(1,0,1,0);
 	SetColor(2,0,0,1);
@@ -750,7 +751,7 @@ void SDLGLBox::Create(float x, float y, float z, float width, float height, floa
 
 	SetIndex(0,0,1,2);
 	SetIndex(1,2,0,3);
-	
+
 	SetIndex(2,4,5,6);
 	SetIndex(3,6,4,7);
 
@@ -821,7 +822,7 @@ void SDLGLBox::Create(float x, float y, float z, float width, float height, floa
 
 void SDLGLTexture::Load(char *filename) {
 	GLenum hr;
-	SDL_Surface *TextureImage; 
+	SDL_Surface *TextureImage;
 	/* Load The Bitmap, Check For Errors, If Bitmap's Not Found Quit */
     if ( ( TextureImage = SDL_LoadBMP( filename ) ) )
         {

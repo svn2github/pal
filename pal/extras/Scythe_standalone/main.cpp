@@ -47,9 +47,6 @@ int  main(int argc,char **argv)
 	// vector for pal bodies
 	std::vector<palBody *> objectVector;
 
-	GraphicsObject * graphicsObject = 0;
-
-
 	float max_y=-1;
 	float amax_x=0;
 
@@ -82,7 +79,7 @@ int  main(int argc,char **argv)
 
 		// draw graphics
 		for (size_t i = 0; i < object.size(); i++) {
-			graphicsObject = BuildGraphics(object[i]);
+			BuildGraphics(object[i]);
 			//find a maximum for auto-distance
 			palVector3 pos;
 			object[i]->GetPosition(pos);

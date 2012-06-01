@@ -632,10 +632,10 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT) {
 	{
 		float time = t->getTime() / 1000.0f;
 		u32 mstime;		
-		u32 mstdiff;
 		mstime = t->getTime();
-		mstdiff = mstime - mslast_time;
 #if 0
+		u32 mstdiff;
+		mstdiff = mstime - mslast_time;
 		//printf("time WAS : %.8d (%.4d)\n",mstime,mstdiff);
 		while (mstdiff<40) {
 			g_device->sleep(1);	

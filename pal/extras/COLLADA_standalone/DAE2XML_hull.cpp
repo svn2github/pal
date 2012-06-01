@@ -1824,7 +1824,6 @@ ConvexH *ConvexHCrop(ConvexH &convex,const Plane &slice)
 
 	EdgeFlag  edgeflag[512];
 	VertFlag  vertflag[256];
-	PlaneFlag planeflag[128];
 	HalfEdge  tmpunderedges[512];
 	Plane	  tmpunderplanes[128];
 	Coplanar coplanaredges[512];
@@ -2045,12 +2044,8 @@ ConvexH *ConvexHCrop(ConvexH &convex,const Plane &slice)
 		} while(e0!=estart) ;
 		e0 = enextface;
 		if(planeside&UNDER) {
-			planeflag[currentplane].undermap = underplanescount;
 			tmpunderplanes[underplanescount] = convex.facets[currentplane];
 			underplanescount++;
-		}
-		else {
-			planeflag[currentplane].undermap = 0;
 		}
 		if(vout>=0 && (planeside&UNDER)) {
 			assert(vin>=0);
@@ -2472,7 +2467,6 @@ int calchullgen(float3 *verts,int verts_count, int vlimit)
 	vlimit-=4;
 	while(vlimit >0 && (te=extrudable(epsilon)))
 	{
-		int3 ti=*te;
 		int v=te->vmax;
 		assert(!isextreme[v]);  // wtf we've already done this vertex
 		isextreme[v]=1;
