@@ -41,7 +41,7 @@ class myFactory : public myPluggableFactory, public MemoryObjectManager<StatusOb
 public:
 	static void LoadObjects(const char *szPath = NULL, void *factoryPointer = 0, void *factoryInfoPointer=0) throw(palException);
 	virtual void FreeObjects(void);
-	myFactoryObject *Construct(PAL_STRING ClassName);
+	myFactoryObject *Construct(const PAL_STRING& ClassName);
 #ifdef INTERNAL_DEBUG
 	void DisplayAllObjects();
 #endif

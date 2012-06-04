@@ -709,9 +709,9 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
 #else
 	int maxNumOutstandingTasks = set_pe;
-	char* collisionName = "collision";
 	btThreadSupportInterface*		m_threadSupportCollision = 0;
 #ifdef OS_WINDOWS
+	char* collisionName = "collision";
 	m_threadSupportCollision = new Win32ThreadSupport(Win32ThreadSupport::Win32ThreadConstructionInfo(
 		collisionName,
 		processCollisionTask,
@@ -733,7 +733,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 #ifndef USE_PARALLEL_SOLVER
 	m_solver = new btSequentialImpulseConstraintSolver();
 #else
-	char* solverName = "solver";
+	const char* solverName = "solver";
 	btThreadSupportInterface*		m_threadSupportSolver = 0;
 #ifdef OS_WINDOWS
 	m_threadSupportSolver = new Win32ThreadSupport(Win32ThreadSupport::Win32ThreadConstructionInfo(
@@ -743,7 +743,9 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 		maxNumOutstandingTasks));
 #else
 	PosixThreadSupport::ThreadConstructionInfo tcInfoSolver(
-		solverName,
+		// Does bullet ever modify this? Probably not, but it's not a
+		// const parameter, so give bullet a copy.
+		strdup(solverName),
 		SolverThreadFunc,
 		SolverlsMemoryFunc,
 		maxNumOutstandingTasks);

@@ -66,7 +66,7 @@ public:
 	\param name The name of the physics engine to be used
 	\return whether the requested engine was able to be selected
 	*/
-	bool SelectEngine(PAL_STRING name);
+	bool SelectEngine(const PAL_STRING& name);
 
 	/**
 	Removes all the objects created - regardless of which engine they were constructed with.
@@ -289,7 +289,7 @@ public:
 	This will return the most suitable class that matches the currently selected engine, and name. This function can be used to construct objects which are not part of the standard PAL implementation. (eg: custom plug-ins)
 	\return A newly constructed PAL object
 	*/
-	palFactoryObject *CreateObject(PAL_STRING name); //this is only to be used for user add-on functionality
+	palFactoryObject *CreateObject(const PAL_STRING& name); //this is only to be used for user add-on functionality
 
 	palPhysics *GetActivePhysics();
 	void SetActivePhysics(palPhysics *physics);
@@ -302,8 +302,8 @@ public:
 	 */
 	void LoadPhysicsEngines(const char* dirName = NULL);
 
-    void DumpObjects(PAL_STRING separator = "\n");
-    void DumpObjects(std::ostream& out, PAL_STRING separator = "\n");
+    void DumpObjects(const PAL_STRING& separator = "\n");
+    void DumpObjects(std::ostream& out, const PAL_STRING& separator = "\n");
 private:
 	palPhysics *m_active;
 public:

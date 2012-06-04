@@ -48,7 +48,7 @@ palFactory::palFactory() {
 	m_active=NULL;
 }
 
-bool palFactory::SelectEngine(PAL_STRING name) {
+bool palFactory::SelectEngine(const PAL_STRING& name) {
 #ifdef INTERNAL_DEBUG
 	printf("palFactory::SelectEngine: this = %p\n", this);
 #endif
@@ -510,7 +510,7 @@ palAngularMotor *palFactory::CreateAngularMotor(palRevoluteLink *pLink, Float Ma
     return angularMotor;
 }
 
-palFactoryObject *palFactory::CreateObject(PAL_STRING name) {
+palFactoryObject *palFactory::CreateObject(const PAL_STRING& name) {
 	myFactoryObject *pmFO = Construct(name);
 	#ifdef INTERNAL_DEBUG
 	printf("%s:%d:Construct:%p\n",__FILE__,__LINE__,pmFO);
@@ -632,11 +632,11 @@ void palFactory::LoadPALfromDLL(const char *szPath) throw(palException) {
 #endif
 }
 
-void palFactory::DumpObjects(PAL_STRING separator) {
+void palFactory::DumpObjects(const PAL_STRING& separator) {
     DumpObjects(std::cout, separator);
 }
 
-void palFactory::DumpObjects(std::ostream& out, PAL_STRING separator) {
+void palFactory::DumpObjects(std::ostream& out, const PAL_STRING& separator) {
     for (std::list<myFactoryBase *>::iterator iter = pMMO.begin();
          iter != pMMO.end();
          iter++) {

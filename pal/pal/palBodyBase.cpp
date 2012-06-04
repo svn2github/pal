@@ -1,7 +1,7 @@
 
 #include "palBodies.h"
 #include "palFactory.h"
-#include <memory.h>
+#include <string.h>
 #include <sstream>
 #ifdef INTERNAL_DEBUG	
 #include <iostream>
@@ -21,7 +21,7 @@
 
 palBodyBase::palBodyBase() {
 	m_pMaterial=NULL;
-	memset(&m_mLoc,0,sizeof(palMatrix4x4));
+	memset((void*)&m_mLoc,0,sizeof(palMatrix4x4));
 	m_mLoc._11 = 1;
 	m_mLoc._22 = 1;
 	m_mLoc._33 = 1;

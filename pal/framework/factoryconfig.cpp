@@ -205,7 +205,7 @@ void myFactory::LoadObjects(const char *szPath , void * factoryPointer, void *fa
 }
 
 
-myFactoryObject *myFactory::Construct(PAL_STRING ClassName) {
+myFactoryObject *myFactory::Construct(const PAL_STRING& ClassName) {
 	myFactoryObject *ret;
 	ret=newObject(ClassName);
 	#ifdef INTERNAL_DEBUG
