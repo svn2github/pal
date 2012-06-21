@@ -131,7 +131,7 @@ void palBody::ApplyTorque(Float tx, Float ty, Float tz) {
 	ApplyAngularImpulse(tx*ts,ty*ts,tz*ts);
 }
 
-palVector3 palBody::CalcInertiaSum(float& summedMass) const
+palVector3 palBody::CalcInertiaSum(Float& summedMass) const
 {
 	palVector3 pv;
 	pv.x = 0.0;

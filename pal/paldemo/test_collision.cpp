@@ -22,6 +22,12 @@ void MakeConvexCone(Float *pVerts) {
 }
 */
 
+#ifdef DOUBLE_PRECISION
+#define GL_VERTEX_3V glVertex3dv
+#else
+#define GL_VERTEX_3V glVertex3fv
+#endif
+
 void Test_Collision::AdditionalRender() {
 	palPhysics*pf = PF->GetActivePhysics();
 	if (!pf) return;
@@ -49,23 +55,23 @@ void Test_Collision::AdditionalRender() {
 			glColor3f(1,1,1);
 			glBegin(GL_LINES);
 			glVertex3f(x,y,z);
-			glVertex3fv(hit.m_vHitPosition._vec);
+			GL_VERTEX_3V(hit.m_vHitPosition._vec);
 			glEnd();
 
 			glDisable(GL_DEPTH_TEST);
 			glBegin(GL_POINTS);
 			glVertex3f(x,y,z);
-			glVertex3fv(hit.m_vHitPosition._vec);
+			GL_VERTEX_3V(hit.m_vHitPosition._vec);
 			glEnd();
 			glEnable(GL_DEPTH_TEST);
 		}
 		if (hit.m_bHitNormal) {
 			glColor3f(0,0,1);
 			glBegin(GL_LINES);
-			glVertex3fv(hit.m_vHitPosition._vec);
+			GL_VERTEX_3V(hit.m_vHitPosition._vec);
 			palVector3 end_norm;
 			vec_add(&end_norm,&hit.m_vHitPosition,&hit.m_vHitNormal);
-			glVertex3fv(end_norm._vec);
+			GL_VERTEX_3V(end_norm._vec);
 			glEnd();
 		}
 	}
@@ -80,7 +86,7 @@ void Test_Collision::AdditionalRender() {
 		
 			glColor3f(1,1,1);
 			glBegin(GL_POINTS);
-			glVertex3fv( c.m_ContactPoints[j].m_vContactPosition._vec);
+			GL_VERTEX_3V( c.m_ContactPoints[j].m_vContactPosition._vec);
 			glEnd();
 			
 		}

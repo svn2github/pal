@@ -37,8 +37,11 @@
 #define DEG2RAD (M_PI/180.0)
 #define RAD2DEG (180.0/M_PI)
 
+#ifdef DOUBLE_PRECISION
+typedef double Float;
+#else
 typedef float Float;
-//typedef double Float;
+#endif
 //need a define for infinity!
 //#define MAX_FLOAT 3.402823466e+38
 

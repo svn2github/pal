@@ -243,7 +243,7 @@ protected:
 	 * Iterates over the vector of geometries and calculates the total moment of inertia
 	 * @return a vector3 with the identity locations of the inertia tensor.
 	 */
-	palVector3 CalcInertiaSum(float& summedMass) const;
+	palVector3 CalcInertiaSum(Float& summedMass) const;
 };
 
 

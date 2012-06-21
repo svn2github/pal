@@ -45,7 +45,7 @@ public:
 	\param dampingBody_linear Linear damping (simplified version of palLiquidDrag)
 	\param dampingBody_angular Angular damping (simplified version of palLiquidDrag)
 	*/
-	void Init(int dimX = 128, int dimY = 128, float cellSize = 0.08, float density = 1000, float dampingFluid = 0.01, float dampingBody_linear = 0.02, float dampingBody_angular = 0.04);
+	void Init(int dimX = 128, int dimY = 128, Float cellSize = 0.08, Float density = 1000, Float dampingFluid = 0.01, Float dampingBody_linear = 0.02, Float dampingBody_angular = 0.04);
 	/** Updates the fluid.
 	*/
 	void Update();
@@ -60,19 +60,19 @@ public:
 private:
 	void SwitchBuffers();
 	void UpdateFluid();
-	void UpdateInteraction(int step=4, float WaterDepth = 5);
+	void UpdateInteraction(int step=4, Float WaterDepth = 5);
 
 	palVector3 *m_Vertices;
 	int m_DimX,m_DimY;
-	float m_FluidDampingFactor;
-	float m_BodyDampingFactor_Linear;
-	float m_BodyDampingFactor_Angular;
-	float m_CellSize;
-	float m_Density;
-	float *m_Waterbuf0;
-	float *m_Waterbuf1;
-	float *m_ReadBuffer;
-	float *m_WriteBuffer;
+	Float m_FluidDampingFactor;
+	Float m_BodyDampingFactor_Linear;
+	Float m_BodyDampingFactor_Angular;
+	Float m_CellSize;
+	Float m_Density;
+	Float *m_Waterbuf0;
+	Float *m_Waterbuf1;
+	Float *m_ReadBuffer;
+	Float *m_WriteBuffer;
 	int m_Count;
 	int m_VertexCount;
 	FACTORY_CLASS(palDampendShallowFluid,palDampendShallowFluid,*,1)

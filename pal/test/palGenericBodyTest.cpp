@@ -25,15 +25,15 @@ template<typename T> void push_back3(std::vector<T> &v, T x, T y, T z) {
 }
 
 static std::vector<Float> createMesh(float x, float y, float z, float radius, float length, int hstrip, int vslice) {
-	float fX1, fY1, fX2, fY2, fX3, fY3, fX4, fY4;	// The vertex positions around each quad we calculate
-	float fAngle,fY,fYNext;
-	float fAngleAdd = 360.0f / (float)vslice;
-	float fSineAngle = 0;
-	float fSineAdd = 180.0f / (hstrip-1);
-	float height = length;
+	Float fX1, fY1, fX2, fY2, fX3, fY3, fX4, fY4;	// The vertex positions around each quad we calculate
+	Float fAngle,fY,fYNext;
+	Float fAngleAdd = 360.0f / (Float)vslice;
+	Float fSineAngle = 0;
+	Float fSineAdd = 180.0f / (hstrip-1);
+	Float height = length;
 	int i,j;
 
-	std::vector<float> verts;
+	std::vector<Float> verts;
 	// Loop around our sphere
 	for (i=0; i<hstrip; i++)
 	{

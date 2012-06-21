@@ -30,11 +30,11 @@ palDampendShallowFluid::~palDampendShallowFluid() {
 	m_Waterbuf1 = NULL;
 }
 
-void palDampendShallowFluid::Init(int dimX, int dimY, float cellSize, float density, float dampingFluid, float dampingBody_linear, float dampingBody_angular) {
-		m_Waterbuf0 = new float [dimX*dimY];
-		m_Waterbuf1 = new float [dimX*dimY];
-		memset(m_Waterbuf0,0,sizeof(float)*dimX*dimY);
-		memset(m_Waterbuf1,0,sizeof(float)*dimX*dimY);
+void palDampendShallowFluid::Init(int dimX, int dimY, Float cellSize, Float density, Float dampingFluid, Float dampingBody_linear, Float dampingBody_angular) {
+		m_Waterbuf0 = new Float [dimX*dimY];
+		m_Waterbuf1 = new Float [dimX*dimY];
+		memset(m_Waterbuf0,0,sizeof(Float)*dimX*dimY);
+		memset(m_Waterbuf1,0,sizeof(Float)*dimX*dimY);
 		m_CellSize = cellSize;
 		m_Density = density;
 		m_DimX = dimX;
@@ -48,7 +48,7 @@ void palDampendShallowFluid::Init(int dimX, int dimY, float cellSize, float dens
 		m_VertexCount = 0;
 	}
 void palDampendShallowFluid::SwitchBuffers() {
-		float *tmp;
+		Float *tmp;
 		tmp = m_ReadBuffer;
 		m_ReadBuffer = m_WriteBuffer;
 		m_WriteBuffer = tmp;
@@ -61,7 +61,7 @@ void palDampendShallowFluid::UpdateFluid() {
 		for (j=2;j<m_DimY-2;j++)
 		for (i=2;i<m_DimX-2;i++) {
 			//int pos = i+j*m_DimX;
-			float value = (
+			Float value = (
 				READBUFFER(m_ReadBuffer,i-2,j) +
 				READBUFFER(m_ReadBuffer,i+2,j) +
 				READBUFFER(m_ReadBuffer,i,j-2) +
@@ -75,7 +75,7 @@ void palDampendShallowFluid::UpdateFluid() {
 				READBUFFER(m_ReadBuffer,i-1,j+1) +
 				READBUFFER(m_ReadBuffer,i+1,j+1));
 			value /= 6.0f;		// Average * 2
-			value -= (float)READBUFFER(m_WriteBuffer,i,j);
+			value -= (Float)READBUFFER(m_WriteBuffer,i,j);
 			//values for damping from 0.04 - 0.0001 are pretty good
 			value -= (value * m_FluidDampingFactor);
 			SETBUFFER(m_WriteBuffer,i,j,value);
@@ -84,7 +84,7 @@ void palDampendShallowFluid::UpdateFluid() {
 
 
 palVector3* palDampendShallowFluid::GetFluidVertices() {
-	float k = m_CellSize;
+	Float k = m_CellSize;
 	m_VertexCount = 0;
 	for (int j=0;j<m_DimY;j++)
 		for (int i=0;i<m_DimX;i++) {
@@ -98,19 +98,19 @@ int palDampendShallowFluid::GetNumVertices() {
 }
 
 //#include <GL/gl.h>
-void palDampendShallowFluid::UpdateInteraction(int step, float WaterDepth) {
+void palDampendShallowFluid::UpdateInteraction(int step, Float WaterDepth) {
 		palCollisionDetection *pcd = dynamic_cast<palCollisionDetection *>( PF->GetActivePhysics());
 		for (int j=0;j<m_DimY;j+=step)
 			for (int i=0;i<m_DimX;i+=step) {
 				palRayHit hit;
-				float x = (i-m_DimX*0.5f)*m_CellSize;
-				float z = (j-m_DimY*0.5f)*m_CellSize;
+				Float x = (i-m_DimX*0.5f)*m_CellSize;
+				Float z = (j-m_DimY*0.5f)*m_CellSize;
 				//lets cast a ray up from the 'bottom' of the water
 				pcd->RayCast(x,-WaterDepth,z,0,1,0,WaterDepth,hit);
 				//did we hit an object, and the body?
 				if ((hit.m_bHitPosition)&&(hit.m_pBody)) {
 					//where is the water level right now?
-					float water_height = READBUFFER(m_ReadBuffer,i,j);
+					Float water_height = READBUFFER(m_ReadBuffer,i,j);
 
 					if (hit.m_vHitPosition.y>water_height) //we are above the water, so still falling, so break!
 						continue;
@@ -123,7 +123,7 @@ void palDampendShallowFluid::UpdateInteraction(int step, float WaterDepth) {
 					palBody *pb = dynamic_cast<palBody *>(hit.m_pBody);
 					if (!pb)  //we won't interact with static objects, right?
 						continue;
-					float y = bottomHit.y;
+					Float y = bottomHit.y;
 
 					bool immersed = false;
 					//are we completely immersed?
@@ -161,18 +161,18 @@ void palDampendShallowFluid::UpdateInteraction(int step, float WaterDepth) {
 #endif
 
 					//where is the top of the displaced water? either the water height, OR , the top of the raycast
-					float top = (topHit.y < water_height) ? topHit.y: water_height;
+					Float top = (topHit.y < water_height) ? topHit.y: water_height;
 					//if there is little difference between top and bottom, it means the raycast has not hit the other side of the object
 					if (fabs(topHit.y - bottomHit.y)<0.001) {
 						top = water_height;
 						immersed = false;
 					}
 					//the displaced water. top - bottom. (because were in -'ves)
-					float disp = fabs(top - bottomHit.y);
+					Float disp = fabs(top - bottomHit.y);
 
 					//volume of displaced water?
-					float vDisplaced =  disp * m_CellSize * step * m_CellSize * step;
-					float bouyancy = 9.8f * m_Density* vDisplaced; //whats the buoyancy force? (gpV)
+					Float vDisplaced =  disp * m_CellSize * step * m_CellSize * step;
+					Float bouyancy = 9.8f * m_Density* vDisplaced; //whats the buoyancy force? (gpV)
 
 					//lets apply the bouyancy force.
 					pb->ApplyForceAtPosition(x,y,z,0,bouyancy,0);
@@ -184,11 +184,11 @@ void palDampendShallowFluid::UpdateInteraction(int step, float WaterDepth) {
 					pb->ApplyImpulse(-v.x,-v.y,-v.z);
 
 					//now lets update the water.
-					//float cur_water = READBUFFER(m_WriteBuffer,i,j);
-					//float lerp=0.5;
+					//Float cur_water = READBUFFER(m_WriteBuffer,i,j);
+					//Float lerp=0.5;
 #define LERP(x,y,a) ((x)*a+(y)*(1-a))
 				if (!immersed) {
-					float displaced = 0.5f;
+					Float displaced = 0.5f;
 
 					SETBUFFER(m_WriteBuffer,i,j,READBUFFER(m_WriteBuffer,i,j)-displaced);
 

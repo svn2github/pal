@@ -1,5 +1,8 @@
 #include "graphics.h"
 #include <iostream>
+#include <vector>
+#include "sdlgl/sdlgl.h"
+#include "framework/util.h"
 
 //(c) Adrian Boeing 2004, see liscence.txt (BSD liscence)
 //the graphics object class
@@ -144,9 +147,19 @@ void BuildTerrainGraphics(palTerrain *pt) {
 			SDLGLPlane *pSGplane;
 			pSGplane = new SDLGLPlane;
 			printf("made heightmap [%f %f %f]\n",m._41,m._42,m._43);
-#ifndef DOUBLE_PRECISION
-			pSGplane->Create(m._41,m._42,m._43,pth->GetWidth(),pth->GetDepth(),pth->GetDataWidth(),pth->GetDataDepth(),pth->GetHeightMap());
+                        float* depthData;
+                        unsigned int dataCount = pth->GetDataWidth()*pth->GetDataDepth();
+#ifdef DOUBLE_PRECISION
+                        std::vector<float> floatData(dataCount);
+                        copyArray(dataCount, pth->GetHeightMap(), floatData.data());
+                        depthData = floatData.data();
+#else
+                        depthData = pth->GetHeightMap();
 #endif
+			pSGplane->Create(m._41,m._42,m._43,
+                                         pth->GetWidth(),pth->GetDepth(),
+                                         pth->GetDataWidth(),pth->GetDataDepth(),
+                                         depthData);
 			pSGterrain = pSGplane;
 			}
 		break;
@@ -156,7 +169,16 @@ void BuildTerrainGraphics(palTerrain *pt) {
 			ptm = dynamic_cast<palTerrainMesh *>(pt);
 			SDL_Mesh  *pSGmesh = NULL;
 			pSGmesh = new SDL_Mesh;
-			pSGmesh->Init(ptm->m_nVertices*3,ptm->m_nIndices,ptm->m_pVertices ,ptm->m_pIndices);
+                        unsigned int dataCount = ptm->m_nVertices*3;
+                        float* vertexData;
+#ifdef DOUBLE_PRECISION
+                        std::vector<float> dataVector(dataCount);
+                        copyArray(dataCount, ptm->m_pVertices, dataVector.data());
+                        vertexData = dataVector.data();
+#else
+                        vertexData = ptm->m_pVertices;
+#endif
+			pSGmesh->Init(dataCount,ptm->m_nIndices,vertexData,ptm->m_pIndices);
 
 			pSGterrain = pSGmesh;
 			}

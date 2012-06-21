@@ -1,13 +1,14 @@
 #include "test.h"
+#include "framework/util.h"
 
 // create a 'pool' terrain
 void Test::CreatePool(float height,float length_down,float length_up,float width_down,float width_up) {
 
-	float lext1 = 0 - ((length_up - length_down)/2);		// length extra from the coordinate below
-	float lext2 = 0 + ((length_up - length_down)/2);		// length extra from the coordinate below
-	float wext1 = 0 - ((width_up - width_down)/2);			// width extra from the coordinate below
-	float wext2 = 0 + ((width_up - width_down)/2);			// width extra from the coordinate below 
-	float ver[3*16];
+	Float lext1 = 0 - ((length_up - length_down)/2);		// length extra from the coordinate below
+	Float lext2 = 0 + ((length_up - length_down)/2);		// length extra from the coordinate below
+	Float wext1 = 0 - ((width_up - width_down)/2);			// width extra from the coordinate below
+	Float wext2 = 0 + ((width_up - width_down)/2);			// width extra from the coordinate below 
+	Float ver[3*16];
 	int ind1[3*18];	
 
 	// all the coordinates of the point
@@ -64,7 +65,14 @@ void Test::CreatePool(float height,float length_down,float length_up,float width
 		pool->Init(0,0,0,ver,16,ind1,3*18);		
 		SDL_Mesh  *graphics_mesh = NULL;
 		graphics_mesh = new SDL_Mesh;
-		graphics_mesh -> Init(3*16,3*18,ver,ind1);
+                int numVerts = 3*16;
+#ifdef DOUBLE_PRECISION
+                std::vector<float> floatVerts(numVerts);
+                copyArray(numVerts, ver, floatVerts.data());
+		graphics_mesh -> Init(numVerts,3*18,floatVerts.data(),ind1);
+#else                
+		graphics_mesh -> Init(numVerts,3*18,ver,ind1);
+#endif
 		pTerrain = pool;
 		terrain_graphics = graphics_mesh;				// drawing the 'pool'
 
@@ -76,8 +84,8 @@ void Test::CreatePool(float height,float length_down,float length_up,float width
 void Test::CreateHeightmap(int size, float stretch ) {
 
 			int h;
-			float *heights = new float[size*size];
-			memset(heights,0,sizeof(float)*size*size);
+			Float *heights = new Float[size*size];
+			memset(heights,0,sizeof(Float)*size*size);
 			for (h=0;h<size*size;h++)
 				heights[h]=-ufrand();
 			
@@ -87,7 +95,16 @@ void Test::CreateHeightmap(int size, float stretch ) {
 			if (pth!=NULL) {
 				pth->Init(0,0,0,stretch,stretch,size,size,heights);
 				SDLGLPlane *pSDLGLplane = new SDLGLPlane;
-				pSDLGLplane->Create(0,0,0,stretch,stretch,size,size,heights);
+                                float* sdlHeights;
+#ifdef DOUBLE_PRECISION
+                                int numHeights = size * size;
+                                std::vector<float> floatHeights(numHeights);
+                                copyArray(numHeights, heights, floatHeights.data());
+                                sdlHeights = floatHeights.data();
+#else
+                                sdlHeights = heights;
+#endif
+				pSDLGLplane->Create(0,0,0,stretch,stretch,size,size,sdlHeights);
 
 				pTerrain = pth;
 				terrain_graphics = pSDLGLplane;
@@ -114,10 +131,11 @@ void Test::CreateTerrain(int type, float size)
 			{
 			int i;
 			float k;
-			float s1[18*15];	// 15 stairs
+                        const int numVertices = 18*15;	// 15 stairs
+			Float s1[numVertices];
 
 			float ysf = 0.3f;
-			for (i=0;i<18*15;i+=18) {
+			for (i=0;i<numVertices;i+=18) {
 			k=0;
 			k = (i/36.0f);
 
@@ -146,8 +164,16 @@ void Test::CreateTerrain(int type, float size)
 			if (map != NULL) {
 				map->Init(0,0,0,s1,6*15,ind,12*15);
 				SDL_Mesh  *graphics_mesh = NULL;				// create the stair map
-				graphics_mesh = new SDL_Mesh;		
-				graphics_mesh -> Init(18*15,12*15,s1,ind);
+				graphics_mesh = new SDL_Mesh;
+                                float* sdlVertices;
+#ifdef DOUBLE_PRECISION
+                                std::vector<float> floatVertices(numVertices);
+                                copyArray(numVertices, s1, floatVertices.data());
+                                sdlVertices = floatVertices.data();
+#else
+                                sdlVertices = s1;
+#endif
+				graphics_mesh -> Init(numVertices,12*15,sdlVertices,ind);
 
 				pTerrain = map;
 				terrain_graphics = graphics_mesh;
@@ -164,7 +190,14 @@ void Test::CreateTerrain(int type, float size)
 				pot->Init(0,0,0,sin(0.2),cos(0.2),0,size);
 				SDLGLPlane *pSDLGLplane = new SDLGLPlane;
 				pSDLGLplane->Create(0,0,0,size,size);
-				pSDLGLplane->SetPosition(pot->GetLocationMatrix()._mat);
+                                Float const* position = pot->GetLocationMatrix()._mat;
+                                float* sdlPosition;
+#ifdef DOUBLE_PRECISION
+                                copyArray(16, position, sdlPosition);
+#else
+                                sdlPosition = position;
+#endif
+				pSDLGLplane->SetPosition(sdlPosition);
 				terrain_graphics = pSDLGLplane;
 				pTerrain = pot;
 				}

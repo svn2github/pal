@@ -138,6 +138,7 @@ class SDL_Lines : public SDLGLObject {
 class SDLGLPoints: public SDLGLObject {
 public:
 	void Create(float x, float y, float z, float *points, int npoints);
+	void Create(float x, float y, float z, double *points, int npoints);
 	virtual void Render();
 };
 

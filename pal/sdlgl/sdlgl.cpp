@@ -343,6 +343,15 @@ void SDLGLObject::SetIndex(int pos, int x, int y, int z) {
 	m_indices[pos*3+2]=z;
 }
 
+void SDLGLPoints::Create(float x, float y, float z, double *points, int npoints) {
+			SDLGLObject::SetPosition(x,y,z);
+			Construct(false,false,npoints,0);
+			m_mode = GL_POINTS;
+			for (int i=0;i<npoints;i++) {
+                            SetData(i,(float)points[i*3+0],(float)points[i*3+1],(float)points[i*3+2]);
+			}
+	}
+
 void SDLGLPoints::Create(float x, float y, float z, float *points, int npoints) {
 			SDLGLObject::SetPosition(x,y,z);
 			Construct(false,false,npoints,0);
