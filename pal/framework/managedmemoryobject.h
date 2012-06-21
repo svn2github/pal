@@ -93,7 +93,7 @@ void MemoryObjectManager<MemoryBase>::Remove(ManagedMemoryObject<MemoryBase> *it
 	if(obj != pMMO.end()) {
 		pMMO.erase(obj);
 	}
-};
+}
 
 template <typename MemoryBase>
 void MemoryObjectManager<MemoryBase>::FreeAll() {

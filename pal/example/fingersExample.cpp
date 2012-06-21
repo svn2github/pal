@@ -132,4 +132,6 @@ int main(int argc, char* argv[]) {
 	EventLoop(pp);
 
 	PF->Cleanup();
+
+        return 0;
 }
