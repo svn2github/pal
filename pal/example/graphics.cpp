@@ -147,14 +147,14 @@ void BuildTerrainGraphics(palTerrain *pt) {
 			SDLGLPlane *pSGplane;
 			pSGplane = new SDLGLPlane;
 			printf("made heightmap [%f %f %f]\n",m._41,m._42,m._43);
-                        float* depthData;
-                        unsigned int dataCount = pth->GetDataWidth()*pth->GetDataDepth();
+			const Float* depthData;
 #ifdef DOUBLE_PRECISION
-                        std::vector<float> floatData(dataCount);
-                        copyArray(dataCount, pth->GetHeightMap(), floatData.data());
-                        depthData = floatData.data();
+			unsigned int dataCount = pth->GetDataWidth()*pth->GetDataDepth();
+			std::vector<float> floatData(dataCount);
+			copyArray(dataCount, pth->GetHeightMap(), floatData.data());
+			depthData = floatData.data();
 #else
-                        depthData = pth->GetHeightMap();
+			depthData = pth->GetHeightMap();
 #endif
 			pSGplane->Create(m._41,m._42,m._43,
                                          pth->GetWidth(),pth->GetDepth(),
