@@ -90,6 +90,10 @@
 #pragma warning(disable : 4250)
 #endif
 
+#define BT_SCALAR_IS_PAL_FLOAT                                           \
+    (defined(DOUBLE_PRECISION) && defined(BT_USE_DOUBLE_PRECISION)      \
+     || !defined(DOUBLE_PRECISION) && !defined(BT_USE_DOUBLE_PRECISION))
+
 class palBulletBodyBase;
 class palBulletDebugDraw;
 
@@ -862,41 +866,29 @@ extern std::ostream& operator<<(std::ostream& out, const btQuaternion& quat);
 
 inline void convertPalMatToBtTransform(btTransform& xform, const palMatrix4x4& palMat)
 {
-#ifndef BT_USE_DOUBLE_PRECISION
-//	if (sizeof(Float) == sizeof(btScalar))
-//	{
-		xform.setFromOpenGLMatrix(palMat._mat);
+    const btScalar* openGlMatrix;
+#if BT_SCALAR_IS_PAL_FLOAT
+    openGlMatrix = palMat._mat;
 #else
-		//	}
-//	else
-//	{
-		btScalar mat[4*4];
-		for (unsigned i = 0; i < 16; ++i)
-		{
-			mat[i] = palMat._mat[i];
-		}
-		xform.setFromOpenGLMatrix(mat);
-//	}
+    btScalar mat[4*4];
+    for (unsigned i = 0; i < 16; ++i) {
+        mat[i] = palMat._mat[i];
+    }
+    openGlMatrix = mat;
 #endif
+    xform.setFromOpenGLMatrix(openGlMatrix);
 }
 
 inline void convertBtTransformToPalMat(palMatrix4x4& palMat, const btTransform& xform)
 {
-#ifndef BT_USE_DOUBLE_PRECISION
-   //	if (sizeof(Float) == sizeof(btScalar))
-//	{
-		xform.getOpenGLMatrix(palMat._mat);
+#if BT_SCALAR_IS_PAL_FLOAT
+    xform.getOpenGLMatrix(palMat._mat);
 #else
-		//	}
-//	else
-//	{
-		btScalar mat[4*4];
-		xform.getOpenGLMatrix(mat);
-		for (unsigned i = 0; i < 16; ++i)
-		{
-			palMat._mat[i] = Float(mat[i]);
-		}
-//	}
+    btScalar mat[4*4];
+    xform.getOpenGLMatrix(mat);
+    for (unsigned i = 0; i < 16; ++i) {
+        palMat._mat[i] = Float(mat[i]);
+    }
 #endif
 }
 

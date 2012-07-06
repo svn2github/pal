@@ -9,6 +9,7 @@
 //#define USE_LISTEN_COLLISION
 
 #include <limits>
+#include <cfloat>
 #include "bullet_pal.h"
 #include "bullet_palVehicle.h"
 #include "bullet_palCharacter.h"
@@ -200,7 +201,7 @@ public:
 		//DBG_EnableCCD |
 		DBG_DrawConstraints |
 		DBG_FastWireframe |
-		DBG_DrawConstraintLimits;
+		DBG_DrawConstraintLimits
 ; }
 
 	void SetPalDebugDraw(palDebugDraw *newDebugDraw) { m_pPalDebugDraw = newDebugDraw; }
@@ -266,14 +267,11 @@ static void AddMeshToTrimesh(btTriangleIndexVertexArray *trimesh, const Float *p
 
 	meshIndex.m_triangleIndexBase = reinterpret_cast<const unsigned char*>(pIndices);
 	meshIndex.m_vertexBase = reinterpret_cast<const unsigned char*>(pVertices);
-	if (sizeof(Float) == sizeof(float))
-	{
-		meshIndex.m_vertexType = PHY_FLOAT;
-	}
-	else
-	{
-		meshIndex.m_vertexType = PHY_DOUBLE;
-	}
+#ifdef DOUBLE_PRECISION
+    meshIndex.m_vertexType = PHY_DOUBLE;
+#else
+    meshIndex.m_vertexType = PHY_FLOAT;
+#endif
 
 	trimesh->addIndexedMesh(meshIndex);
 }
@@ -2343,14 +2341,9 @@ void palBulletConvexGeometry::InternalInit(const Float *pVertices, unsigned int 
 //
 //	delete tmpConvexShape;
 //	delete hull;
-#ifndef BT_USE_DOUBLE_PRECISION
-//	if (sizeof(btScalar) == sizeof(Float))
-//	{
+#if BT_FLOAT_IS_PAL_FLOAT
 	m_pbtConvexShape = new btConvexHullShape(pVertices,nVertices,sizeof(btScalar)*3);
 #else
-//	}
-//	else
-//	{
 	m_pbtConvexShape = new btConvexHullShape();
 	for (unsigned i = 0; i < nVertices; ++i)
 		{
@@ -2674,10 +2667,17 @@ void palBulletSoftBody::BulletInit(const Float *pParticles, const Float *pMass, 
 
 	palBulletPhysics *pbf=dynamic_cast<palBulletPhysics *>(PF->GetActivePhysics());
 
-// TODO this will crash with double precision, so the particle list needs to be copied to a list of doubles.
-#ifndef BT_USE_DOUBLE_PRECISION
-	m_pbtSBody = btSoftBodyHelpers::CreateFromTriMesh(pbf->m_softBodyWorldInfo	,	pParticles,pIndices, nIndices/3);
+    btScalar* particleArray;
+#if BT_FLOAT_IS_PAL_FLOAT
+    particleArray = pParticles;
+#else
+    btScalar tempArray[nParticles];
+    for (int i = 0; i < nParticles; i++) {
+        tempArray[i] = pParticles[i];
+    }
+    particleArray = tempArray;
 #endif
+	m_pbtSBody = btSoftBodyHelpers::CreateFromTriMesh(pbf->m_softBodyWorldInfo, particleArray, pIndices, nIndices/3);
 	m_pbtSBody->generateBendingConstraints(2);
 	m_pbtSBody->m_cfg.piterations=2;
 	m_pbtSBody->m_cfg.collisions|=btSoftBody::fCollision::VF_SS;
