@@ -208,12 +208,23 @@ std::vector<palBodyBase *> ScythePhysics::loadScythePhysics(const char * fileNam
 				// mesh = 9
 				else if (physEntity->actors[j].primitives[i].type == 9) {
 					palConvex * pConvex = dynamic_cast<palConvex *>(PF->CreateObject("palConvex"));
+					Float* palVerts;
+					int numVerts = physEntity->actors[j].primitives[i].meshData->numVerts;
+#ifdef DOUBLE_PRECISION
+					Float vertBuffer[numVerts];
+					for (int k = 0; k < numVerts; k++) {
+						vertBuffer[k] = physEntity->actors[j].primitives[i].meshData->verts[k];
+					}
+					palVerts = vertBuffer;
+#else
+					palVerts = physEntity->actors[j].primitives[i].meshData->verts;
+#endif 
 					pConvex->Init(
-						physEntity->actors[j].primitives[i].pos.x,				// pos x
-						physEntity->actors[j].primitives[i].pos.y,				// pos y
-						physEntity->actors[j].primitives[i].pos.z,				// pos z
-						physEntity->actors[j].primitives[i].meshData->verts,		// vertices
-						physEntity->actors[j].primitives[i].meshData->numVerts,	// number of vertices
+						(Float) physEntity->actors[j].primitives[i].pos.x,				// pos x
+						(Float) physEntity->actors[j].primitives[i].pos.y,				// pos y
+						(Float) physEntity->actors[j].primitives[i].pos.z,				// pos z
+						palVerts,
+						numVerts,
 						physEntity->actors[j].primitives[i].mass);				// mass
 
 					pBody = pConvex;
@@ -353,22 +364,30 @@ std::vector<palBodyBase *> ScythePhysics::loadScythePhysics(const char * fileNam
 				case 9:
 					{
 						palConvexGeometry *pConvexGeom = pCompoundBody->AddConvex();
-						
+						Float palMass;
+						Float* palVerts;
+						int numVerts = physEntity->actors[j].primitives[i].meshData->numVerts;
+#ifdef DOUBLE_PRECISION
+						Float vertBuffer[numVerts];
+						for (int k = 0; k < numVerts; k++) {
+							vertBuffer[k] = physEntity->actors[j].primitives[i].meshData->verts[k];
+						}
+						palVerts = vertBuffer;
+#else
+						palVerts = physEntity->actors[j].primitives[i].meshData->verts;
+#endif 
+
 						if (physEntity->actors[j].primitives[i].mass == 0) {
-							pConvexGeom->Init(
-								mat,
-								physEntity->actors[j].primitives[i].meshData->verts,
-								physEntity->actors[j].primitives[i].meshData->numVerts,
-								physEntity->actors[j].primitives[i].density);
+							palMass = physEntity->actors[j].primitives[i].density;
 						}
 						else {
-							pConvexGeom->Init(
-								mat,
-								physEntity->actors[j].primitives[i].meshData->verts,
-								physEntity->actors[j].primitives[i].meshData->numVerts,
-								physEntity->actors[j].primitives[i].mass);
+							palMass = physEntity->actors[j].primitives[i].mass;
 						}
-
+						pConvexGeom->Init(
+							mat,
+							palVerts,
+							numVerts,
+							palMass);
 						break;
 
 					}

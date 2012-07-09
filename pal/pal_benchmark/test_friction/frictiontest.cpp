@@ -196,12 +196,17 @@ int main(int argc, char *argv[]) {
 
 			//draw the ground
 			if (pot) {
+				float* sdlPosition;
 #ifdef DOUBLE_PRECISION
-				
-				pSDLGLplane->SetPosition(pot->GetLocationMatrix()._mat);
+				float sdlBuffer[16];
+				for (int i = 0; i < 16; i++) {
+					sdlBuffer[i] = pot->GetLocationMatrix()._mat[i];
+				}
+				sdlPosition = sdlBuffer;
 #else
-				pSDLGLplane->SetPosition(pot->GetLocationMatrix()._mat);
+				sdlPosition = pot->GetLocationMatrix()._mat;
 #endif
+				pSDLGLplane->SetPosition(sdlPosition);
 			} 
 			pSDLGLplane->Render();
 			

@@ -8,7 +8,7 @@
 #define UTIL_H
 
 template <typename SRC, typename DEST>
-DEST* copyArray(int numItems, const SRC* source, DEST* dest = 0) {
+DEST* copyArray(const int numItems, const SRC* source, DEST* dest = 0) {
     if (!dest) {
         dest = new DEST[numItems];
     }

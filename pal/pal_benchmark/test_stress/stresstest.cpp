@@ -1,5 +1,6 @@
 
 #include "test_lib/test_lib.h"
+#include "framework/util.h"
 
 bool	g_quit = false;
 
@@ -22,13 +23,15 @@ void CreatePool(float height,float length_down,float length_up,float width_down,
 	float lext2 = 0 + ((length_up - length_down)/2);		// length extra from the coordinate below
 	float wext1 = 0 - ((width_up - width_down)/2);			// width extra from the coordinate below
 	float wext2 = 0 + ((width_up - width_down)/2);			// width extra from the coordinate below 
-	float ver[3*16];
-	int ind1[3*18];	
+	const int numCoordinates = 3 * 16;
+	const int numIndices = 3 * 18;
+	Float ver[numCoordinates];
+	int ind1[numIndices]; 
 
 	// all the coordinates of the point
-	ver[0]=0;						ver[1]=0;				ver[2]=0;							// 1st coordinate
-	ver[3]=length_down;				ver[4]=0;				ver[5]=0;							// 2nd coordinate 
-	ver[6]=0;						ver[7]=0;				ver[8]=width_down;					// 3rd coordinate
+	ver[0]=0;						ver[1]=0;				ver[2]=0;							// 1st vertex
+	ver[3]=length_down;				ver[4]=0;				ver[5]=0;							// 2nd vertex 
+	ver[6]=0;						ver[7]=0;				ver[8]=width_down;					// 3rd vertex
 	ver[9]=length_down;				ver[10]=0;				ver[11]=width_down;					//		.
 	ver[12]=0;						ver[13]=height;			ver[14]=wext1;						//		.
 	ver[15]=length_down;			ver[16]=height;			ver[17]=wext1;						//		.
@@ -41,9 +44,9 @@ void CreatePool(float height,float length_down,float length_up,float width_down,
 	ver[36]=lext1;					ver[37]=height;			ver[38]=wext1;						//		.
 	ver[39]=length_down + lext2;	ver[40]=height;			ver[41]=wext1;						//		.
 	ver[42]=lext1;					ver[43]=height;			ver[44]=width_down + wext2;			//		.
-	ver[45]=length_down + lext2;	ver[46]=height;			ver[47]=width_down + wext2;			// 16th coordinate
+	ver[45]=length_down + lext2;	ver[46]=height;			ver[47]=width_down + wext2;			// 16th vertex
 
-	for (int i=0;i<48;i++) {
+	for (int i=0;i<numCoordinates;i++) {
 		if ((i%3) == 1)
 			ver[i]-=height;
 		if ((i%3) == 0) 
@@ -76,10 +79,17 @@ void CreatePool(float height,float length_down,float length_up,float width_down,
 	pool = NULL;
 	pool = PF->CreateTerrainMesh();
 	if (pool != NULL) {
-		pool->Init(0,0,0,ver,16,ind1,3*18);		
+		pool->Init(0.0f,0.0f,0.0f,ver,16,ind1,numIndices);		
 		SDL_Mesh  *graphics_mesh = NULL;
 		graphics_mesh = new SDL_Mesh;
-		graphics_mesh -> Init(3*16,3*18,ver,ind1);
+		float* sdlVerts;
+#ifdef DOUBLE_PRECISION
+		float sdlBuffer[numCoordinates];
+		sdlVerts = copyArray(numCoordinates, ver, sdlBuffer);
+#else
+		sdlVerts = ver;
+#endif		
+		graphics_mesh -> Init(numCoordinates,numIndices,sdlVerts,ind1);
 		g_terrain_graphics = graphics_mesh;				// drawing the 'pool'
 	} else {
 		printf("Error : Could not create a 'pool'\n");
@@ -104,8 +114,8 @@ int InitPhysics() {
 	return 0;
 }
 
-
-void Resize(float *verts, int nv, float xs, float ys, float zs) {
+template <typename T>
+void Resize(T *verts, int nv, float xs, float ys, float zs) {
 	for (int i=0;i<nv;i++) {
 		verts[i*3+0]*=xs;
 		verts[i*3+1]*=ys;
@@ -113,7 +123,7 @@ void Resize(float *verts, int nv, float xs, float ys, float zs) {
 	}
 }
 
-void MakeZoid(float x, float y, float z) {
+void MakeZoid(Float x, Float y, Float z) {
 	palConvex *pc = dynamic_cast<palConvex *>(PF->CreateObject("palConvex"));
 	if (!pc) {
 		printf("failed to create convex\n");
@@ -126,7 +136,7 @@ void MakeZoid(float x, float y, float z) {
 	}
 	int nv;
 	fscanf(fin,"%d",&nv);
-	float *verts = new float[nv*3];
+	Float *verts = new Float[nv*3];
 	for (int i=0;i<nv;i++) {
 		fscanf(fin,"%f %f %f\n",&verts[i*3+0],&verts[i*3+1],&verts[i*3+2]);
 	}

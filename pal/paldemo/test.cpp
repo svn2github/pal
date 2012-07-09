@@ -191,9 +191,9 @@ void Test::CreateTerrain(int type, float size)
 				SDLGLPlane *pSDLGLplane = new SDLGLPlane;
 				pSDLGLplane->Create(0,0,0,size,size);
 				Float const* position = pot->GetLocationMatrix()._mat;
-				const Float* sdlPosition;
+				float* sdlPosition;
 #ifdef DOUBLE_PRECISION
-				copyArray(16, position, sdlPosition);
+				sdlPosition = copyArray(16, position, sdlPosition);
 #else
 				sdlPosition = position;
 #endif

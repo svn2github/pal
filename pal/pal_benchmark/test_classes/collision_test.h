@@ -28,7 +28,7 @@ template <typename T = PALTest> class PAL_Collision_Test : public T
 protected:
 	virtual void doInnerUpdateLoop() { ; }
 
-	float verts[3*5];					//pyramid verts
+	Float verts[3*5];					//pyramid verts
 	int	  inds[3*4];					//pyramid inds
 	std::vector<palSphere *> vSpheres;	//sphere bodies
 	palVector3 plane_normals[4];		//pyramid face plane
@@ -38,14 +38,14 @@ protected:
 	int doCreatePhysics()
 	{	
 		radius = 0.04f;
-		float lverts[] = {	0,0,1,					//top
+		Float lverts[] = {	0,0,1,					//top
 							-1,0,0,	0,-1,0, 1,0,0,	//middle
 							0,0,-1 };				//bottom
 
 		int linds[] = {	2,1,0, 2,0,3,
 						1,2,4, 2,3,4};
 
-		memcpy(verts,lverts,3*5*sizeof(float));
+		memcpy(verts,lverts,3*5*sizeof(Float));
 		memcpy(inds,linds,3*4*sizeof(int));
 		
 		this->pp = PF->CreatePhysics();
@@ -66,7 +66,7 @@ protected:
 		//initialize terrain
 		palTerrainMesh *ptm = 0;
 		ptm = PF->CreateTerrainMesh();
-		ptm->Init(0,0,0,verts,5,inds,3*4);
+		ptm->Init(0.0f,0.0f,0.0f,verts,5,inds,3*4);
 
 		palSphere *ps;
 		for (int j=0;j<8;j++) {
