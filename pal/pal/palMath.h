@@ -38,14 +38,15 @@
 #define RAD2DEG (180.0/M_PI)
 
 #ifdef DOUBLE_PRECISION
-typedef double Float;
+	typedef double Float;
 #else
-typedef float Float;
+	typedef float Float;
 #endif
+
+#define FLOAT_EPSILON  1.192092896e-07  /* smallest such that 1.0+FLT_EPSILON != 1.0 */
+
 //need a define for infinity!
 //#define MAX_FLOAT 3.402823466e+38
-
-#define FLOAT_EPSILON  1.192092896e-07F  /* smallest such that 1.0+FLT_EPSILON != 1.0 */
 
 struct palVector3 {
 	static const unsigned int num_components = 3;

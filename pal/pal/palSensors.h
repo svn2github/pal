@@ -152,7 +152,7 @@ public:
 	*/
 	/*
 	virtual int GetData ( void* data ) {
-		float *dp = (float *)data;
+		Float *dp = (Float *)data;
 		*dp = GetAngle ();
 		return 0;
 	}*/

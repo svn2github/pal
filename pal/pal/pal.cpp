@@ -355,7 +355,7 @@ void palTriangleMesh::Init(Float x, Float y, Float z, const Float *pVertices, in
 	palBody::SetPosition(x,y,z);
 	m_nVertices=nVertices;
 	m_nIndices=nIndices;
-	m_pVertices=(float *) pVertices;
+	m_pVertices=(Float *) pVertices;
 	m_pIndices=(int *) pIndices;
 }*/
 

@@ -2,11 +2,11 @@
 #include "test_lib/test_lib.h"
 //#include "../example/debugconsole.h"
 
-float frand() {
-	return rand()/(float)RAND_MAX;
+Float frand() {
+	return rand()/(Float)RAND_MAX;
 }
 
-void printmatrix(float *mat) {
+void printmatrix(Float *mat) {
 	for (int i=0;i<16;i++) {
 		printf("%f ",mat[i]);
 		if (i%4 == 3) 
@@ -18,15 +18,15 @@ bool g_quit = false;
 
 //test specific:
 bool g_graphics = true;
-float g_runningaverage = 0;
-float g_runningaverage_accel = 0;
+Float g_runningaverage = 0;
+Float g_runningaverage_accel = 0;
 int g_nrun=0;
-float g_start_time= 0.5f;
-float g_max_time= 999999;
+Float g_start_time= 0.5f;
+Float g_max_time= 999999;
 bool g_force_active = false;
-float theta = 0;
-float g_mat_stat = 0.2f;
-float g_mat_kin = 0.1f;
+Float theta = 0;
+Float g_mat_stat = 0.2f;
+Float g_mat_kin = 0.1f;
 
 int main(int argc, char *argv[]) {
 #if 1
@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	float gravityMag = -9.8;
+	Float gravityMag = -9.8;
 	//initialize gravity
 	palPhysicsDesc desc;
 	desc.m_vGravity.y = gravityMag;
@@ -150,8 +150,8 @@ int main(int argc, char *argv[]) {
 	// BW: Timer t;
 
 	bool mouse_down=false;
-	float angle = M_PI*0.4f;
-	float distance = 12;
+	Float angle = M_PI*0.4;
+	Float distance = 12.0;
 	if (g_graphics)
 	while (!g_quit) {
 		if(SDL_PollEvent(&E)) {
@@ -196,9 +196,9 @@ int main(int argc, char *argv[]) {
 
 			//draw the ground
 			if (pot) {
-				float* sdlPosition;
+				Float* sdlPosition;
 #ifdef DOUBLE_PRECISION
-				float sdlBuffer[16];
+				Float sdlBuffer[16];
 				for (int i = 0; i < 16; i++) {
 					sdlBuffer[i] = pot->GetLocationMatrix()._mat[i];
 				}
@@ -230,15 +230,15 @@ int main(int argc, char *argv[]) {
 			vt_unit.y=sin(theta);
 			vt_unit.z=0;
 
-			float FGN = gravityMag*cos(theta); //normal gravity force
-			float FGT = gravityMag*sin(theta); //tangent gravity force
+			Float FGN = gravityMag*cos(theta); //normal gravity force
+			Float FGT = gravityMag*sin(theta); //tangent gravity force
 
 			//acceleration in tangent direction
-			float a = vec_dot(&accel,&vt_unit);
+			Float a = vec_dot(&accel,&vt_unit);
 //			printf("A  :%f [%f,%f%,%f] [%f]\n",a,accel.x,accel.y,accel.z,pp->GetTime());
 		
-			float FT = a-FGT; //tangent force
-			float ratio = fabsf(FT)/fabsf(FGN);
+			Float FT = a-FGT; //tangent force
+			Float ratio = fabsf(FT)/fabsf(FGN);
 
 			//average
 			if (pp->GetTime() > g_start_time) {
@@ -284,14 +284,14 @@ int main(int argc, char *argv[]) {
 		vt_unit.y=sin(theta);
 		vt_unit.z=0;
 
-		float FGN = gravityMag*cos(theta); //normal gravity force
-		float FGT = gravityMag*sin(theta); //tangent gravity force
+		Float FGN = gravityMag*cos(theta); //normal gravity force
+		Float FGT = gravityMag*sin(theta); //tangent gravity force
 
 		//acceleration in direction of unit vector
-		float a = vec_dot(&accel,&vt_unit);
+		Float a = vec_dot(&accel,&vt_unit);
 		
-		float FT = a-FGT;
-		float ratio = fabsf(FT)/fabsf(FGN);
+		Float FT = a-FGT;
+		Float ratio = fabsf(FT)/fabsf(FGN);
 
 		//stats:
 //			printf("tan(t) :%f\n",tan(theta));

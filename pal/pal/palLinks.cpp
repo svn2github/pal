@@ -558,7 +558,7 @@ void palSphericalLink::GenericInit(palBody *pb0, palBody *pb1, void *param) {
 		p[i]=atof(szParam);
 	}
 	this->Init(pb0,pb1,p[0],p[1],p[2]);*/
-	float *p = static_cast<float *>(param);
+	Float *p = static_cast<Float *>(param);
 	this->Init(pb0,pb1,p[0],p[1],p[2]);
 }
 
@@ -577,7 +577,7 @@ void palRevoluteLink::GenericInit(palBody *pb0, palBody *pb1, void *param) {
 		szParam = (char *)ptr;
 		p[i]=atof(szParam);
 	}*/
-	float *p = static_cast<float *>(param);
+	Float *p = static_cast<Float *>(param);
 	this->Init(pb0,pb1,p[0],p[1],p[2], p[3],p[4],p[5]);
 }
 
@@ -595,7 +595,7 @@ void palPrismaticLink::GenericInit(palBody *pb0, palBody *pb1, void *param) {
 		szParam = (char *)ptr;
 		p[i]=atof(szParam);
 	}*/
-	float *p = static_cast<float *>(param);
+	Float *p = static_cast<Float *>(param);
 	this->Init(pb0,pb1,p[0],p[1],p[2], p[3],p[4],p[5]);
 }
 

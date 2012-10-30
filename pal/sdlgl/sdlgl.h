@@ -25,6 +25,7 @@
 
 #ifdef _WIN32												// If We're Under MSVC
 #include <windows.h>										// We Need The Windows Header
+#include <WinDef.h> // for DWORD
 #else														// Otherwhise
 #include <stdio.h>											// We Only Need The Standard IO Header
 #include <stdlib.h>

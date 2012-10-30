@@ -89,7 +89,7 @@ void vec_vec_mul(palVector3 *v, const palVector3 *a, const palVector3 *b) {
 }
 
 void vec_mat_mul(palVector3 *v, const palMatrix4x4 *a, const palVector3 *b) {
-	float *m = (float *) a->_mat;
+	Float *m = (Float *) a->_mat;
 	v->x = m[0] * b->x + m[4] * b->y + m[8] * b->z;
 	v->y = m[1] * b->x + m[5] * b->y + m[9] * b->z;
 	v->z = m[2] * b->x + m[6] * b->y + m[10] * b->z;

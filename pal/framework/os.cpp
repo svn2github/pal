@@ -44,13 +44,6 @@ typedef struct HINSTANCE__* hInstance;
 #    define DYNLIB_UNLOAD_DEF( a ) dlclose( a )
 #    define OS_CriticalMessage_DEF(sz) fprintf(stderr,"CRITCAL ERROR:%s\n",(sz))
 #    define OS_Sleep_DEF(milisec) usleep(milisec * 1000)
-/*
-#elif defined(OS_OSX)
-#    define DYNLIB_HANDLE CFBundleRef
-#    define DYNLIB_LOAD_DEF( a ) mac_loadExeBundle( a )
-#    define DYNLIB_GETSYM_DEF( a, b ) mac_getBundleSym( a, b )
-#    define DYNLIB_UNLOAD_DEF( a ) mac_unloadExeBundle( a )
-*/
 #endif
 
 class OS_DynlibHandleClass {
