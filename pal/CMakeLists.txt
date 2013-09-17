@@ -207,8 +207,8 @@ IF((NOT PAL_BUILD_BULLET OR BULLET_DOUBLE_PRECISION) AND (NOT PAL_BUILD_NEWTON O
 	ADD_DEFINITIONS( -DDOUBLE_PRECISION )
 ENDIF()  
 
-OPTION(BUILD_OUTPUT_DIR_RELEASE_DEBUG "Set to OFF to build binaries in the same directory (ex: /bin or /lib), instead of separating them (ex: /bin/debug, /bin/release, /lib/debug, /lib/release)." ON)
-MARK_AS_ADVANCED(BUILD_OUTPUT_DIR_RELEASE_DEBUG)
+#OPTION(BUILD_OUTPUT_DIR_RELEASE_DEBUG "Set to OFF to build binaries in the same directory (ex: /bin or /lib), instead of separating them (ex: /bin/debug, /bin/release, /lib/debug, /lib/release)." ON)
+#MARK_AS_ADVANCED(BUILD_OUTPUT_DIR_RELEASE_DEBUG)
 
 
 ################################################################################
@@ -286,8 +286,8 @@ IF(MSVC)
 ENDIF()
 
 IF(APPLE)
-	SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,-single_module -flat_namespace -compatibility_version 2 -current_version 2" )
-	INCLUDE_DIRECTORIES(/usr/include/malloc)
+	SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,-single_module -flat_namespace -compatibility_version 3 -current_version 3" )
+	INCLUDE_DIRECTORIES(${CMAKE_OSX_SYSROOT}/usr/include/malloc)
 ENDIF()
 
 OPTION(PAL_INTERNAL_DEBUG "Set to ON to enable internal PAL debug (disabled in release configurations)." OFF)

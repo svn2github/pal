@@ -729,7 +729,8 @@ void palODEBody::RecalcMassAndInertia() {
 		dMassSetSphereTotal(&m, m_fMass, 1.0);
 	}
 
-	dMassAdjust(&m, m_fMass);
+	dReal newMass = m_fMass;
+	dMassAdjust(&m, newMass);
 	m.c[0] = 0.0;
 	m.c[1] = 0.0;
 	m.c[2] = 0.0;
@@ -852,7 +853,7 @@ void palODEBody::SetAngularVelocity(const palVector3& vel) {
 }
 
 const std::bitset<palODEBody::DUMMY_ACTIVATION_SETTING_TYPE>
-	palODEBody::SUPPORTED_SETTINGS = std::bitset<palODEBody::DUMMY_ACTIVATION_SETTING_TYPE>(~(0xFFFFFFFF << palODEBody::DUMMY_ACTIVATION_SETTING_TYPE));
+	palODEBody::SUPPORTED_SETTINGS = std::bitset<palODEBody::DUMMY_ACTIVATION_SETTING_TYPE>(int(~(0xFFFFFFFF << palODEBody::DUMMY_ACTIVATION_SETTING_TYPE)));
 
 
 Float palODEBody::GetActivationLinearVelocityThreshold() const {

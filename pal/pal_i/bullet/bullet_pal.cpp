@@ -732,9 +732,9 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_solver = new btSequentialImpulseConstraintSolver();
 #else
 	const char* solverName = "solver";
-	btThreadSupportInterface*		m_threadSupportSolver = 0;
+	btThreadSupportInterface*	 threadSupportSolver = 0;
 #ifdef OS_WINDOWS
-	m_threadSupportSolver = new Win32ThreadSupport(Win32ThreadSupport::Win32ThreadConstructionInfo(
+	threadSupportSolver = new Win32ThreadSupport(Win32ThreadSupport::Win32ThreadConstructionInfo(
 		solverName,
 		SolverThreadFunc,
 		SolverlsMemoryFunc,
@@ -747,10 +747,10 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 		SolverThreadFunc,
 		SolverlsMemoryFunc,
 		maxNumOutstandingTasks);
-	m_threadSupportSolver = new PosixThreadSupport(tcInfoSolver);
+	threadSupportSolver = new PosixThreadSupport(tcInfoSolver);
 #endif
-	m_threadSupportSolver->startSPU();
-	m_solver = new btParallelConstraintSolver(m_threadSupportSolver);
+	threadSupportSolver->startSPU();
+	m_solver = new btParallelConstraintSolver(threadSupportSolver);
 	//this solver requires the contacts to be in a contiguous pool, so avoid dynamic allocation
 	m_dispatcher->setDispatcherFlags(btCollisionDispatcher::CD_DISABLE_CONTACTPOOL_DYNAMIC_ALLOCATION);
 #endif
@@ -832,8 +832,8 @@ void palBulletPhysics::StartIterate(Float timestep) {
 	if (m_dynamicsWorld) {
 
 		palDebugDraw* debugDraw = GetDebugDraw();
-		m_pbtDebugDraw->SetPalDebugDraw(debugDraw);
 		if (debugDraw != NULL) {
+	      m_pbtDebugDraw->SetPalDebugDraw(debugDraw);
 			m_dynamicsWorld->setDebugDrawer(m_pbtDebugDraw);
 		} else {
 			m_dynamicsWorld->setDebugDrawer(NULL);
@@ -1151,7 +1151,7 @@ palBulletBody::~palBulletBody() {
 */
 // Bullet supports them all
 const std::bitset<palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE>
-	palBulletBody::SUPPORTED_SETTINGS = std::bitset<palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE>(~(0xFFFFFFFF << palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE));
+	palBulletBody::SUPPORTED_SETTINGS = std::bitset<palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE>(int(~(0xFFFFFFFF << palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE)));
 
 Float palBulletBody::GetActivationLinearVelocityThreshold() const {
 	Float velocity;
@@ -2617,7 +2617,7 @@ palBulletGenericLinkSpring::palBulletGenericLinkSpring()
 
 }
 
-void palBulletGenericLinkSpring::Init(palGenericLink* link, bool disableCollisionsBetweenLinkedBodies) {
+void palBulletGenericLinkSpring::Init(palGenericLink* link) {
 	BaseClass::Init(link);
 	m_pBulletLink = dynamic_cast<palBulletGenericLink*>(link);
 }
@@ -2667,11 +2667,11 @@ void palBulletSoftBody::BulletInit(const Float *pParticles, const Float *pMass, 
 
 	palBulletPhysics *pbf=dynamic_cast<palBulletPhysics *>(PF->GetActivePhysics());
 
-    btScalar* particleArray;
-#if BT_FLOAT_IS_PAL_FLOAT
+    const btScalar* particleArray;
+#if (defined(DOUBLE_PRECISION) && defined(BT_USE_DOUBLE_PRECISION) || !defined(DOUBLE_PRECISION) && !defined(BT_USE_DOUBLE_PRECISION))
     particleArray = pParticles;
 #else
-    btScalar tempArray[nParticles];
+    btScalar* tempArray = new btScalar[nParticles];
     for (int i = 0; i < nParticles; i++) {
         tempArray[i] = pParticles[i];
     }

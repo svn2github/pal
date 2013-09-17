@@ -606,7 +606,7 @@ void palFactory::LoadPhysicsEngines(const char* dirName) {
 		fprintf(stderr, "%s:%d: Unable to load plugins from dynamic/shared libraries because of \"%s\". "
 					"If the path to plugin libraries is incorrect, try setting or correcting the environment variable PAL_PLUGIN_PATH.\n"
 					,__FILE__,__LINE__, ex.what());
-		throw ex;
+		throw;
 	}
 }
 

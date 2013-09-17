@@ -752,7 +752,7 @@ public:
 
 	palBulletGenericLinkSpring();
 
-	virtual void Init(palGenericLink* link, bool disableCollisionsBetweenLinkedBodies);
+	virtual void Init(palGenericLink* link);
 
 	virtual void SetLinearSpring(palAxis axis, const palSpringDesc& spring);
 

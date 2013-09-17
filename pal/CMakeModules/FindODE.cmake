@@ -11,6 +11,10 @@ IF (WIN32)
 	ENDIF()
 ENDIF()
 
+if (ODE_DOUBLE_PRECISION)
+	ADD_DEFINITIONS(-DdDOUBLE)
+endif()
+
 # Try the user's environment request before anything else.
 FIND_PATH(ODE_INCLUDE_DIR ode/ode.h
 	HINTS

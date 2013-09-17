@@ -70,7 +70,7 @@ void myFactory::LoadObjects(const char *szPath , void * factoryPointer, void *fa
 		catch (const palException& ex)
 		{
 			fprintf(stderr, "%s:%d: Unable to change directory to \"%s\" to load plugins because of \"%s\" \n",__FILE__,__LINE__,szPath, ex.what());
-			throw ex;
+			throw;
 		}
 	}
 	PAL_VECTOR<PAL_STRING> filesfound;
