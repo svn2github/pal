@@ -96,6 +96,7 @@ ELSE()
 	SET(PAL_MODULE_COPY OFF)
 ENDIF()
 
+OPTION(PAL_BUILD_DOUBLE_PRECISION "Set to ON to make PAL build as double precision." OFF)
 
 IF(UNIX AND NOT APPLE)
 	# Some Unicies need explicit linkage to the Math library or the build fails.
@@ -201,11 +202,6 @@ IF(PAL_STATIC)
 	ADD_DEFINITIONS(-DPAL_STATIC)
 ENDIF()
 
-IF((NOT PAL_BUILD_BULLET OR BULLET_DOUBLE_PRECISION) AND (NOT PAL_BUILD_NEWTON OR NEWTON_DOUBLE_PRECISION)
-   AND (NOT PAL_BUILD_ODE OR ODE_DOUBLE_PRECISION))
-	MESSAGE( "-- Enabling double-precision PAL" )
-	ADD_DEFINITIONS( -DDOUBLE_PRECISION )
-ENDIF()  
 
 #OPTION(BUILD_OUTPUT_DIR_RELEASE_DEBUG "Set to OFF to build binaries in the same directory (ex: /bin or /lib), instead of separating them (ex: /bin/debug, /bin/release, /lib/debug, /lib/release)." ON)
 #MARK_AS_ADVANCED(BUILD_OUTPUT_DIR_RELEASE_DEBUG)
@@ -541,6 +537,13 @@ FOREACH(CUR_ENGINE ${PAL_ENGINE_LIST})
 		SET(PAL_ENGINE_DEFINES "${PAL_ENGINE_DEFINES}/// Indicates the CMake build system has found ${CUR_ENGINE}.\n#define PAL_BUILD_${CUR_ENGINE}")
 	ENDIF()
 ENDFOREACH()
+IF(PAL_BUILD_DOUBLE_PRECISION)
+	MESSAGE( "-- Enabling double-precision PAL" )
+        SET(PAL_ENGINE_DEFINES "${PAL_ENGINE_DEFINES}\n\n/// Build pal with a double precision floating point interface.\n#define DOUBLE_PRECISION")	
+ELSE()
+	MESSAGE( "-- building single-precision PAL" )
+        SET(PAL_ENGINE_DEFINES "${PAL_ENGINE_DEFINES}\n\n/// Build pal with a double precision floating point interface.\n//#define DOUBLE_PRECISION")	
+ENDIF()  
 
 SET(PAL_CONFIG_HEADER "${PROJECT_BINARY_DIR}/pal/Config.h")
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/pal/Config.h.in" "${PAL_CONFIG_HEADER}")
