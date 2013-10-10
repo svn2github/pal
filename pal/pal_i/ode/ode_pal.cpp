@@ -730,11 +730,24 @@ void palODEBody::RecalcMassAndInertia() {
 	}
 
 	dReal newMass = m_fMass;
+	if (newMass == dReal(0.0))
+	{
+		newMass = dReal(1.0);
+	}
+
 	dMassAdjust(&m, newMass);
 	m.c[0] = 0.0;
 	m.c[1] = 0.0;
 	m.c[2] = 0.0;
-	dBodySetMass(odeBody, &m);
+	
+	if (dMassCheck(&m)) {
+		dBodySetMass(odeBody, &m);
+	}
+	else {
+		dMassSetZero(&m);
+		dMassSetSphereTotal(&m, newMass, 1.0);
+		dBodySetMass(odeBody, &m);
+	}
 }
 
 void palODEBody::SetPosition(const palMatrix4x4& location) {
