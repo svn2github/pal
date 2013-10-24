@@ -195,7 +195,7 @@ void Test::CreateTerrain(int type, float size)
 #ifdef DOUBLE_PRECISION
 				sdlPosition = copyArray(16, position, sdlPosition);
 #else
-				sdlPosition = position;
+				sdlPosition = (float*)position;
 #endif
 				pSDLGLplane->SetPosition(sdlPosition);
 				terrain_graphics = pSDLGLplane;
