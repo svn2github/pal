@@ -1793,7 +1793,7 @@ bool odeRevoluteLinkFeedback::SetEnabled(bool enable) {
 	if (enable && !currentFeedback) {
 		if (!m_odeFeedback) {
 			m_odeFeedback = new dJointFeedback;
-			memset(m_odeFeedback, 0, sizeof(m_odeFeedback));
+			memset(m_odeFeedback, 0, sizeof(*m_odeFeedback));
 		}
 		dJointSetFeedback(m_odeJoint, m_odeFeedback);
 		enabled = true;

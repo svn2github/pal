@@ -78,6 +78,7 @@ void FindFiles(PAL_STRING searchString, PAL_VECTOR<PAL_STRING> &filesFound) {
 #include <string.h>
 #include <errno.h>
 #include <cstdio>
+#include <unistd.h>
 
 void GetCurrentDir(const int buffersize, char *szDirectory) {
 	getcwd(szDirectory, buffersize);

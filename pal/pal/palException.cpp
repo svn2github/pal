@@ -9,6 +9,7 @@
 #include <pal/palException.h>
 #include <string.h>
 #include <malloc.h>
+#include <stdlib.h>
 
 palException::palException() throw()
     : m_message(0), m_cause(0)
@@ -22,7 +23,7 @@ palException::palException(const palException& other) throw()
 }
 
 palException::palException(const char* message, const std::exception *cause) throw()
-    : m_message(strdup(message ? message : "")), m_cause(cause)
+    : m_message(strdup(message ? message : 0)), m_cause(cause)
 {
 }
 
@@ -40,12 +41,12 @@ const std::exception *palException::GetCause() const {
 }
 
 const char *palException::what() const throw() {
-    return m_message;
+    return m_message == 0 ? "" : m_message;
 }
 
 void palException::InitMessage(const char *message) {
-    if (!m_message) {
-        m_message = message;
+    if (!m_message && message != NULL) {
+        m_message = strdup(message);
     }
 }
 
