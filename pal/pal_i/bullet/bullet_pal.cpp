@@ -399,8 +399,7 @@ struct palBulletCustomResultCallback : public btCollisionWorld::RayResultCallbac
 
 	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace)
 	{
-	  m_closestHitFraction = rayResult.m_hitFraction;
-	  m_collisionObject = rayResult.m_collisionObject;
+	  //m_collisionObject = rayResult.m_collisionObject;
 
 	  btVector3 hitNormalWorld, hitPointWorld;
 		if (normalInWorldSpace) {
@@ -415,11 +414,6 @@ struct palBulletCustomResultCallback : public btCollisionWorld::RayResultCallbac
 
 		btRigidBody* body = btRigidBody::upcast(rayResult.m_collisionObject);
 
-//		if ((body->getBroadphaseProxy()->m_collisionFilterGroup & (short)(m_groupFilter)) == 0)
-//		{
-//			return m_lastFraction;
-//		}
-
 		palRayHit hit;
 		hit.Clear();
 		hit.SetHitPosition(hitPointWorld.x(), hitPointWorld.y(), hitPointWorld.z());
@@ -431,7 +425,12 @@ struct palBulletCustomResultCallback : public btCollisionWorld::RayResultCallbac
 			hit.m_pBody = static_cast<palBodyBase *>(body->getUserPointer());
 		}
 
-		m_lastFraction = m_callback.AddHit(hit) / hit.m_fDistance;
+		m_lastFraction = m_callback.AddHit(hit) / m_range;
+		if (m_lastFraction < m_closestHitFraction)
+		{
+		   m_closestHitFraction = rayResult.m_hitFraction;
+		}
+
 		return m_lastFraction;
 	}
 };

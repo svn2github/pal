@@ -91,8 +91,8 @@
 #endif
 
 #define BT_SCALAR_IS_PAL_FLOAT                                           \
-    (defined(DOUBLE_PRECISION) && defined(BT_USE_DOUBLE_PRECISION)      \
-     || !defined(DOUBLE_PRECISION) && !defined(BT_USE_DOUBLE_PRECISION))
+    ((defined(DOUBLE_PRECISION) && defined(BT_USE_DOUBLE_PRECISION))      \
+     || (!defined(DOUBLE_PRECISION) && !defined(BT_USE_DOUBLE_PRECISION)))
 
 class palBulletBodyBase;
 class palBulletDebugDraw;
