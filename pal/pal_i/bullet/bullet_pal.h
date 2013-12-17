@@ -90,9 +90,19 @@
 #pragma warning(disable : 4250)
 #endif
 
-#define BT_SCALAR_IS_PAL_FLOAT                                           \
-    ((defined(DOUBLE_PRECISION) && defined(BT_USE_DOUBLE_PRECISION))      \
-     || (!defined(DOUBLE_PRECISION) && !defined(BT_USE_DOUBLE_PRECISION)))
+#ifdef DOUBLE_PRECISION
+	#ifdef BT_USE_DOUBLE_PRECISION
+		#define BT_SCALAR_IS_PAL_FLOAT 1
+	#else
+		#define BT_SCALAR_IS_PAL_FLOAT 0
+	#endif
+#else
+	#ifdef BT_USE_DOUBLE_PRECISION
+		#define BT_SCALAR_IS_PAL_FLOAT 0
+	#else
+		#define BT_SCALAR_IS_PAL_FLOAT 1
+	#endif
+#endif
 
 class palBulletBodyBase;
 class palBulletDebugDraw;
