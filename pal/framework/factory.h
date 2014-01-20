@@ -191,9 +191,9 @@ template <typename FactoryBase> void PluggableFactory<FactoryBase>::UpdateRegist
 				if (Entry->mVersion > itv->mVersion) { //its a higher version lets replace it
 					mRegistry.erase(itr); //erase the current entry
 #ifdef INTERNAL_DEBUG
-					printf("%s:%d: adding class %s to mRegistry with ctor %p\n",
+					printf("%s:%d: adding class %s as %s to mRegistry with ctor %p\n",
 								__FILE__, __LINE__,
-								Entry->mClassName.c_str(), Entry->mConstructor);
+								Entry->mClassName.c_str(), Entry->mGroupName.c_str(), Entry->mConstructor);
 #endif
 					mRegistry.insert(std::make_pair(Entry->mClassName,Entry->mConstructor) ); //insert a new entry
 				} 
