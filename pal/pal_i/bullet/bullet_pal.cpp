@@ -2072,8 +2072,6 @@ void palBulletSphericalLink::SetLimits(Float cone_limit_rad, Float twist_limit_r
  *
  */
 
-#include "bullet_palHingeConstraint.h"
-
 btScalar adjustAngleToLimits(btScalar angleInRadians, btScalar angleLowerLimitInRadians, btScalar angleUpperLimitInRadians) {
 	if(angleLowerLimitInRadians >= angleUpperLimitInRadians) {
 		return angleInRadians;
@@ -2116,8 +2114,12 @@ void palBulletRevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float 
 	// DEBUG
 	//std::cout << "pal frame A: " << m_frameA << "\tpal frame B: " << m_frameB << std::endl;
 	//std::cout << "bullet frame A: " << frameA << "\tbullet frame B: " << frameB << std::endl;
-	m_btHinge = new palHingeConstraint(*(body0->BulletGetRigidBody()),*(body1->BulletGetRigidBody()), frameA, frameB, false);
+	m_btHinge = new btHingeConstraint(*(body0->BulletGetRigidBody()),*(body1->BulletGetRigidBody()), frameA, frameB, false);
 	palBulletPhysics::GetInstance()->AddBulletConstraint(m_btHinge, disableCollisionsBetweenLinkedBodies);
+   m_btHinge->setParam(BT_CONSTRAINT_STOP_CFM, btScalar(0.0f));
+   m_btHinge->setParam(BT_CONSTRAINT_CFM, btScalar(0.0f));
+   m_btHinge->setParam(BT_CONSTRAINT_STOP_ERP, btScalar(0.9f));
+   //m_btHinge->setParam(BT_CONSTRAINT_ERP, btScalar(0.9f));
 
 }
 
@@ -2151,7 +2153,7 @@ palLinkFeedback* palBulletRevoluteLink::GetFeedback() const
 	return m_feedback;
 }
 
-bulletRevoluteLinkFeedback::bulletRevoluteLinkFeedback(palHingeConstraint *hinge)
+bulletRevoluteLinkFeedback::bulletRevoluteLinkFeedback(btHingeConstraint *hinge)
 	: m_btHinge(hinge)
 {
 }
@@ -2233,7 +2235,6 @@ void palBulletRevoluteSpringLink::SetSpring(const palSpringDesc& springDesc) {
 	m_bt6Dof->setDamping(5, springDesc.m_fDamper);
 	m_bt6Dof->setEquilibriumPoint(5, springDesc.m_fTarget);
 	//m_bt6Dof->getRotationalLimitMotor(2)->m_bounce = btScalar(0.3);
-	//m_bt6Dof->setParam(BT_CONSTRAINT_STOP_CFM, btScalar(1.0e-5f), 5);
 }
 
 void palBulletRevoluteSpringLink::GetSpring(palSpringDesc& springDescOut) const {
@@ -2746,8 +2747,6 @@ void pal_bullet_call_me_hack() {
 };
 #endif
 
-// Bullet license below is for function adjustAngleToLimits and class
-// palHingeConstraint (which are based on on Bullet code).
 
 /*
 Bullet Continuous Collision Detection and Physics Library

@@ -68,7 +68,6 @@
 #include <pal/palCollision.h>
 #include <pal/palSolver.h>
 #include <pal/palSoftBody.h>
-#include "bullet_palHingeConstraint.h"
 #include <iosfwd>
 
 #if defined(_MSC_VER)
@@ -563,12 +562,12 @@ protected:
 
 class bulletRevoluteLinkFeedback : public palLinkFeedback {
   public:
-	bulletRevoluteLinkFeedback(palHingeConstraint *hinge);
+	bulletRevoluteLinkFeedback(btHingeConstraint *hinge);
 	virtual bool IsEnabled() const;
 	virtual bool SetEnabled(bool enable);
 	virtual Float GetValue() const;
   protected:
-	palHingeConstraint *m_btHinge;
+	btHingeConstraint *m_btHinge;
 };
 
 class palBulletRevoluteLink: public palRevoluteLink {
@@ -582,7 +581,7 @@ public:
 	virtual Float GetAngle() const;
 	virtual void GetPosition(palVector3& pos) const;
 	virtual palLinkFeedback* GetFeedback() const throw(palIllegalStateException);
-	palHingeConstraint *m_btHinge;
+	btHingeConstraint *m_btHinge;
 protected:
 	bulletRevoluteLinkFeedback* m_feedback;
 	FACTORY_CLASS(palBulletRevoluteLink,palRevoluteLink,Bullet,1)
@@ -752,7 +751,7 @@ public:
 	virtual void Update(Float targetVelocity);
 	virtual void Apply();
 protected:
-	palHingeConstraint *m_bhc;
+	btHingeConstraint *m_bhc;
 	FACTORY_CLASS(palBulletAngularMotor,palAngularMotor,Bullet,1)
 };
 
