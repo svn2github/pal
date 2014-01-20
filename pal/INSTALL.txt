@@ -13,7 +13,7 @@ Notes about finding dependencies:
 - Scripts will look for "*_DIR" and "*_PATH" environment variables (such as "BULLET_DIR" and "BULLET_PATH") to find dependencies.
 - If you want the finders to restart their job about a given variable without clearing the whole cache, just set the variable to "NOTFOUND" and configure again.
 - If a dependency is not found or not completely found (for instance if you put it in a custom directory), you should enter manually the paths:
-	- *_INCLUD_DIR (For instance ODE_INCLUD_DIR) points to the include directory, as you would set it in your compiler (/parent/mylib/include for instance).
+	- *_INCLUDE_DIR (For instance ODE_INCLUDE_DIR) points to the include directory, as you would set it in your compiler (/parent/mylib/include for instance).
 	- *_LIBRARY and *_LIBRARY_DEBUG point to the ".lib", ".so" or ".a" used by the linker, respectively for releases (= all but debug) and debug configurations. If *_LIBRARY_DEBUG is not found, then the scripts will use the release library in debug configuration.
 	- *_LIBRARY_MODULE and *_LIBRARY_MODULE_DEBUG are purely optional and point to ".dll" (For Windows only). It is used only for automatic module copy. You may have to copy the modules to the right location or set your PATH accordingly if not set.
 
