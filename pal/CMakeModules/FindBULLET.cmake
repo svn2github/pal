@@ -25,16 +25,7 @@ FIND_PATH(BULLET_INCLUDE_DIR btBulletDynamicsCommon.h
 	$ENV{BULLET_DIR}
 	$ENV{BULLET_PATH}
 	${ADDITIONAL_SEARCH_PATHS}
-	PATH_SUFFIXES include src
-	PATHS
-		~/Library/Frameworks
-		/Library/Frameworks
-		/usr/local
-		/usr
-		/sw # Fink
-		/opt/local # DarwinPorts
-		/opt/csw # Blastwave
-		/opt
+	PATH_SUFFIXES include src include/bullet
 )
 
 IF(BULLET_SINGLE_THREADED)
@@ -54,15 +45,6 @@ FOREACH(CUR_LIB ${BULLET_LIBS})
 			$ENV{BULLET_PATH}
 			${ADDITIONAL_SEARCH_PATHS}
 		PATH_SUFFIXES lib64 lib src "src/${CUR_LIB}" "src/${CUR_LIB_LOWER}" "out/release_dll${BULLET_MSVC_LIB_DIR}/libs" "out/release${BULLET_MSVC_LIB_DIR}/libs" "out/release_dll${BULLET_MSVC_LIB_DIR}/build/lib${CUR_LIB_LOWER}" 
-		PATHS
-			~/Library/Frameworks
-			/Library/Frameworks
-			/usr/local
-			/usr
-			/sw
-			/opt/local
-			/opt/csw
-			/opt
 	)
 
 	FIND_LIBRARY(BULLET_LIBRARY_${CUR_LIB}_DEBUG
@@ -72,15 +54,6 @@ FOREACH(CUR_LIB ${BULLET_LIBS})
 			$ENV{BULLET_PATH}
 			${ADDITIONAL_SEARCH_PATHS}
 		PATH_SUFFIXES lib64 lib src "src/${CUR_LIB}" "src/${CUR_LIB_LOWER}" "out/debug_dll${BULLET_MSVC_LIB_DIR}/libs" "out/debug${BULLET_MSVC_LIB_DIR}/libs" "out/debug_dll${BULLET_MSVC_LIB_DIR}/build/lib${CUR_LIB_LOWER}" 
-		PATHS
-			~/Library/Frameworks
-			/Library/Frameworks
-			/usr/local
-			/usr
-			/sw
-			/opt/local
-			/opt/csw
-			/opt
 	)
 
 	# Don't call FIND_PACKAGE_ADD_TARGET_LIBRARIES() here because of the LinearMath/BulletMath special case

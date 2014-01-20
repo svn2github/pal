@@ -13,6 +13,8 @@ ENDIF()
 
 if (ODE_DOUBLE_PRECISION)
 	ADD_DEFINITIONS(-DdDOUBLE)
+else()
+	ADD_DEFINITIONS(-DdSINGLE)
 endif()
 
 # Try the user's environment request before anything else.
@@ -22,15 +24,6 @@ FIND_PATH(ODE_INCLUDE_DIR ode/ode.h
 	$ENV{ODE_PATH}
 	${ADDITIONAL_SEARCH_PATHS}
 	PATH_SUFFIXES include
-	PATHS
-		~/Library/Frameworks
-		/Library/Frameworks
-		/usr/local
-		/usr
-		/sw/ # Fink
-		/opt/local # DarwinPorts
-		/opt/csw # Blastwave
-		/opt
 )
 
 FIND_LIBRARY(ODE_LIBRARY
@@ -40,15 +33,6 @@ FIND_LIBRARY(ODE_LIBRARY
 	$ENV{ODE_PATH}
 	${ADDITIONAL_SEARCH_PATHS}
 	PATH_SUFFIXES lib64 lib "lib/release${ODE_PRECISION_PREFIX}dll" "lib/release_${ODE_PRECISION_PREFIX}dll"
-	PATHS
-		~/Library/Frameworks
-		/Library/Frameworks
-		/usr/local
-		/usr
-		/sw
-		/opt/local
-		/opt/csw
-		/opt
 )
 
 FIND_LIBRARY(ODE_LIBRARY_DEBUG 
@@ -58,15 +42,6 @@ FIND_LIBRARY(ODE_LIBRARY_DEBUG
 	$ENV{ODE_PATH}
 	${ADDITIONAL_SEARCH_PATHS}
 	PATH_SUFFIXES "lib/debug${ODE_PRECISION_PREFIX}dll" "lib/debug_${ODE_PRECISION_PREFIX}dll"
-	PATHS
-		~/Library/Frameworks
-		/Library/Frameworks
-		/usr/local
-		/usr
-		/sw
-		/opt/local
-		/opt/csw
-		/opt
 )
 
 
@@ -80,15 +55,6 @@ IF(PAL_MODULE_COPY)
 		${ADDITIONAL_SEARCH_PATHS}
 		PATH_SUFFIXES "lib/release${ODE_PRECISION_PREFIX}dll" "lib/release_${ODE_PRECISION_PREFIX}dll"
 		DOC "Optional path of the release DLL, to be copied after the build."
-		PATHS
-			~/Library/Frameworks
-			/Library/Frameworks
-			/usr/local
-			/usr
-			/sw
-			/opt/local
-			/opt/csw
-			/opt
 	)
 
 	FIND_FILE(ODE_LIBRARY_MODULE_DEBUG 
@@ -99,15 +65,6 @@ IF(PAL_MODULE_COPY)
 		${ADDITIONAL_SEARCH_PATHS}
 		PATH_SUFFIXES "lib/debug${ODE_PRECISION_PREFIX}dll" "lib/debug_${ODE_PRECISION_PREFIX}dll"
 		DOC "Optional path of the debug DLL, to be copied after the build."
-		PATHS
-			~/Library/Frameworks
-			/Library/Frameworks
-			/usr/local
-			/usr
-			/sw
-			/opt/local
-			/opt/csw
-			/opt
 	)
 ENDIF()
 

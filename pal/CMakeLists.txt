@@ -115,7 +115,7 @@ OPTION(PAL_BUILD_BULLET "Set to ON to build PAL BULLET." ${DEPENDENCIES_DEFAULT_
 OPTION(BULLET_SINGLE_THREADED "Set to ON to search for BULLET library in single threaded mode (multi-threaded otherwise)." ON)
 OPTION(BULLET_DOUBLE_PRECISION "Set to ON if bullet has been build double precision." OFF)
 IF(PAL_BUILD_BULLET AND PAL_CONFIG_HAS_BEEN_RUN_BEFORE)
-	SET_ADDITIONAL_SEARCH_PATHS("bullet" "bullet-2.71" "bullet-2.73" "bullet-2.74" "bullet-2.75" "bullet-2.75-rc3")
+	SET_ADDITIONAL_SEARCH_PATHS("bullet"  "bullet-2.82"  "bullet-2.81" "bullet-2.80" "bullet-2.79")
 	FIND_PACKAGE(BULLET)
 ENDIF()
 
@@ -156,7 +156,7 @@ ENDIF()
 OPTION(PAL_BUILD_ODE "Set to ON to build PAL ODE." ${DEPENDENCIES_DEFAULT_OPTION})
 OPTION(ODE_DOUBLE_PRECISION "Set to ON to search for ODE library in double precision." OFF)
 IF(PAL_BUILD_ODE AND PAL_CONFIG_HAS_BEEN_RUN_BEFORE)
-	SET_ADDITIONAL_SEARCH_PATHS("ODE" "ode-0.10.0" "ode-0.11" "ode-0.11.1")
+	SET_ADDITIONAL_SEARCH_PATHS("ODE" "ode-0.12" "ode-0.11.1" )
 	FIND_PACKAGE(ODE)
 ENDIF()
 
