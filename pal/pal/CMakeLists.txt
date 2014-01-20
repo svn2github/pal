@@ -2,7 +2,7 @@ SET(LIB_NAME libpal)
 IF(PAL_STATIC)
 	SET(PAL_USER_DEFINED_DYNAMIC_OR_STATIC STATIC)
 ELSE()
-	IF(MSVC OR APPLE)
+	IF(MSVC)
 		# NOT YET SUPPORTED (missing exports under MSVC)???
 		SET(PAL_USER_DEFINED_DYNAMIC_OR_STATIC STATIC)
 	ELSE()  # on linux it must be compiled shared or there are symbol issues at runtime
