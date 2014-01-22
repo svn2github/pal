@@ -18,15 +18,6 @@
 
 project( PAL )
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
-
-FIND_PACKAGE(GTest)
-IF(GTEST_FOUND)
-	ENABLE_TESTING()
-	INCLUDE(CTest)
-	SET(TESTING_ENABLED TRUE)
-ELSE()
-	MESSAGE(STATUS "Google Test framework not found. Unit tests not enabled.")
-ENDIF()
 	
 
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
@@ -562,6 +553,15 @@ ENDIF()
 IF(PAL_STATIC AND ${NB_ENGINES} GREATER 1)
 	MESSAGE("${WARNING_STRING}You selected more than one engine whith PAL_STATIC option. This is not supported yet (=it is buggy).")
 ENDIF()
+
+ADD_SUBDIRECTORY(gtest)
+
+SET(GTEST_BOTH_LIBRARIES  gtest gtest_main)
+SET(GTEST_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/gtest/include)
+
+ENABLE_TESTING()
+INCLUDE(CTest)
+SET(TESTING_ENABLED TRUE)
 
 ADD_SUBDIRECTORY(pal)		# libpal
 ADD_SUBDIRECTORY(pal_i)		# libpal_ode and such
