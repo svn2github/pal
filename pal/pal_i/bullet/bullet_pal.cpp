@@ -277,6 +277,67 @@ static void AddMeshToTrimesh(btTriangleIndexVertexArray *trimesh, const Float *p
 }
 
 ////////////////////////////////////////////////////
+static bool SetAnyBulletParam(btTypedConstraint* constraint, int parameter, btScalar value, int axis)
+{
+   bool result = constraint != NULL;
+   if (result)
+   {
+      btConstraintParams param = btConstraintParams(parameter);
+      switch (parameter)
+      {
+      case PAL_LINK_PARAM_STOP_ERP:
+         param = BT_CONSTRAINT_STOP_ERP;
+         constraint->setParam(param, value, axis);
+         break;
+      case PAL_LINK_PARAM_CFM:
+         param = BT_CONSTRAINT_CFM;
+         constraint->setParam(param, value, axis);
+         break;
+      case PAL_LINK_PARAM_STOP_CFM:
+         param = BT_CONSTRAINT_STOP_CFM;
+         constraint->setParam(param, value, axis);
+         break;
+      // nothing in bullet currently supports this, and it asserts out if you pass it.
+      case PAL_LINK_PARAM_ERP:
+      default:
+         result = false;
+      }
+   }
+   return result;
+}
+
+////////////////////////////////////////////////////
+static btScalar GetAnyBulletParam(btTypedConstraint* constraint, int parameter, int axis)
+{
+   btScalar result = -1.0f;
+   if (constraint != NULL)
+   {
+      btConstraintParams param = btConstraintParams(parameter);
+      switch (parameter)
+      {
+      case PAL_LINK_PARAM_STOP_ERP:
+         param = BT_CONSTRAINT_STOP_ERP;
+         result = constraint->getParam(param, axis);
+         break;
+      case PAL_LINK_PARAM_CFM:
+         param = BT_CONSTRAINT_CFM;
+         result = constraint->getParam(param, axis);
+         break;
+      case PAL_LINK_PARAM_STOP_CFM:
+         param = BT_CONSTRAINT_STOP_CFM;
+         result = constraint->getParam(param, axis);
+         break;
+      // nothing in bullet currently supports this, and it asserts out if you pass it.
+      case PAL_LINK_PARAM_ERP:
+      default:
+         result = false;
+      }
+   }
+   return result;
+}
+
+
+////////////////////////////////////////////////////
 class palBulletAction : public btActionInterface {
 public:
 	palBulletAction(palAction& action)
@@ -2091,6 +2152,7 @@ btScalar adjustAngleToLimits(btScalar angleInRadians, btScalar angleLowerLimitIn
 	}
 }
 
+
 palBulletRevoluteLink::palBulletRevoluteLink()
 	: palLink(PAL_LINK_REVOLUTE), m_btHinge(0), m_feedback(0) {}
 
@@ -2152,6 +2214,32 @@ palLinkFeedback* palBulletRevoluteLink::GetFeedback() const
 	}
 	return m_feedback;
 }
+
+bool palBulletRevoluteLink::SetParam(int parameterCode, Float value, int axis) {
+   if ((axis == 5 || axis == -1))
+   {
+      return SetAnyBulletParam(m_btHinge, parameterCode, btScalar(value), axis);
+   }
+   return false;
+}
+
+Float palBulletRevoluteLink::GetParam(int parameterCode, int axis) {
+   if ((axis == 5 || axis == -1))
+   {
+      return GetAnyBulletParam(m_btHinge, parameterCode, axis);
+   }
+   return -1.0f;
+}
+
+bool palBulletRevoluteLink::SupportsParameters() const {
+   return true;
+}
+
+bool palBulletRevoluteLink::SupportsParametersPerAxis() const {
+   // This joint only supports the z axis only, so it's best to return false.
+   return false;
+}
+
 
 bulletRevoluteLinkFeedback::bulletRevoluteLinkFeedback(btHingeConstraint *hinge)
 	: m_btHinge(hinge)
@@ -2241,6 +2329,34 @@ void palBulletRevoluteSpringLink::GetSpring(palSpringDesc& springDescOut) const 
 	m_bt6Dof->getSpringDesc(5, springDescOut);
 }
 
+bool palBulletRevoluteSpringLink::SetParam(int parameterCode, Float value, int axis) {
+   // Check to prevent an assertion crash failure.
+   if (axis != -1)
+      return false;
+   bool result = true;
+
+   for (unsigned axisI = 0; result && axisI < 5; ++axisI)
+   {
+      result = result && SetAnyBulletParam(m_bt6Dof, parameterCode, btScalar(value), axisI);
+   }
+   return result;
+}
+
+Float palBulletRevoluteSpringLink::GetParam(int parameterCode, int axis) {
+   if (axis != -1)
+      return -1.0f;
+   return GetAnyBulletParam(m_bt6Dof, parameterCode, 5);
+}
+
+bool palBulletRevoluteSpringLink::SupportsParameters() const {
+   return true;
+}
+
+bool palBulletRevoluteSpringLink::SupportsParametersPerAxis() const {
+   // This joint only supports the z axis only, so it's best to return false.
+   return false;
+}
+
 
 ////////////////////////////////////////////////////////
 
@@ -2295,6 +2411,25 @@ void palBulletPrismaticLink::SetLimits(Float lower_limit, Float upper_limit) {
 	m_btSlider->setLowerLinLimit(lower_limit);
 	m_btSlider->setUpperLinLimit(upper_limit);
 }
+
+bool palBulletPrismaticLink::SetParam(int parameterCode, Float value, int axis) {
+   // Check to prevent an assertion crash failure.
+   return SetAnyBulletParam(m_btSlider, parameterCode, btScalar(value), axis);
+}
+
+Float palBulletPrismaticLink::GetParam(int parameterCode, int axis) {
+   return GetAnyBulletParam(m_btSlider, parameterCode, axis);
+}
+
+bool palBulletPrismaticLink::SupportsParameters() const {
+   return true;
+}
+
+bool palBulletPrismaticLink::SupportsParametersPerAxis() const {
+   return true;
+}
+
+
 //////////////////////////////
 
 
@@ -2543,6 +2678,36 @@ void palBulletGenericLink::Init(palBodyBase *parent, palBodyBase *child,
 	palBulletPhysics::GetInstance()->AddBulletConstraint(genericConstraint, disableCollisionsBetweenLinkedBodies);
 }
 
+bool palBulletGenericLink::SetParam(int parameterCode, Float value, int axis) {
+
+   if (axis < 0)
+   {
+      for (unsigned axisI = 0; axisI < 6; ++axisI)
+      {
+         return SetAnyBulletParam(genericConstraint, parameterCode, btScalar(value), axisI);
+      }
+   }
+   else
+   {
+      return SetAnyBulletParam(genericConstraint, parameterCode, btScalar(value), axis);
+   }
+}
+
+Float palBulletGenericLink::GetParam(int parameterCode, int axis) {
+   if (axis < 0)
+      axis = 0;
+   return GetAnyBulletParam(genericConstraint, parameterCode, axis);
+}
+
+bool palBulletGenericLink::SupportsParameters() const {
+   return true;
+}
+
+bool palBulletGenericLink::SupportsParametersPerAxis() const {
+   return true;
+}
+
+
 palBulletRigidLink::palBulletRigidLink()
 	:  palLink(PAL_LINK_RIGID), palBulletRevoluteLink(), palRigidLink()
 {
@@ -2574,7 +2739,6 @@ void palBulletRigidLink::Init(palBodyBase *parent, palBodyBase *child, bool disa
 	}
 	SetLimits(lowerLimit, upperLimit);
 }
-
 
 std::ostream& operator<<(std::ostream &os, const palBulletRigidLink& link)
 {

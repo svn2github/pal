@@ -580,6 +580,13 @@ public:
 
 	virtual Float GetAngle() const;
 	virtual void GetPosition(palVector3& pos) const;
+
+	/*override*/ bool SetParam(int parameterCode, Float value, int axis);
+	/*override*/ Float GetParam(int parameterCode, int axis);
+	/*override*/ bool SupportsParameters() const;
+	/*override*/ bool SupportsParametersPerAxis() const;
+
+
 	virtual palLinkFeedback* GetFeedback() const throw(palIllegalStateException);
 	btHingeConstraint *m_btHinge;
 protected:
@@ -623,8 +630,13 @@ public:
 	virtual void SetSpring(const palSpringDesc& springDesc);
 	virtual void GetSpring(palSpringDesc& springDescOut) const;
 
-	SubbtGeneric6DofSpringConstraint *m_bt6Dof;
+	/*override*/ bool SetParam(int parameterCode, Float value, int axis);
+   /*override*/ Float GetParam(int parameterCode, int axis);
+   /*override*/ bool SupportsParameters() const;
+   /*override*/ bool SupportsParametersPerAxis() const;
+
 protected:
+	SubbtGeneric6DofSpringConstraint *m_bt6Dof;
 	FACTORY_CLASS(palBulletRevoluteSpringLink,palRevoluteSpringLink,Bullet,1)
 };
 
@@ -637,7 +649,11 @@ public:
 
 	virtual void SetLimits(Float lower_limit, Float upper_limit);
 
-	//btGeneric6DofConstraint* m_btSlider;
+
+	/*override*/ bool SetParam(int parameterCode, Float value, int axis);
+   /*override*/ Float GetParam(int parameterCode, int axis);
+   /*override*/ bool SupportsParameters() const;
+   /*override*/ bool SupportsParametersPerAxis() const;
 	btSliderConstraint* m_btSlider;
 protected:
 	FACTORY_CLASS(palBulletPrismaticLink,palPrismaticLink,Bullet,1)
@@ -726,8 +742,14 @@ public:
 					  const palVector3& linearUpperLimits,
 					  const palVector3& angularLowerLimits,
 					  const palVector3& angularUpperLimits,
-                      bool disableCollisionsBetweenLinkedBodies);
-	SubbtGeneric6DofSpringConstraint* BulletGetGenericConstraint() { return genericConstraint; }
+					  bool disableCollisionsBetweenLinkedBodies);
+
+	/*override*/ bool SetParam(int parameterCode, Float value, int axis);
+	/*override*/ Float GetParam(int parameterCode, int axis);
+	/*override*/ bool SupportsParameters() const;
+	/*override*/ bool SupportsParametersPerAxis() const;
+
+   SubbtGeneric6DofSpringConstraint* BulletGetGenericConstraint() { return genericConstraint; }
 protected:
 	SubbtGeneric6DofSpringConstraint* genericConstraint;
 	FACTORY_CLASS(palBulletGenericLink,palGenericLink,Bullet,1)
