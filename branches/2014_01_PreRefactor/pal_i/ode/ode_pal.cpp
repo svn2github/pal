@@ -238,7 +238,6 @@ static void nearCallback(void *data, dGeomID o1, dGeomID o2) {
 		response = response && IsCollisionResponseEnabled(b2);
 
 	for (i = 0; i < MAX_CONTACTS; i++) {
-#pragma message("todo: fix ode flags to allow friction AND restitution")
 		g_contactArray[i].surface.mode = dContactBounce //| dContactSoftERP | dContactSoftCFM
 					| dContactApprox1;
 		//remove dContactSoftCFM | dContactApprox1 for bounce..
@@ -1036,7 +1035,7 @@ void palODEGeometry::SetPosition(const palMatrix4x4 &loc) {
 
 void palODEGeometry::ReCalculateOffset() {
 	palGeometry::ReCalculateOffset();
-	if (m_pBody)
+	if (m_pBody && odeGeom !=0 && dGeomGetBody(odeGeom) != 0)
 	{
 		dReal pos[3];
 		dReal R[12];
@@ -1103,7 +1102,6 @@ palODECapsuleGeometry::palODECapsuleGeometry() {
 
 void palODECapsuleGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
 	m_upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
-	#pragma message("todo: fix cyl geom")
 	palCapsuleGeometry::Init(pos,radius,length,mass);
 	memset(&odeGeom ,0,sizeof(odeGeom));
 	odeGeom = dCreateCCylinder(g_space, m_fRadius, m_fLength+m_fRadius);
@@ -1288,7 +1286,6 @@ void palODEConvex::Init(Float x, Float y, Float z, const Float *pVertices, int n
 
 	dMass m;
 	m_fMass=mass;
-#pragma message("todo: mass set in convex geom")
 	dMassSetSphereTotal(&m,1,1);
 	dBodySetMass(odeBody,&m);
 }
@@ -1594,12 +1591,12 @@ bool palODEGenericBody::IsStatic() const {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-palODELink::palODELink() {
+palODELinkData::palODELinkData() {
 	odeJoint = 0;
 	odeMotorJoint = 0;
 }
 
-palODELink::~palODELink() {
+palODELinkData::~palODELinkData() {
 	if (odeJoint) {
 		dJointDestroy(odeJoint);
 		odeJoint = 0;
@@ -1667,9 +1664,64 @@ void palODESphericalLink::Init(palBodyBase *parent, palBodyBase *child, Float x,
 	SetAnchor(x, y, z);
 }
 
+static void MapLinkParameterToODEParam(int& parameterCode, int axis)
+{
+   if (axis < 0)
+      axis = 0;
+   else
+      // Need to add one to the axis because ODE use 1 based, but we use 0 based.
+      axis += 1;
+
+   // IF the value is less than the link base, then accept the code as an ode specific parameter and just pass it.
+   if (parameterCode > PAL_LINK_PARAM_BASE)
+   {
+      switch (parameterCode)
+      {
+      case PAL_LINK_PARAM_ERP:
+         parameterCode = dParamERP + dParamGroup * axis;
+         break;
+      case PAL_LINK_PARAM_STOP_ERP:
+         parameterCode = dParamStopERP + dParamGroup * axis;
+         break;
+      case PAL_LINK_PARAM_CFM:
+         parameterCode = dParamCFM + dParamGroup * axis;
+         break;
+      case PAL_LINK_PARAM_STOP_CFM:
+         parameterCode = dParamStopCFM + dParamGroup * axis;
+         break;
+      default:
+         // leave it alone.
+         break;
+      }
+   }
+
+
+}
+
 void palODESphericalLink::SetAnchor(Float x, Float y, Float z) {
 	dJointSetBallAnchor(odeJoint, x, y, z);
 }
+
+bool palODESphericalLink::SetParam(int parameterCode, Float value, int axis) {
+   if (axis != -1)
+      return false;
+   dJointSetBallParam(ODEGetJointID(), parameterCode, dReal(value));
+   return true;
+}
+
+Float palODESphericalLink::GetParam(int parameterCode, int axis) {
+
+   return Float(dJointGetBallParam(ODEGetJointID(), parameterCode));
+}
+
+bool palODESphericalLink::SupportsParameters() const {
+   return true;
+}
+
+bool palODESphericalLink::SupportsParametersPerAxis() const {
+   return true;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 palODERigidLink::palODERigidLink() {}
@@ -1697,6 +1749,27 @@ void palODERigidLink::Init(palBodyBase *parent, palBodyBase *child, bool disable
 			dJointAttach(odeJoint, body0->odeBody, 0);
 		}
 	}
+}
+
+bool palODERigidLink::SetParam(int parameterCode, Float value, int axis) {
+   if (axis != -1)
+      return false;
+   dJointSetFixedParam(ODEGetJointID(), parameterCode, dReal(value));
+   return true;
+}
+
+Float palODERigidLink::GetParam(int parameterCode, int axis) {
+   if (axis != -1)
+      return -1.0f;
+   return Float(dJointGetFixedParam(ODEGetJointID(), parameterCode));
+}
+
+bool palODERigidLink::SupportsParameters() const {
+   return true;
+}
+
+bool palODERigidLink::SupportsParametersPerAxis() const {
+   return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1766,6 +1839,27 @@ palLinkFeedback* palODERevoluteLink::GetFeedback() const throw(palIllegalStateEx
 		const_cast<palODERevoluteLink*>(this)->m_feedback = new odeRevoluteLinkFeedback(odeJoint);
 	}
 	return m_feedback;
+}
+
+bool palODERevoluteLink::SetParam(int parameterCode, Float value, int axis) {
+   if (axis != -1)
+      return false;
+   dJointSetHingeParam(ODEGetJointID(), parameterCode, dReal(value));
+   return true;
+}
+
+Float palODERevoluteLink::GetParam(int parameterCode, int axis) {
+   if (axis != -1)
+      return -1.0f;
+   return Float(dJointGetHingeParam(ODEGetJointID(), parameterCode));
+}
+
+bool palODERevoluteLink::SupportsParameters() const {
+   return true;
+}
+
+bool palODERevoluteLink::SupportsParametersPerAxis() const {
+   return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1842,6 +1936,28 @@ void palODEPrismaticLink::SetAnchorAxis(Float x, Float y, Float z, Float axis_x,
 	//	dJointSetHingeAnchor(odeJoint,x,y,z);
 	//	dJointSetHingeAxis(odeJoint,axis_x,axis_y,axis_z);
 }
+
+bool palODEPrismaticLink::SetParam(int parameterCode, Float value, int axis) {
+   if (axis != -1)
+      return false;
+   dJointSetSliderParam(ODEGetJointID(), parameterCode, dReal(value));
+   return true;
+}
+
+Float palODEPrismaticLink::GetParam(int parameterCode, int axis) {
+   if (axis != -1)
+      return -1.0f;
+   return Float(dJointGetSliderParam(ODEGetJointID(), parameterCode));
+}
+
+bool palODEPrismaticLink::SupportsParameters() const {
+   return true;
+}
+
+bool palODEPrismaticLink::SupportsParametersPerAxis() const {
+   return true;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 palODETerrain::palODETerrain() {

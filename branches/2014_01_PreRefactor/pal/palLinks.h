@@ -37,6 +37,15 @@ typedef enum {
 	PAL_LINK_RIGID = 5, //!< Immovable link
 } palLinkType;
 
+typedef enum {
+   // Start at a high number so you can put in low numbers for real engine numbers not shown in this list if the engine supports them.
+   PAL_LINK_PARAM_BASE = 0x800,
+   PAL_LINK_PARAM_ERP, //!< Error reduction parameter.  The amount a joint error is reduced each tick.  Values 0.2 to 0.8 are recommended
+   PAL_LINK_PARAM_STOP_ERP, //!< Error reduction parameter, but for the stop of a joint.
+   PAL_LINK_PARAM_CFM, //!< Constraint force mixing.  0 allows for no error, > 0 .. 1 allows for some error, and it cause the joints to be more stable.
+   PAL_LINK_PARAM_STOP_CFM //!< Constraint force mixing, but for the stop on a joint.
+} palLinkParam;
+
 //corkscrew?
 //universal ( 2d)
 
@@ -89,12 +98,27 @@ public:
 	virtual void Init(palBodyBase *parent, palBodyBase *child,
 					  Float x, Float y, Float z, bool disableCollisionsBetweenLinkedBodies);
 
-//	virtual void SetTorque(Float tx, Float ty, Float tz);
-//	virtual void GetTorque(palVector3& torque) = 0;
+	/**
+	 * Sets the value of a joint parameter.  The code is defined by the engine to which it applies.
+	 * Some engines allow the value to be set per axis.  Axes are defined as x,y,z,Rx,Ry,Rz, though what is available
+	 * to configure is not defined.  Passing -1 means to set the default axis, which usually means the logical axis such
+	 * as the main axis of rotation for a revolute link.  On other links, it means all axes.  Some links require an axis
+	 * to be provided.
+	 * If anything passed in is not supported, it should return false.
+	 * Some engines don't support any joint parameters at all.
+	 */
+	virtual bool SetParam(int parameterCode, Float value, int axis = -1);
+	/**
+	 * @return the value of a joint parameter or -1 if the value is not supported.
+	 */
+   virtual Float GetParam(int parameterCode, int axis = -1);
+	// @return true if this joint/the current engine supports joint parameters of any kind.
+	virtual bool SupportsParameters() const;
+	// @return true if some joint parameters can be set per axis, i.e. if the axis parameter on SetParam should be used.
+	virtual bool SupportsParametersPerAxis() const;
 
-//	virtual void GenericInit(palBody *pb0, palBody *pb1, void *paramarray) = 0;
 	virtual std::string toString() const;
-    
+
 	virtual palLinkFeedback* GetFeedback() const throw(palIllegalStateException);
 	/// It has a virtual destructor, so there is no reason not be able to delete one.
 	virtual ~palLink();

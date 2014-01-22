@@ -430,10 +430,10 @@ protected:
 
 /** The ODE Link class
 */
-class palODELink : virtual public palLink {
+class palODELinkData {
 public:
-	palODELink();
-	virtual ~palODELink();
+	palODELinkData();
+	virtual ~palODELinkData();
 
 	//ODE specific:
 	/** Returns the ODE joint associated with the PAL link
@@ -447,24 +447,29 @@ protected:
 	dJointID odeMotorJoint; //the ODE motorised joint
 };
 
-class palODESphericalLink : virtual public palSphericalLink, virtual public palODELink {
+class palODESphericalLink : public palSphericalLink, public palODELinkData {
 public:
 	palODESphericalLink();
 	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
                       bool disableCollisionsBetweenLinkedBodies);
-//	void SetLimits(Float lower_limit_rad, Float upper_limit_rad);
-//	void SetTwistLimits(Float lower_limit_rad, Float upper_limit_rad);
-	//extra methods provided by ODE abilities:
 	void SetAnchor(Float x, Float y, Float z);
+   /*override*/ bool SetParam(int parameterCode, Float value, int axis = -1);
+   /*override*/ Float GetParam(int parameterCode, int axis = -1);
+   /*override*/ bool SupportsParameters() const;
+   /*override*/ bool SupportsParametersPerAxis() const;
 protected:
 	void InitMotor();
 	FACTORY_CLASS(palODESphericalLink,palSphericalLink,ODE,1)
 };
 
-class palODERigidLink: virtual public palRigidLink, virtual public palODELink {
+class palODERigidLink: public palRigidLink, public palODELinkData {
 public:
 	palODERigidLink();
 	virtual void Init(palBodyBase *parent, palBodyBase *child, bool disableCollisionsBetweenLinkedBodies);
+   /*override*/ bool SetParam(int parameterCode, Float value, int axis = -1);
+   /*override*/ Float GetParam(int parameterCode, int axis = -1);
+   /*override*/ bool SupportsParameters() const;
+   /*override*/ bool SupportsParametersPerAxis() const;
 protected:
 	FACTORY_CLASS(palODERigidLink,palRigidLink,ODE,1)
 };
@@ -481,28 +486,35 @@ class odeRevoluteLinkFeedback : public palLinkFeedback {
 	dJointFeedback* m_odeFeedback;
 };
 
-class palODERevoluteLink: virtual public palRevoluteLink, virtual public palODELink {
+class palODERevoluteLink: public palRevoluteLink, public palODELinkData {
 public:
 	palODERevoluteLink();
 	virtual ~palODERevoluteLink();
 	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies);
 	virtual void SetLimits(Float lower_limit_rad, Float upper_limit_rad);
-//	virtual Float GetAngle();
 	virtual void AddTorque(Float torque);
 	//extra methods provided by ODE abilities:
 	virtual void SetAnchorAxis(Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z);
 	virtual palLinkFeedback* GetFeedback() const throw(palIllegalStateException);
+   /*override*/ bool SetParam(int parameterCode, Float value, int axis = -1);
+   /*override*/ Float GetParam(int parameterCode, int axis = -1);
+   /*override*/ bool SupportsParameters() const;
+   /*override*/ bool SupportsParametersPerAxis() const;
 protected:
 	odeRevoluteLinkFeedback* m_feedback;
 	FACTORY_CLASS(palODERevoluteLink,palRevoluteLink,ODE,1)
 };
 
-class palODEPrismaticLink: virtual public palPrismaticLink, virtual public palODELink {
+class palODEPrismaticLink: public palPrismaticLink, public palODELinkData {
 public:
 	palODEPrismaticLink();
 	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies);
 	//extra methods provided by ODE abilities:
 	void SetAnchorAxis(Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z);
+   /*override*/ bool SetParam(int parameterCode, Float value, int axis = -1);
+   /*override*/ Float GetParam(int parameterCode, int axis = -1);
+   /*override*/ bool SupportsParameters() const;
+   /*override*/ bool SupportsParametersPerAxis() const;
 protected:
 	FACTORY_CLASS(palODEPrismaticLink,palPrismaticLink,ODE,1)
 };

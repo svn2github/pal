@@ -66,6 +66,13 @@ void palLink::Init(palBodyBase *parent, palBodyBase *child,
 	m_fPosZ = z;
 }
 
+// Doesn't support anything by default.
+bool palLink::SetParam(int /*parameterCode*/, Float /*value*/, int /*axis*/) { return false; }
+Float palLink::GetParam(int /*parameterCode*/, int /*axis*/) { return -1; }
+bool palLink::SupportsParameters() const { return false; }
+bool palLink::SupportsParametersPerAxis() const { return false; }
+
+
 std::string palLink::toString() const
 {
     std::ostringstream oss;
