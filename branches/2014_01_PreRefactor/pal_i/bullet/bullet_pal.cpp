@@ -2178,11 +2178,6 @@ void palBulletRevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float 
 	//std::cout << "bullet frame A: " << frameA << "\tbullet frame B: " << frameB << std::endl;
 	m_btHinge = new btHingeConstraint(*(body0->BulletGetRigidBody()),*(body1->BulletGetRigidBody()), frameA, frameB, false);
 	palBulletPhysics::GetInstance()->AddBulletConstraint(m_btHinge, disableCollisionsBetweenLinkedBodies);
-   m_btHinge->setParam(BT_CONSTRAINT_STOP_CFM, btScalar(0.0f));
-   m_btHinge->setParam(BT_CONSTRAINT_CFM, btScalar(0.0f));
-   m_btHinge->setParam(BT_CONSTRAINT_STOP_ERP, btScalar(0.9f));
-   //m_btHinge->setParam(BT_CONSTRAINT_ERP, btScalar(0.9f));
-
 }
 
 void palBulletRevoluteLink::SetLimits(Float lower_limit_rad, Float upper_limit_rad) {
