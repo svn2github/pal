@@ -71,21 +71,6 @@
 #include <iosfwd>
 
 #if defined(_MSC_VER)
-//#ifndef NDEBUG
-//#pragma comment( lib, "libbulletcollision_d.lib")
-//#pragma comment( lib, "libbulletdynamics_d.lib")
-//#pragma comment( lib, "libbulletmath_d.lib")
-//#ifndef BULLET_SINGLETHREAD
-//#pragma comment( lib, "libbulletmultithreaded_d.lib")
-//#endif
-//#else
-//#pragma comment( lib, "libbulletcollision.lib")
-//#pragma comment( lib, "libbulletdynamics.lib")
-//#pragma comment( lib, "libbulletmath.lib")
-//#ifndef BULLET_SINGLETHREAD
-//#pragma comment( lib, "libbulletmultithreaded.lib")
-//#endif
-//#endif
 #pragma warning(disable : 4250)
 #endif
 
@@ -769,8 +754,8 @@ class palBulletAngularMotor : public palAngularMotor {
 public:
 	palBulletAngularMotor();
 	virtual ~palBulletAngularMotor() {};
-	virtual void Init(palRevoluteLink *pLink, Float Max, bool disableCollisionsBetweenLinkedBodies);
-	virtual void Update(Float targetVelocity);
+	virtual void Init(palRevoluteLink *pLink, Float Max);
+	virtual void Update(Float targetVelocity, Float Max);
 	virtual void Apply();
 protected:
 	btHingeConstraint *m_bhc;

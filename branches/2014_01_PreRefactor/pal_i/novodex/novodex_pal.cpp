@@ -2299,12 +2299,18 @@ void palNovodexAngularMotor::Init(palRevoluteLink *pLink, Float Max) {
 	m_j->setMotor(motorDesc);
 
 }
-void palNovodexAngularMotor::Update(Float targetVelocity) {
+void palNovodexAngularMotor::Update(Float targetVelocity, Float max) {
 	if (!m_j) return;
+	if (max <= 0.0)
+	{
+		max = m_fMax;
+	}
+
 	NxMotorDesc motorDesc;
 	m_j->getMotor(motorDesc);
 
 	motorDesc.velTarget = targetVelocity;
+	motorDesc.maxForce = max;
 	m_j->setMotor(motorDesc);
 }
 void palNovodexAngularMotor::Apply() {

@@ -279,61 +279,67 @@ static void AddMeshToTrimesh(btTriangleIndexVertexArray *trimesh, const Float *p
 ////////////////////////////////////////////////////
 static bool SetAnyBulletParam(btTypedConstraint* constraint, int parameter, btScalar value, int axis)
 {
-   bool result = constraint != NULL;
-   if (result)
-   {
-      btConstraintParams param = btConstraintParams(parameter);
-      switch (parameter)
-      {
-      case PAL_LINK_PARAM_STOP_ERP:
-         param = BT_CONSTRAINT_STOP_ERP;
-         constraint->setParam(param, value, axis);
-         break;
-      case PAL_LINK_PARAM_CFM:
-         param = BT_CONSTRAINT_CFM;
-         constraint->setParam(param, value, axis);
-         break;
-      case PAL_LINK_PARAM_STOP_CFM:
-         param = BT_CONSTRAINT_STOP_CFM;
-         constraint->setParam(param, value, axis);
-         break;
-      // nothing in bullet currently supports this, and it asserts out if you pass it.
-      case PAL_LINK_PARAM_ERP:
-      default:
-         result = false;
-      }
-   }
-   return result;
+	bool result = constraint != NULL;
+	if (result)
+	{
+		btConstraintParams param = btConstraintParams(parameter);
+		switch (parameter)
+		{
+		case PAL_LINK_PARAM_STOP_ERP:
+			param = BT_CONSTRAINT_STOP_ERP;
+			constraint->setParam(param, value, axis);
+			break;
+		case PAL_LINK_PARAM_CFM:
+			param = BT_CONSTRAINT_CFM;
+			constraint->setParam(param, value, axis);
+			break;
+		case PAL_LINK_PARAM_STOP_CFM:
+			param = BT_CONSTRAINT_STOP_CFM;
+			constraint->setParam(param, value, axis);
+			break;
+		case PAL_LINK_PARAM_BREAK_IMPULSE:
+			constraint->setBreakingImpulseThreshold(value);
+			break;
+			// nothing in bullet currently supports this, and it asserts out if you pass it.
+		case PAL_LINK_PARAM_ERP:
+		default:
+			result = false;
+		}
+	}
+	return result;
 }
 
 ////////////////////////////////////////////////////
 static btScalar GetAnyBulletParam(btTypedConstraint* constraint, int parameter, int axis)
 {
-   btScalar result = -1.0f;
-   if (constraint != NULL)
-   {
-      btConstraintParams param = btConstraintParams(parameter);
-      switch (parameter)
-      {
-      case PAL_LINK_PARAM_STOP_ERP:
-         param = BT_CONSTRAINT_STOP_ERP;
-         result = constraint->getParam(param, axis);
-         break;
-      case PAL_LINK_PARAM_CFM:
-         param = BT_CONSTRAINT_CFM;
-         result = constraint->getParam(param, axis);
-         break;
-      case PAL_LINK_PARAM_STOP_CFM:
-         param = BT_CONSTRAINT_STOP_CFM;
-         result = constraint->getParam(param, axis);
-         break;
-      // nothing in bullet currently supports this, and it asserts out if you pass it.
-      case PAL_LINK_PARAM_ERP:
-      default:
-         result = false;
-      }
-   }
-   return result;
+	btScalar result = -1.0f;
+	if (constraint != NULL)
+	{
+		btConstraintParams param = btConstraintParams(parameter);
+		switch (parameter)
+		{
+		case PAL_LINK_PARAM_STOP_ERP:
+			param = BT_CONSTRAINT_STOP_ERP;
+			result = constraint->getParam(param, axis);
+			break;
+		case PAL_LINK_PARAM_CFM:
+			param = BT_CONSTRAINT_CFM;
+			result = constraint->getParam(param, axis);
+			break;
+		case PAL_LINK_PARAM_STOP_CFM:
+			param = BT_CONSTRAINT_STOP_CFM;
+			result = constraint->getParam(param, axis);
+			break;
+		case PAL_LINK_PARAM_BREAK_IMPULSE:
+			result = constraint->getBreakingImpulseThreshold();
+			break;
+			// nothing in bullet currently supports this, and it asserts out if you pass it.
+		case PAL_LINK_PARAM_ERP:
+		default:
+			result = false;
+		}
+	}
+	return result;
 }
 
 
@@ -428,7 +434,7 @@ void palBulletPhysics::RayCast(Float x, Float y, Float z, Float dx, Float dy, Fl
 		hit.m_bHit = true;
 		hit.m_fDistance = range*rayCallback.m_closestHitFraction;
 
-		btRigidBody* body = btRigidBody::upcast(rayCallback.m_collisionObject);
+		const btRigidBody* body = btRigidBody::upcast(rayCallback.m_collisionObject);
 		if (body)
 		{
 			hit.m_pBody = static_cast<palBodyBase *>(body->getUserPointer());
@@ -460,9 +466,9 @@ struct palBulletCustomResultCallback : public btCollisionWorld::RayResultCallbac
 
 	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace)
 	{
-	  //m_collisionObject = rayResult.m_collisionObject;
+		//m_collisionObject = rayResult.m_collisionObject;
 
-	  btVector3 hitNormalWorld, hitPointWorld;
+		btVector3 hitNormalWorld, hitPointWorld;
 		if (normalInWorldSpace) {
 			hitNormalWorld = rayResult.m_hitNormalLocal;
 		}
@@ -473,7 +479,7 @@ struct palBulletCustomResultCallback : public btCollisionWorld::RayResultCallbac
 
 		hitPointWorld.setInterpolate3(m_rayFromWorld,m_rayToWorld,rayResult.m_hitFraction);
 
-		btRigidBody* body = btRigidBody::upcast(rayResult.m_collisionObject);
+		const btRigidBody* body = btRigidBody::upcast(rayResult.m_collisionObject);
 
 		palRayHit hit;
 		hit.Clear();
@@ -489,7 +495,7 @@ struct palBulletCustomResultCallback : public btCollisionWorld::RayResultCallbac
 		m_lastFraction = m_callback.AddHit(hit) / m_range;
 		if (m_lastFraction < m_closestHitFraction)
 		{
-		   m_closestHitFraction = rayResult.m_hitFraction;
+			m_closestHitFraction = rayResult.m_hitFraction;
 		}
 
 		return m_lastFraction;
@@ -845,6 +851,9 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_dynamicsWorld->getSolverInfo().m_solverMode =
 			SOLVER_USE_FRICTION_WARMSTARTING | SOLVER_USE_2_FRICTION_DIRECTIONS
 			| SOLVER_RANDMIZE_ORDER | SOLVER_USE_WARMSTARTING | SOLVER_SIMD;
+//  2.82
+//			SOLVER_USE_WARMSTARTING | SOLVER_USE_2_FRICTION_DIRECTIONS | SOLVER_FRICTION_SEPARATE
+//			| SOLVER_RANDMIZE_ORDER | SOLVER_ENABLE_FRICTION_DIRECTION_CACHING | SOLVER_SIMD;
 	m_dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration = btScalar(0.0001);
 
 	//m_dynamicsWorld->getSimulationIslandManager()->setSplitIslands(false);
@@ -915,8 +924,11 @@ void palBulletPhysics::StartIterate(Float timestep) {
 		for (i=0;i<numManifolds;i++)
 		{
 			btPersistentManifold* contactManifold = m_dispatcher->getManifoldByIndexInternal(i);
-			btCollisionObject* obA = static_cast<btCollisionObject*>(contactManifold->getBody0());
-			btCollisionObject* obB = static_cast<btCollisionObject*>(contactManifold->getBody1());
+			const btCollisionObject* obA = static_cast<btCollisionObject*>(contactManifold->getBody0());
+			const btCollisionObject* obB = static_cast<btCollisionObject*>(contactManifold->getBody1());
+// Bullet 2.8.2
+//			const btCollisionObject* obA = contactManifold->getBody0();
+//			const btCollisionObject* obB = contactManifold->getBody1();
 			palBodyBase *body1=static_cast<palBodyBase *>(obA->getUserPointer());
 			palBodyBase *body2=static_cast<palBodyBase *>(obB->getUserPointer());
 #ifdef USE_LISTEN_COLLISION
@@ -2682,10 +2694,7 @@ bool palBulletGenericLink::SetParam(int parameterCode, Float value, int axis) {
          return SetAnyBulletParam(genericConstraint, parameterCode, btScalar(value), axisI);
       }
    }
-   else
-   {
-      return SetAnyBulletParam(genericConstraint, parameterCode, btScalar(value), axis);
-   }
+   return SetAnyBulletParam(genericConstraint, parameterCode, btScalar(value), axis);
 }
 
 Float palBulletGenericLink::GetParam(int parameterCode, int axis) {
@@ -2749,17 +2758,21 @@ std::ostream& operator<<(std::ostream &os, const palBulletRigidLink& link)
 palBulletAngularMotor::palBulletAngularMotor()
 	: m_bhc(0) {}
 
-void palBulletAngularMotor::Init(palRevoluteLink *pLink, Float Max, bool disableCollisionsBetweenLinkedBodies) {
+void palBulletAngularMotor::Init(palRevoluteLink *pLink, Float Max) {
 	palAngularMotor::Init(pLink,Max);
 	palBulletRevoluteLink *pbrl = dynamic_cast<palBulletRevoluteLink *> (m_link);
 	if (pbrl)
 		m_bhc = pbrl->m_btHinge;
 }
 
-void palBulletAngularMotor::Update(Float targetVelocity) {
+void palBulletAngularMotor::Update(Float targetVelocity, Float Max) {
 	if (!m_bhc)
 		return;
-	m_bhc->enableAngularMotor(true,targetVelocity,m_fMax);
+	if (Max <= 0.0)
+	{
+		Max = m_fMax;
+	}
+	m_bhc->enableAngularMotor(true,targetVelocity,Max);
 	m_bhc->getRigidBodyA().activate();
 	m_bhc->getRigidBodyB().activate();
 }

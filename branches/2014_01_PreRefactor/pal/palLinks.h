@@ -43,7 +43,8 @@ typedef enum {
    PAL_LINK_PARAM_ERP, //!< Error reduction parameter.  The amount a joint error is reduced each tick.  Values 0.2 to 0.8 are recommended
    PAL_LINK_PARAM_STOP_ERP, //!< Error reduction parameter, but for the stop of a joint.
    PAL_LINK_PARAM_CFM, //!< Constraint force mixing.  0 allows for no error, > 0 .. 1 allows for some error, and it cause the joints to be more stable.
-   PAL_LINK_PARAM_STOP_CFM //!< Constraint force mixing, but for the stop on a joint.
+   PAL_LINK_PARAM_STOP_CFM, //!< Constraint force mixing, but for the stop on a joint.
+   PAL_LINK_PARAM_BREAK_IMPULSE //!< The impulse value that will cause the constraint to break.
 } palLinkParam;
 
 //corkscrew?

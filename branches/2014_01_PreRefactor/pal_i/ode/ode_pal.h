@@ -614,7 +614,7 @@ public:
 	palODEAngularMotor();
 	virtual ~palODEAngularMotor();
 	virtual void Init(palRevoluteLink *pLink, Float Max);
-	virtual void Update(Float targetVelocity);
+	virtual void Update(Float targetVelocity, Float Max);
 	virtual void Apply();
 protected:
 	dJointID odeJoint; //the ODE joint

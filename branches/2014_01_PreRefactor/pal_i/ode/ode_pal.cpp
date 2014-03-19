@@ -2198,9 +2198,14 @@ void palODEAngularMotor::Init(palRevoluteLink *pLink, Float Max) {
 	}
 }
 
-void palODEAngularMotor::Update(Float targetVelocity) {
+void palODEAngularMotor::Update(Float targetVelocity, Float Max) {
 	if (odeJoint)
+	{
+		if (Max <= 0.0)
+			Max = m_fMax;
+		dJointSetHingeParam(odeJoint, dParamFMax, Max);
 		dJointSetHingeParam(odeJoint, dParamVel, targetVelocity);
+	}
 }
 
 void palODEAngularMotor::Apply() {

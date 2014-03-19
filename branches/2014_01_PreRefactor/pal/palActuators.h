@@ -63,19 +63,24 @@ public:
 class palAngularMotor : public palActuator {
 public:
 	virtual ~palAngularMotor() {}
-	virtual void Init(palRevoluteLink *pLink, Float Max) {
+	//@todo taking a revolute link is silly here.  Lots of other joint types can have motors.
+	virtual void Init(palRevoluteLink *pLink, Float Max = 0.0) {
 		m_link = pLink;
 		m_fMax = Max;
 	};
-	virtual void Update(Float targetVelocity) = 0;
+	/**
+	 * @param targetVelocity  the target velocity of the motor.
+	 * @param Max  The max force for this motor, or leave it default to make it use the default configured in init.
+	 */
+	virtual void Update(Float targetVelocity, Float Max = -1.0) = 0;
 	palRevoluteLink *GetLink() {
 		return m_link;
 	}
 	virtual std::string toString() const {
-	    std::string result("palAngularMotor[link=");
-	    result.append(m_link->toString());
-	    result.append("]");
-	    return result;
+		std::string result("palAngularMotor[link=");
+		result.append(m_link->toString());
+		result.append("]");
+		return result;
 	}
 protected:
 	Float m_fMax;
@@ -543,7 +548,7 @@ protected:
 	Float m_CL_c;
 	Float m_fAxisX;
 	Float m_fAxisY;
-	Float m_fAxisZ;	
+	Float m_fAxisZ;
 
 	FACTORY_CLASS(palHydrofoil,palHydrofoil,*,1);
 };

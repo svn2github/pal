@@ -129,6 +129,8 @@ void palBulletCharacterController::Walk(const palVector3& walkVelocity, Float ti
 void palBulletCharacterController::WalkClear() {
 	if (m_pKinematicCharacterController != NULL) {
 		m_pKinematicCharacterController->reset();
+//		Bullet 2.82
+//		m_pKinematicCharacterController->reset(palBulletPhysics::GetInstance()->BulletGetDynamicsWorld());
 	}
 }
 
