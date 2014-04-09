@@ -214,10 +214,10 @@ void palRevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Flo
 		// XXX debug
 		Float projection = vec_dot( & m_axisA, & Z_AXIS );
 
-		if (projection >= 1 - FLOAT_EPSILON) {
+		if (projection >= 1 - PAL_FLOAT_EPSILON) {
 			// The hinge axis coincides with the parent's +Z axis.
 			rbAxisA2 = palVector3( 0, 1, 0 );
-		} else if (projection <= -1 + FLOAT_EPSILON) {
+		} else if (projection <= -1 + PAL_FLOAT_EPSILON) {
 			// The hinge axis coincides with the parent's -Z axis.
 			rbAxisA2 = palVector3( 0, -1, 0 );
 		} else {

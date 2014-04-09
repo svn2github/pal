@@ -397,6 +397,10 @@ palPhysics::palPhysics()
 palPhysics::~palPhysics() {
 }
 
+void palPhysics::GetPropertyDocumentation(PAL_MAP<PAL_STRING, PAL_STRING>& docOut) const
+{
+}
+
 void palPhysics::Update(Float timestep) {
 #ifdef INTERNAL_DEBUG
 	std::cout << "palPhysics::Update: timestep = " << timestep << " (==0.02? " << (timestep == 0.02f) << ")" << std::endl;

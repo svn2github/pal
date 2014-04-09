@@ -109,11 +109,12 @@ public:
 	 */
 	static palBulletPhysics* GetInstance();
 
-	virtual void Init(const palPhysicsDesc& desc);
-	virtual void Cleanup();
-	virtual const char* GetPALVersion() const;
-	virtual const char* GetVersion() const;
-	virtual palCollisionDetection* asCollisionDetection() { return this; }
+	/*override*/ void GetPropertyDocumentation(PAL_MAP<PAL_STRING, PAL_STRING>& docOut) const;
+	/*override*/ void Init(const palPhysicsDesc& desc);
+	/*override*/ void Cleanup();
+	/*override*/ const char* GetPALVersion() const;
+	/*override*/ const char* GetVersion() const;
+	/*override*/ palCollisionDetection* asCollisionDetection() { return this; }
 
 	//extra methods provided by Bullet abilities:
 	/** Returns the current Bullet World in use by PAL

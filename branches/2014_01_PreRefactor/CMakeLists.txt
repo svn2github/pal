@@ -103,8 +103,6 @@ IF(PAL_BUILD_BOX2D AND PAL_CONFIG_HAS_BEEN_RUN_BEFORE)
 ENDIF()
 
 OPTION(PAL_BUILD_BULLET "Set to ON to build PAL BULLET." ${DEPENDENCIES_DEFAULT_OPTION})
-OPTION(BULLET_SINGLE_THREADED "Set to ON to search for BULLET library in single threaded mode (multi-threaded otherwise)." ON)
-OPTION(BULLET_DOUBLE_PRECISION "Set to ON if bullet has been build double precision." OFF)
 IF(PAL_BUILD_BULLET AND PAL_CONFIG_HAS_BEEN_RUN_BEFORE)
 	SET_ADDITIONAL_SEARCH_PATHS("bullet"  "bullet-2.82"  "bullet-2.81" "bullet-2.80" "bullet-2.79")
 	FIND_PACKAGE(BULLET)

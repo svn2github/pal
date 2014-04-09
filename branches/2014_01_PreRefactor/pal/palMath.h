@@ -39,14 +39,13 @@
 
 #ifdef DOUBLE_PRECISION
 	typedef double Float;
+	#define PAL_FLOAT_EPSILON  DBL_EPSILON  /* smallest such that 1.0+FLT_EPSILON != 1.0 */
+	#define PAL_MAX_FLOAT DBL_MAX
 #else
 	typedef float Float;
+	#define PAL_FLOAT_EPSILON  FLT_EPSILON  /* smallest such that 1.0+FLT_EPSILON != 1.0 */
+	#define PAL_MAX_FLOAT FLT_MAX
 #endif
-
-#define FLOAT_EPSILON  1.192092896e-07  /* smallest such that 1.0+FLT_EPSILON != 1.0 */
-
-//need a define for infinity!
-//#define MAX_FLOAT 3.402823466e+38
 
 struct palVector3 {
 	static const unsigned int num_components = 3;

@@ -16,6 +16,7 @@
  TODO:
  -get to 1.0 (ie: same as pal.h)
  */
+#include <pal/pal.inl>
 
 #ifndef NDEBUG
 #ifdef MICROSOFT_VC
@@ -129,17 +130,33 @@ const char* palODEPhysics::GetPALVersion() const {
 	return verbuf;
 }
 
+void palODEPhysics::GetPropertyDocumentation(PAL_MAP<PAL_STRING, PAL_STRING>& descriptions) const
+{
+	palPhysics::GetPropertyDocumentation(descriptions);
+	descriptions["ODE_NoInitOrShutdown"] = "Defaults to FALSE.  If set to true, the global ode init won't be called, nor the global shutdown.  This is so you can manage this yourself.";
+	descriptions["WorldERP"] = "The Global value of the Error Reduction Parameter. Default is 0.2. See http://www.ode.org/ode-latest-userguide.html#sec_3_8_2";
+	descriptions["WorldCFM"] = "The Global value of the Constraint Force Mixing Parameter. Default is 10^-5 (single) or 10^-10 (double).  See http://www.ode.org/ode-latest-userguide.html#sec_3_8_2";
+}
+
 void palODEPhysics::Init(const palPhysicsDesc& desc) {
 	palPhysics::Init(desc);
 	if (m_Properties["ODE_NoInitOrShutdown"] != "true") {
 		dInitODE2(0);
 	}
+
 	g_world = dWorldCreate();
 	g_space = dHashSpaceCreate(0);
-	g_contactgroup = dJointGroupCreate(0); //0 happparently
+	g_contactgroup = dJointGroupCreate(0); //0 apparently
 	SetGravity(m_fGravityX, m_fGravityY, m_fGravityZ);
 	// enable auto disable because pal has support for it on bodies, and it generally helps performance.
 	dWorldSetAutoDisableFlag(g_world, 1);
+
+	dReal erp = GetInitProperty("WorldERP", dWorldGetERP(g_world), dReal(PAL_FLOAT_EPSILON), dReal(1.0));
+	dWorldSetERP (g_world, erp);
+
+	dReal cfm = GetInitProperty("WorldCFM", dWorldGetCFM(g_world), dReal(0.0), dReal(1.0));
+	dWorldSetCFM (g_world, cfm);
+
 	m_initialized = true;
 }
 ;

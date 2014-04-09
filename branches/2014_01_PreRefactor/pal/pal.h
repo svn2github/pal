@@ -80,6 +80,13 @@ struct palPhysicsDesc {
 class palPhysics : public palFactoryObject {
 	friend class palFactory;
 public:
+
+	/**
+	 * Gets the properties supported by this physics engine api.
+	 * @param docOut an output parameter of property names mapped to documentation
+	 */
+	virtual void GetPropertyDocumentation(PAL_MAP<PAL_STRING, PAL_STRING>& docOut) const;
+
 	/**
 	Initializes the physics engine.
 	\param desc The description object defining the settings for this physics instance.
@@ -102,6 +109,7 @@ public:
 	This returns the physics engine name and physics engine version.
 	*/
 	virtual const char* GetVersion() const = 0;
+
 	/**
 	Returns the current simulation time
 	*/
@@ -142,6 +150,11 @@ public:
 	virtual palDebugDraw* GetDebugDraw();
 
 	virtual palCollisionDetection* asCollisionDetection() { return 0; }
+
+
+	template<typename T>
+	T GetInitProperty( PAL_STRING name, T defaultVal, T min, T max );
+
 protected:
 	bool m_bListen; //!< If set to true, notify functions are called.
 	palMaterials *m_pMaterials;

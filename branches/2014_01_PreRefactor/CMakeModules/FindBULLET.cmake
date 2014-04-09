@@ -5,6 +5,8 @@
 
 INCLUDE(FindPackageTargetLibraries)
 
+OPTION(BULLET_DOUBLE_PRECISION "Set to ON if bullet has been build double precision." OFF)
+
 SET(BULLET_MSVC_LIB_DIR "")
 IF(CMAKE_GENERATOR MATCHES "Visual Studio")
 	IF (${CMAKE_GENERATOR} MATCHES "2008")
@@ -28,12 +30,8 @@ FIND_PATH(BULLET_INCLUDE_DIR btBulletDynamicsCommon.h
 	PATH_SUFFIXES include src include/bullet
 )
 
-IF(BULLET_SINGLE_THREADED)
-	# WARNING: BulletMath is the name found in MSVC prebuilt bojects, LinearMath is what is found using the CMake script. The case is handled below.
-	SET(BULLET_LIBS "BulletSoftBody" "BulletDynamics" "BulletCollision" "LinearMath")		# Tested with Bullet 2.79
-ELSE()
-	SET(BULLET_LIBS "BulletSoftBody" "BulletDynamics" "BulletCollision" "LinearMath" "BulletMultiThreaded")		# Tested with Bullet 2.79
-ENDIF()
+SET(BULLET_LIBS "BulletSoftBody" "BulletDynamics" "BulletCollision" "LinearMath" "BulletMultiThreaded")		# Tested with Bullet 2.82
+
 SET(BULLET_LIBRARIES)
 
 FOREACH(CUR_LIB ${BULLET_LIBS})

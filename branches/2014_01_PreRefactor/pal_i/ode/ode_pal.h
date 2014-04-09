@@ -106,6 +106,7 @@ public:
 	virtual void Init(const palPhysicsDesc& desc);
 	void SetGravity(Float gravity_x, Float gravity_y, Float gravity_z);
 
+	/*override*/ void GetPropertyDocumentation(PAL_MAP<PAL_STRING, PAL_STRING>& docOut) const;
 
 	//colision detection functionality
 	virtual void SetCollisionAccuracy(Float fAccuracy);

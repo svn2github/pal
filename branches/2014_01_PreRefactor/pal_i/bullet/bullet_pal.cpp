@@ -1,11 +1,3 @@
-#ifndef BULLET_SINGLETHREAD
-#define USE_PARALLEL_DISPATCHER 1
-#define USE_PARALLEL_SOLVER 1
-#else
-#undef USE_PARALLEL_DISPATCHER
-#undef USE_PARALLEL_SOLVER
-#endif
-
 //#define USE_LISTEN_COLLISION
 
 #include <limits>
@@ -15,7 +7,9 @@
 #include "bullet_palCharacter.h"
 #include "LinearMath/btScalar.h"
 #include "LinearMath/btIDebugDraw.h"
-#include <iostream>
+//#include <iostream>
+
+#include <pal/pal.inl>
 
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
@@ -30,7 +24,6 @@
 #include <iostream>
 #endif
 
-#if defined(USE_PARALLEL_DISPATCHER) || defined(USE_PARALLEL_SOLVER)
 #include <BulletMultiThreaded/SpuGatheringCollisionDispatcher.h>
 #include <BulletMultiThreaded/PlatformDefinitions.h>
 
@@ -52,8 +45,6 @@
 #endif //USE_LIBSPE2
 
 #include "BulletMultiThreaded/btParallelConstraintSolver.h"
-
-#endif//USE_PARALLEL_DISPATCHER || USE_PARALLEL_SOLVER
 
 FACTORY_CLASS_IMPLEMENTATION_BEGIN_GROUP;
 FACTORY_CLASS_IMPLEMENTATION(palBulletPhysics);
@@ -212,7 +203,11 @@ private:
 
 static bool g_bEnableCustomMaterials = false;
 
+#if BT_BULLET_VERSION < 280
 static bool CustomMaterialCombinerCallback(btManifoldPoint& cp, const btCollisionObject* colObj0,int partId0,int index0,const btCollisionObject* colObj1,int partId1,int index1)
+#else
+static bool CustomMaterialCombinerCallback(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0,int partId0,int index0,const btCollisionObjectWrapper* colObj1,int partId1,int index1)
+#endif
 {
 	if (g_bEnableCustomMaterials)
 	{
@@ -748,17 +743,41 @@ bool palBulletPhysics::GetHardware(void) const {
 	return false;
 }
 
+void palBulletPhysics::GetPropertyDocumentation(PAL_MAP<PAL_STRING, PAL_STRING>& descriptions) const
+{
+	palPhysics::GetPropertyDocumentation(descriptions);
+	descriptions["Bullet_UseMultithreadedDispatcher"] = "Enables the multithreaded physics solver.  See palSolver::SetPE.  This defaults to false.";
+	descriptions["Bullet_UseInternalEdgeUtility"] = "Enables the callback for the internal edge checked on the collision detection. Defaults false"
+			"This is extra overhead, but it prevents issues related to colliding with the back side and internal edges of triangle meshes."
+			"This defaults to false";
+	descriptions["Bullet_UseMultithreadedDispatcher"] = "Enables the multithreaded physics solver.  See palSolver::SetPE.  This defaults to false.";
+	descriptions["Bullet_UseAxisSweepBroadphase"] = "Enables the axis sweep broadphase as opposed to the .  See palSolver::SetPE.  This defaults to false.";
+	descriptions["WorldERP"] = "The Global value of the Error Reduction Parameter. Used as Baumgarte factor. Default is 0.2. See http://www.ode.org/ode-latest-userguide.html#sec_3_8_2";
+	descriptions["WorldERP2"] = "The Global value of the Error Reduction Parameter. Used in Split Impulse. Default is 0.1. See http://www.ode.org/ode-latest-userguide.html#sec_3_8_2";
+	descriptions["WorldCFM"] = "The Global value of the Constraint Force Mixing Parameter. Default is 0.0.  See http://www.ode.org/ode-latest-userguide.html#sec_3_8_2";
+	descriptions["WorldDamping"] = "A default world damping value used in non-collision constraints. It's actually a scalar where 1.0 is no damping and 0.0 is completely damped. Default is 1.0.";
+	descriptions["LinearSlop"] = "This value, which defaults to 0.0, is subtracted from the penetration when two objects collide, and it helps stop large collision forces";
+	descriptions["WarmstartingFactor"] = "This value, which defaults to 0.85, is a multiplier used when warmstarting, i.e. carry over, constraint forces between ticks.";
+}
+
+
 void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	palPhysics::Init(desc);
 
-	btBroadphaseInterface*	broadphase;
-#if 0
-	btVector3 worldMin(-1000,-1000,-1000);
-	btVector3 worldMax(1000,1000,1000);
-	broadphase = new btAxisSweep3(worldMin,worldMax);
-#else
-	broadphase = new btDbvtBroadphase();
-#endif
+
+	bool parallel_solver = m_Properties["Bullet_UseMultithreadedDispatcher"] == "true";
+	btBroadphaseInterface*	broadphase = NULL;
+
+	if (m_Properties["Bullet_UseAxisSweepBroadphase"] == "true")
+	{
+		btVector3 worldMin(-1000,-1000,-1000);
+		btVector3 worldMax(1000,1000,1000);
+		broadphase = new btAxisSweep3(worldMin,worldMax);
+	}
+	else
+	{
+		broadphase = new btDbvtBroadphase();
+	}
 	m_overlapCallback = new CustomOverlapFilterCallback;
 	broadphase->getOverlappingPairCache()->setOverlapFilterCallback(m_overlapCallback);
 	// so ghosts and the character controller will work.
@@ -769,57 +788,57 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_collisionConfiguration = //new btDefaultCollisionConfiguration(cci);
 		new btSoftBodyRigidBodyCollisionConfiguration(cci);
 
-#ifndef USE_PARALLEL_DISPATCHER
-	m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
-#else
-	int maxNumOutstandingTasks = set_pe;
-	btThreadSupportInterface*		m_threadSupportCollision = 0;
+	if (!parallel_solver)
+	{
+		m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
+		m_solver = new btSequentialImpulseConstraintSolver();
+	}
+	else
+	{
+		int maxNumOutstandingTasks = set_pe;
+		btThreadSupportInterface*		m_threadSupportCollision = 0;
 #ifdef OS_WINDOWS
-	char* collisionName = "collision";
-	m_threadSupportCollision = new Win32ThreadSupport(Win32ThreadSupport::Win32ThreadConstructionInfo(
-		collisionName,
-		processCollisionTask,
-		createCollisionLocalStoreMemory,
-		maxNumOutstandingTasks));
+		char* collisionName = "collision";
+		m_threadSupportCollision = new Win32ThreadSupport(Win32ThreadSupport::Win32ThreadConstructionInfo(
+			collisionName,
+			processCollisionTask,
+			createCollisionLocalStoreMemory,
+			maxNumOutstandingTasks));
 #else
-	const char* threadName = "collision";
-	PosixThreadSupport::ThreadConstructionInfo tcInfo(
-		strdup(threadName),
-		processCollisionTask,
-		createCollisionLocalStoreMemory,
-		maxNumOutstandingTasks);
-	m_threadSupportCollision = new PosixThreadSupport(tcInfo);
+		const char* threadName = "collision";
+		PosixThreadSupport::ThreadConstructionInfo tcInfo(
+			strdup(threadName),
+			processCollisionTask,
+			createCollisionLocalStoreMemory,
+			maxNumOutstandingTasks);
+		m_threadSupportCollision = new PosixThreadSupport(tcInfo);
 #endif
-	m_threadSupportCollision->startSPU();
-	m_dispatcher = new	SpuGatheringCollisionDispatcher(m_threadSupportCollision,maxNumOutstandingTasks,m_collisionConfiguration);
+		m_threadSupportCollision->startSPU();
+		m_dispatcher = new	SpuGatheringCollisionDispatcher(m_threadSupportCollision,maxNumOutstandingTasks,m_collisionConfiguration);
+		const char* solverName = "solver";
+		btThreadSupportInterface*	 threadSupportSolver = 0;
+#ifdef OS_WINDOWS
+		threadSupportSolver = new Win32ThreadSupport(Win32ThreadSupport::Win32ThreadConstructionInfo(
+			solverName,
+			SolverThreadFunc,
+			SolverlsMemoryFunc,
+			maxNumOutstandingTasks));
+#else
+		PosixThreadSupport::ThreadConstructionInfo tcInfoSolver(
+			// Does bullet ever modify this? Probably not, but it's not a
+			// const parameter, so give bullet a copy.
+			strdup(solverName),
+			SolverThreadFunc,
+			SolverlsMemoryFunc,
+			maxNumOutstandingTasks);
+		threadSupportSolver = new PosixThreadSupport(tcInfoSolver);
 #endif
+		threadSupportSolver->startSPU();
+		m_solver = new btParallelConstraintSolver(threadSupportSolver);
+		//this solver requires the contacts to be in a contiguous pool, so avoid dynamic allocation
+		m_dispatcher->setDispatcherFlags(btCollisionDispatcher::CD_DISABLE_CONTACTPOOL_DYNAMIC_ALLOCATION);
+	}
 
-#ifndef USE_PARALLEL_SOLVER
-	m_solver = new btSequentialImpulseConstraintSolver();
-#else
-	const char* solverName = "solver";
-	btThreadSupportInterface*	 threadSupportSolver = 0;
-#ifdef OS_WINDOWS
-	threadSupportSolver = new Win32ThreadSupport(Win32ThreadSupport::Win32ThreadConstructionInfo(
-		solverName,
-		SolverThreadFunc,
-		SolverlsMemoryFunc,
-		maxNumOutstandingTasks));
-#else
-	PosixThreadSupport::ThreadConstructionInfo tcInfoSolver(
-		// Does bullet ever modify this? Probably not, but it's not a
-		// const parameter, so give bullet a copy.
-		strdup(solverName),
-		SolverThreadFunc,
-		SolverlsMemoryFunc,
-		maxNumOutstandingTasks);
-	threadSupportSolver = new PosixThreadSupport(tcInfoSolver);
-#endif
-	threadSupportSolver->startSPU();
-	m_solver = new btParallelConstraintSolver(threadSupportSolver);
-	//this solver requires the contacts to be in a contiguous pool, so avoid dynamic allocation
-	m_dispatcher->setDispatcherFlags(btCollisionDispatcher::CD_DISABLE_CONTACTPOOL_DYNAMIC_ALLOCATION);
-#endif
 
 
 	if (m_Properties["Bullet_UseInternalEdgeUtility"] == "true") {
@@ -849,17 +868,25 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_CollisionMasks.resize(32U, ~0);
 
 	m_dynamicsWorld->getSolverInfo().m_solverMode =
+#if BT_BULLET_VERSION < 280
 			SOLVER_USE_FRICTION_WARMSTARTING | SOLVER_USE_2_FRICTION_DIRECTIONS
 			| SOLVER_RANDMIZE_ORDER | SOLVER_USE_WARMSTARTING | SOLVER_SIMD;
-//  2.82
-//			SOLVER_USE_WARMSTARTING | SOLVER_USE_2_FRICTION_DIRECTIONS | SOLVER_FRICTION_SEPARATE
-//			| SOLVER_RANDMIZE_ORDER | SOLVER_ENABLE_FRICTION_DIRECTION_CACHING | SOLVER_SIMD;
+#else
+			SOLVER_USE_WARMSTARTING | SOLVER_USE_2_FRICTION_DIRECTIONS | SOLVER_FRICTION_SEPARATE
+			| SOLVER_RANDMIZE_ORDER | SOLVER_ENABLE_FRICTION_DIRECTION_CACHING | SOLVER_SIMD;
+#endif
+
+	m_dynamicsWorld->getSolverInfo().m_erp = GetInitProperty("WorldERP", m_dynamicsWorld->getSolverInfo().m_erp, btScalar(PAL_FLOAT_EPSILON), btScalar(1.0));
+	m_dynamicsWorld->getSolverInfo().m_globalCfm = GetInitProperty("WorldCFM", m_dynamicsWorld->getSolverInfo().m_globalCfm, btScalar(0.0), btScalar(1.0));
+	m_dynamicsWorld->getSolverInfo().m_erp2 = GetInitProperty("WorldERP2", m_dynamicsWorld->getSolverInfo().m_erp2, btScalar(PAL_FLOAT_EPSILON), btScalar(1.0));
+	m_dynamicsWorld->getSolverInfo().m_damping = GetInitProperty("WorldDamping", m_dynamicsWorld->getSolverInfo().m_damping, btScalar(0.0), btScalar(1.0));
+	m_dynamicsWorld->getSolverInfo().m_linearSlop = GetInitProperty("LinearSlop", m_dynamicsWorld->getSolverInfo().m_linearSlop, btScalar(0.0), btScalar(BT_LARGE_FLOAT));
+	m_dynamicsWorld->getSolverInfo().m_warmstartingFactor = GetInitProperty("WarmstartingFactor", m_dynamicsWorld->getSolverInfo().m_warmstartingFactor, btScalar(0.0), btScalar(1.0));
+
 	m_dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration = btScalar(0.0001);
 
 	//m_dynamicsWorld->getSimulationIslandManager()->setSplitIslands(false);
-#ifdef USE_PARALLEL_DISPATCHER
-	m_dynamicsWorld->getDispatchInfo().m_enableSPU = true;
-#endif
+	m_dynamicsWorld->getDispatchInfo().m_enableSPU = parallel_solver;
 
 				// Reset so it assigns it to the world properly
 	SetSolverAccuracy(palSolver::GetSolverAccuracy());
@@ -924,11 +951,13 @@ void palBulletPhysics::StartIterate(Float timestep) {
 		for (i=0;i<numManifolds;i++)
 		{
 			btPersistentManifold* contactManifold = m_dispatcher->getManifoldByIndexInternal(i);
+#if BT_BULLET_VERSION < 280
 			const btCollisionObject* obA = static_cast<btCollisionObject*>(contactManifold->getBody0());
 			const btCollisionObject* obB = static_cast<btCollisionObject*>(contactManifold->getBody1());
-// Bullet 2.8.2
-//			const btCollisionObject* obA = contactManifold->getBody0();
-//			const btCollisionObject* obB = contactManifold->getBody1();
+#else
+			const btCollisionObject* obA = contactManifold->getBody0();
+			const btCollisionObject* obB = contactManifold->getBody1();
+#endif
 			palBodyBase *body1=static_cast<palBodyBase *>(obA->getUserPointer());
 			palBodyBase *body2=static_cast<palBodyBase *>(obB->getUserPointer());
 #ifdef USE_LISTEN_COLLISION
