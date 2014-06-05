@@ -53,9 +53,6 @@ public:
 	: m_pBody(0), m_Type(PAL_SENSOR_NONE) {}
 	palBody *m_pBody;
 	palSensorType m_Type;
-private:
-	palSensor(const palSensor& obj) {}
-	palSensor& operator=(palSensor& obj) { return *this; }
 };
 
 //this doesnt need to be virtual, but you never know right?

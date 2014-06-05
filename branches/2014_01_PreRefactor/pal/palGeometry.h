@@ -123,9 +123,7 @@ protected:
 	palMatrix4x4 m_mOffset; //offset from body
 	palBodyBase *m_pBody;
 	Float m_fMass;
-	palGeometry(const palGeometry& obj) {}
 private:
-	palGeometry& operator=(palGeometry& obj) { return *this; }
 };
 
 /** A sphere geometry.
@@ -230,7 +228,7 @@ private:
 };
 /*
 //moment of inertia: parallel axis theorem:
-//Itotal = ICM + M*d² (ie: original inertia tensor plus mass times distance squared)
+//Itotal = ICM + M*dï¿½ (ie: original inertia tensor plus mass times distance squared)
 class palCompoundBody : public palBody {
 	virtual void Init(Float x, Float y, Float z);
 //	this:
@@ -333,9 +331,6 @@ protected:
 	virtual void CalculateInertia();
 	virtual void GenericInit(const palMatrix4x4& location, const void *param_array) {};
 	Float *GenerateMesh_Vertices();
-private:
-	palConcaveGeometry(const palConcaveGeometry& obj) : palGeometry(obj) {}
-	palConcaveGeometry& operator=(palConcaveGeometry& obj) { return *this; }
 };
 #if 0
 /** A plane geometry.
@@ -362,9 +357,6 @@ protected:
 	void CalcualteOrientationMatrixFromNormals();
 	Float CalculateD();
 	virtual void CalculateInertia();
-private:
-	palPlaneGeometry(const palPlaneGeometry& obj) {}
-	palPlaneGeometry& operator=(palPlaneGeometry& obj) { return *this; }
 };
 #endif
 

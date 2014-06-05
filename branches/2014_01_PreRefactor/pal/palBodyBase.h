@@ -141,10 +141,8 @@ protected:
 	virtual void ClearGeometryBody(palGeometry *pgeom);
 
 	virtual void Cleanup() ; //deletes all geometries and links which reference this body
-	palBodyBase(const palBodyBase& pbb) {}
 private:
 	void *m_pUserData;
-	palBodyBase& operator=(palBodyBase& pbb) { return *this; }
 };
 
 class palCompoundBodyBase : virtual public palBodyBase {

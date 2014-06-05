@@ -133,9 +133,6 @@ protected:
 	\param child The "child" body to connect
 	*/
 	void SetBodies(palBodyBase *parent, palBodyBase *child);
-private:
-	palLink(const palLink& obj) {}
-	palLink& operator=(palLink& obj) { return *this; }
 };
 
 /** A Spherical link.

@@ -45,16 +45,16 @@ typedef enum {
 */
 class palActuator : public palFactoryObject {
 public:
-	palActuator()
-		: m_Type(PAL_ACTUATOR_NONE) {}
-	palActuator(palActuatorType actuatorType)
-		: m_Type(actuatorType) {}
 	virtual ~palActuator() {}
 	/** Ensures the actuator operates for the current time step
 	*/
 	virtual void Apply() = 0;
 	palActuatorType m_Type;
-//protected:
+protected:
+	palActuator()
+		: m_Type(PAL_ACTUATOR_NONE) {}
+	palActuator(palActuatorType actuatorType)
+		: m_Type(actuatorType) {}
 };
 
 /** A generic angular actuator.
@@ -112,8 +112,6 @@ public:
 
 	FACTORY_CLASS(palForceActuator,palForceActuator,*,1);
 private:
-	palForceActuator(const palForceActuator& obj) : palActuator(obj) {}
-	palForceActuator& operator=(palForceActuator& obj) { return *this; }
 };
 
 /** A "impulse" actuator.
@@ -156,8 +154,6 @@ protected:
 
 	FACTORY_CLASS(palImpulseActuator,palImpulseActuator,*,1);
 private:
-	palImpulseActuator(const palImpulseActuator& obj) : palActuator(obj) {}
-	palImpulseActuator& operator=(palImpulseActuator& obj) { return *this; }
 };
 
 
@@ -396,8 +392,6 @@ protected:
 
 private:
 	FACTORY_CLASS(palSpring,palSpring,*,1);
-	palSpring(const palSpring& obj) : palActuator(obj) {}
-	palSpring& operator=(palSpring& obj) { return *this; }
 };
 
 /**
@@ -448,8 +442,6 @@ private:
 	palSpringDesc m_SpringDescAngular[3];
 
 	//FACTORY_CLASS(palGenericLinkSpring,palGenericLinkSpring,*,1);
-	palGenericLinkSpring(const palGenericLinkSpring& obj) : palActuator(obj) {}
-	palGenericLinkSpring& operator=(palGenericLinkSpring& obj) { return *this; }
 };
 
 
@@ -485,8 +477,6 @@ protected:
 
 	FACTORY_CLASS(palLiquidDrag,palLiquidDrag,*,1);
 private:
-	palLiquidDrag(const palLiquidDrag& obj) : palActuator(obj) {}
-	palLiquidDrag& operator=(palLiquidDrag& obj) { return *this; }
 };
 
 
@@ -572,8 +562,6 @@ protected:
 
 	FACTORY_CLASS(palFakeBuoyancy,palFakeBuoyancy,*,1);
 private:
-	palFakeBuoyancy(const palFakeBuoyancy& obj) : palActuator(obj) {}
-	palFakeBuoyancy& operator=(palFakeBuoyancy& obj) { return *this; }
 };
 
 #endif

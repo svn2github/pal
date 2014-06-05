@@ -309,9 +309,6 @@ private:
 public:
 	static palFactory *GetInstance();
 	static void SetInstance(palFactory *pf);
-private:
-	palFactory(const palFactory& obj) {}
-	palFactory& operator=(palFactory& obj) { return *this; }
 };
 
 #endif

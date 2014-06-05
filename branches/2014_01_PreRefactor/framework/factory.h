@@ -88,6 +88,11 @@ public:
 	virtual FactoryObject* Create() = 0;
 	//the following code is ugly, should be some how eliminated and integrated with the normal Register function
 	virtual void RegisterWithFactory(PAL_VECTOR<RegistrationInfo<FactoryBase> > &lsInfo) = 0;
+protected:
+	FactoryObject() {}
+private:
+	FactoryObject(FactoryObject&) {}
+	FactoryObject& operator=(const FactoryObject&) {return *this;}
 };
 
 /**

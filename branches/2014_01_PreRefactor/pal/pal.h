@@ -192,8 +192,6 @@ protected:
 	PAL_LIST<palAction*> m_Actions;
 private:
 	palDebugDraw *m_pDebugDraw;
-	palPhysics(const palPhysics& pp) {}
-	palPhysics& operator=(palPhysics& pp) { return *this; }
 };
 
 /*!

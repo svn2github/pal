@@ -28,8 +28,6 @@ class palStatic : virtual public palBodyBase {
 public:
 	palStatic() {}
 	virtual ~palStatic() {}
-protected:
-	palStatic(const palStatic& obj) : palBodyBase(obj) {}
 };
 
 
