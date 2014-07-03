@@ -24,6 +24,7 @@ public:
 	virtual void ClearStatus(StatusCode Statuscode);
 	void SetParent(StatusObject *pParent);
 	StatusObject *GetParent();
+	const StatusObject *GetParent() const;
 	StatusObject& operator=(const StatusObject& statObj) {
 		m_pParent = statObj.m_pParent; m_StatusCode = statObj.m_StatusCode; return *this;
 	}

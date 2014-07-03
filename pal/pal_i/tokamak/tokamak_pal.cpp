@@ -55,7 +55,7 @@ extern "C" {
 
 //FACTORY_CLASS_IMPLEMENTATION(palTokamakMaterial);
 FACTORY_CLASS_IMPLEMENTATION_BEGIN_GROUP;
-FACTORY_CLASS_IMPLEMENTATION(palTokamakMaterialUnique);
+FACTORY_CLASS_IMPLEMENTATION(palTokamakMaterial);
 FACTORY_CLASS_IMPLEMENTATION(palTokamakMaterialInteraction);
 
 FACTORY_CLASS_IMPLEMENTATION(palTokamakBoxGeometry);
@@ -136,15 +136,15 @@ void TokamakMaterial::Init(Float static_friction, Float kinetic_friction, Float 
 palTokamakMaterialInteraction::palTokamakMaterialInteraction() {
 }
 
-void palTokamakMaterialInteraction::Init(palMaterialUnique *pM1, palMaterialUnique *pM2, const palMaterialDesc& desc) {
+void palTokamakMaterialInteraction::Init(palMaterial *pM1, palMaterial *pM2, const palMaterialDesc& desc) {
 	palMaterialInteraction::Init(pM1,pM2, desc);
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-palTokamakMaterialUnique::palTokamakMaterialUnique() {
+palTokamakMaterial::palTokamakMaterial() {
 }
 
-void palTokamakMaterialUnique::Init(PAL_STRING name,const palMaterialDesc& desc) {
-	palMaterialUnique::Init(name, desc);
+void palTokamakMaterial::Init(PAL_STRING name,const palMaterialDesc& desc) {
+	palMaterial::Init(name, desc);
 	m_Index=g_materialcount;
 	if (gSim) {
 		gSim->SetMaterial(m_Index, m_fStatic, m_fRestitution);
@@ -391,7 +391,7 @@ void palTokamakBody::SetAngularVelocity(const palVector3& velocity_rad) {
 }
 
 void palTokamakBody::SetMaterial(palMaterial *material) {
-	palTokamakMaterialUnique *ptmU = dynamic_cast<palTokamakMaterialUnique *> (material);
+	palTokamakMaterial *ptmU = dynamic_cast<palTokamakMaterial *> (material);
 	if (ptmU) {
 		for (unsigned int i=0;i<m_Geometries.size();i++) {
 			palTokamakGeometry *ptG = dynamic_cast<palTokamakGeometry *> (m_Geometries[i]);
@@ -433,7 +433,7 @@ void palTokamakGeometry::SetPosition(const palMatrix4x4& loc) {
 }
 
 void palTokamakGeometry::SetMaterial(palMaterial *material) {
-	palTokamakMaterialUnique *ptmU = dynamic_cast<palTokamakMaterialUnique *> (material);
+	palTokamakMaterial *ptmU = dynamic_cast<palTokamakMaterial *> (material);
 	if (ptmU)
 		m_ptokGeom->SetMaterialIndex(ptmU->m_Index);
 }
@@ -1493,7 +1493,7 @@ void palTokamakOrientatedTerrainPlane::Init(Float x, Float y, Float z, Float nx,
 }
 
 void palTokamakOrientatedTerrainPlane::SetMaterial(palMaterial *material) {
-	palTokamakMaterialUnique *ptmU = dynamic_cast<palTokamakMaterialUnique *> (material);
+	palTokamakMaterial *ptmU = dynamic_cast<palTokamakMaterial *> (material);
 
 	gFloor->BeginIterateGeometry();
 	neGeometry * geom = gFloor->GetNextGeometry();
@@ -1534,7 +1534,7 @@ void palTokamakTerrainPlane::Init(Float x, Float y, Float z, Float min_size) {
 }
 
 void palTokamakTerrainPlane::SetMaterial(palMaterial *material) {
-	palTokamakMaterialUnique *ptmU = dynamic_cast<palTokamakMaterialUnique *> (material);
+	palTokamakMaterial *ptmU = dynamic_cast<palTokamakMaterial *> (material);
 
 	gFloor->BeginIterateGeometry();
 	neGeometry * geom = gFloor->GetNextGeometry();
@@ -1622,7 +1622,7 @@ palTokamakTerrainMesh::palTokamakTerrainMesh(){
 }
 
 void palTokamakTerrainMesh::SetMaterial(palMaterial *material) {
-	palTokamakMaterialUnique *ptmU = dynamic_cast<palTokamakMaterialUnique *> (material);
+	palTokamakMaterial *ptmU = dynamic_cast<palTokamakMaterial *> (material);
 	if (gFloor) {
 	gFloor->BeginIterateGeometry();
 	neGeometry * geom = gFloor->GetNextGeometry();

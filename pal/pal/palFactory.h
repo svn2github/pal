@@ -72,9 +72,7 @@ public:
 	Removes all the objects created - regardless of which engine they were constructed with.
 	*/
 	void Cleanup();
-	//
-	// i might remove this
-	palMaterials *CreateMaterials();
+
 	/** Creates the physics class.
 	This should be created and initialized before any other objects are created for the current physics engine
 	\return A newly constructed physics class, specified by the select method
@@ -291,6 +289,19 @@ public:
 	*/
 	palFactoryObject *CreateObject(const PAL_STRING& name); //this is only to be used for user add-on functionality
 
+	/// Handy template CreateObject that can be used to create and cast an object for you.
+	template<typename T>
+	T* CreateObject(const PAL_STRING& name)
+	{
+		palFactoryObject* pfo = CreateObject(name);
+		T* result = dynamic_cast<T*>(pfo);
+		if (result == NULL)
+		{
+			delete pfo;
+		}
+		return result;
+	}
+
 	palPhysics *GetActivePhysics();
 	void SetActivePhysics(palPhysics *physics);
 	void LoadPALfromDLL(const char *szPath = NULL) throw(palException);
@@ -309,9 +320,6 @@ private:
 public:
 	static palFactory *GetInstance();
 	static void SetInstance(palFactory *pf);
-private:
-	palFactory(const palFactory& obj) {}
-	palFactory& operator=(palFactory& obj) { return *this; }
 };
 
 #endif

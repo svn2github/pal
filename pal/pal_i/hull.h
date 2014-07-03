@@ -1,4 +1,4 @@
-#ifndef HUL_H
+#ifndef HULL_H
 
 #define HULL_H
 

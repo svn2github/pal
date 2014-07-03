@@ -45,16 +45,16 @@ typedef enum {
 */
 class palActuator : public palFactoryObject {
 public:
-	palActuator()
-		: m_Type(PAL_ACTUATOR_NONE) {}
-	palActuator(palActuatorType actuatorType)
-		: m_Type(actuatorType) {}
 	virtual ~palActuator() {}
 	/** Ensures the actuator operates for the current time step
 	*/
 	virtual void Apply() = 0;
 	palActuatorType m_Type;
-//protected:
+protected:
+	palActuator()
+		: m_Type(PAL_ACTUATOR_NONE) {}
+	palActuator(palActuatorType actuatorType)
+		: m_Type(actuatorType) {}
 };
 
 /** A generic angular actuator.
@@ -63,19 +63,24 @@ public:
 class palAngularMotor : public palActuator {
 public:
 	virtual ~palAngularMotor() {}
-	virtual void Init(palRevoluteLink *pLink, Float Max) {
+	//@todo taking a revolute link is silly here.  Lots of other joint types can have motors.
+	virtual void Init(palRevoluteLink *pLink, Float Max = 0.0) {
 		m_link = pLink;
 		m_fMax = Max;
 	};
-	virtual void Update(Float targetVelocity) = 0;
+	/**
+	 * @param targetVelocity  the target velocity of the motor.
+	 * @param Max  The max force for this motor, or leave it default to make it use the default configured in init.
+	 */
+	virtual void Update(Float targetVelocity, Float Max = -1.0) = 0;
 	palRevoluteLink *GetLink() {
 		return m_link;
 	}
 	virtual std::string toString() const {
-	    std::string result("palAngularMotor[link=");
-	    result.append(m_link->toString());
-	    result.append("]");
-	    return result;
+		std::string result("palAngularMotor[link=");
+		result.append(m_link->toString());
+		result.append("]");
+		return result;
 	}
 protected:
 	Float m_fMax;
@@ -107,8 +112,6 @@ public:
 
 	FACTORY_CLASS(palForceActuator,palForceActuator,*,1);
 private:
-	palForceActuator(const palForceActuator& obj) : palActuator(obj) {}
-	palForceActuator& operator=(palForceActuator& obj) { return *this; }
 };
 
 /** A "impulse" actuator.
@@ -151,8 +154,6 @@ protected:
 
 	FACTORY_CLASS(palImpulseActuator,palImpulseActuator,*,1);
 private:
-	palImpulseActuator(const palImpulseActuator& obj) : palActuator(obj) {}
-	palImpulseActuator& operator=(palImpulseActuator& obj) { return *this; }
 };
 
 
@@ -391,8 +392,6 @@ protected:
 
 private:
 	FACTORY_CLASS(palSpring,palSpring,*,1);
-	palSpring(const palSpring& obj) : palActuator(obj) {}
-	palSpring& operator=(palSpring& obj) { return *this; }
 };
 
 /**
@@ -443,8 +442,6 @@ private:
 	palSpringDesc m_SpringDescAngular[3];
 
 	//FACTORY_CLASS(palGenericLinkSpring,palGenericLinkSpring,*,1);
-	palGenericLinkSpring(const palGenericLinkSpring& obj) : palActuator(obj) {}
-	palGenericLinkSpring& operator=(palGenericLinkSpring& obj) { return *this; }
 };
 
 
@@ -480,8 +477,6 @@ protected:
 
 	FACTORY_CLASS(palLiquidDrag,palLiquidDrag,*,1);
 private:
-	palLiquidDrag(const palLiquidDrag& obj) : palActuator(obj) {}
-	palLiquidDrag& operator=(palLiquidDrag& obj) { return *this; }
 };
 
 
@@ -543,7 +538,7 @@ protected:
 	Float m_CL_c;
 	Float m_fAxisX;
 	Float m_fAxisY;
-	Float m_fAxisZ;	
+	Float m_fAxisZ;
 
 	FACTORY_CLASS(palHydrofoil,palHydrofoil,*,1);
 };
@@ -567,8 +562,6 @@ protected:
 
 	FACTORY_CLASS(palFakeBuoyancy,palFakeBuoyancy,*,1);
 private:
-	palFakeBuoyancy(const palFakeBuoyancy& obj) : palActuator(obj) {}
-	palFakeBuoyancy& operator=(palFakeBuoyancy& obj) { return *this; }
 };
 
 #endif

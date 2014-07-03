@@ -71,21 +71,6 @@
 #include <iosfwd>
 
 #if defined(_MSC_VER)
-//#ifndef NDEBUG
-//#pragma comment( lib, "libbulletcollision_d.lib")
-//#pragma comment( lib, "libbulletdynamics_d.lib")
-//#pragma comment( lib, "libbulletmath_d.lib")
-//#ifndef BULLET_SINGLETHREAD
-//#pragma comment( lib, "libbulletmultithreaded_d.lib")
-//#endif
-//#else
-//#pragma comment( lib, "libbulletcollision.lib")
-//#pragma comment( lib, "libbulletdynamics.lib")
-//#pragma comment( lib, "libbulletmath.lib")
-//#ifndef BULLET_SINGLETHREAD
-//#pragma comment( lib, "libbulletmultithreaded.lib")
-//#endif
-//#endif
 #pragma warning(disable : 4250)
 #endif
 
@@ -116,19 +101,13 @@ class palBulletPhysics: public palPhysics, public palCollisionDetectionExtended,
 public:
 	palBulletPhysics();
 
-	/*
-	 *  @return The singleton instance of bullet physics.  This ASSUMES that the instance of the
-	 *          physics singleton is the bullet one, which generally is valid because you can't
-	 *          create objects for the bullet physics engine unless it is the active plugin.
-	 *          There are more contrived ways to get around this, and it's static, so be careful.
-	 */
-	static palBulletPhysics* GetInstance();
 
-	virtual void Init(const palPhysicsDesc& desc);
-	virtual void Cleanup();
-	virtual const char* GetPALVersion() const;
-	virtual const char* GetVersion() const;
-	virtual palCollisionDetection* asCollisionDetection() { return this; }
+	/*override*/ void GetPropertyDocumentation(PAL_MAP<PAL_STRING, PAL_STRING>& docOut) const;
+	/*override*/ void Init(const palPhysicsDesc& desc);
+	/*override*/ void Cleanup();
+	/*override*/ const char* GetPALVersion() const;
+	/*override*/ const char* GetVersion() const;
+	/*override*/ palCollisionDetection* asCollisionDetection() { return this; }
 
 	//extra methods provided by Bullet abilities:
 	/** Returns the current Bullet World in use by PAL
@@ -143,9 +122,9 @@ public:
 	//colision detection functionality
 	virtual void SetCollisionAccuracy(Float fAccuracy);
 	virtual void SetGroupCollision(palGroup a, palGroup b, bool enabled);
-	virtual void RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range, palRayHit& hit);
+	virtual void RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range, palRayHit& hit) const;
 	virtual void RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range,
-				palRayHitCallback& callback, palGroupFlags groupFilter = ~0);
+				palRayHitCallback& callback, palGroupFlags groupFilter = ~0) const;
 	virtual void NotifyCollision(palBodyBase *a, palBodyBase *b, bool enabled);
 	virtual void NotifyCollision(palBodyBase *pBody, bool enabled);
 	void CleanupNotifications(palBodyBase *pBody);
@@ -769,8 +748,8 @@ class palBulletAngularMotor : public palAngularMotor {
 public:
 	palBulletAngularMotor();
 	virtual ~palBulletAngularMotor() {};
-	virtual void Init(palRevoluteLink *pLink, Float Max, bool disableCollisionsBetweenLinkedBodies);
-	virtual void Update(Float targetVelocity);
+	virtual void Init(palRevoluteLink *pLink, Float Max);
+	virtual void Update(Float targetVelocity, Float Max);
 	virtual void Apply();
 protected:
 	btHingeConstraint *m_bhc;
@@ -894,6 +873,55 @@ inline palGroup convert_to_pal_group(short int v)
 extern std::ostream& operator<<(std::ostream& out, const btVector3& v);
 extern std::ostream& operator<<(std::ostream& out, const btTransform& xform);
 extern std::ostream& operator<<(std::ostream& out, const btQuaternion& quat);
+
+inline void convertManifoldPtToContactPoint(btManifoldPoint& pt, palContactPoint& cp)
+{
+	btVector3 pos = pt.getPositionWorldOnB();
+	cp.m_vContactPosition.x = pos.x();
+	cp.m_vContactPosition.y = pos.y();
+	cp.m_vContactPosition.z = pos.z();
+
+	btVector3 norm = pt.m_normalWorldOnB;
+	cp.m_vContactNormal.x = norm.x();
+	cp.m_vContactNormal.y = norm.y();
+	cp.m_vContactNormal.z = norm.z();
+
+	cp.m_fDistance= pt.getDistance();
+	cp.m_fImpulse= pt.getAppliedImpulse();
+
+	if (pt.m_lateralFrictionInitialized)
+	{
+		for (unsigned i = 0; i < 3; ++i)
+		{
+			cp.m_vImpulseLateral1[i] = pt.m_lateralFrictionDir1[i] * pt.m_appliedImpulseLateral1;
+			cp.m_vImpulseLateral2[i] = pt.m_lateralFrictionDir2[i] * pt.m_appliedImpulseLateral2;
+		}
+	}
+}
+
+// This is only a partial conversion.  It assumes you are only updating a manfold point.
+inline void convertContactPointToManifoldPt(palContactPoint& cp, btManifoldPoint& pt)
+{
+	palVector3 lat1 = cp.m_vImpulseLateral1;
+	palVector3 lat2 = cp.m_vImpulseLateral2;
+	Float latMag1 = vec_norm(&lat1);
+	Float latMag2 = vec_norm(&lat2);
+
+	for (unsigned i = 0; i < 3; ++i)
+	{
+		pt.m_positionWorldOnB[i] = cp.m_vContactPosition[i];
+		pt.m_normalWorldOnB[i] = cp.m_vContactNormal[i];
+		pt.m_lateralFrictionDir1[i] = lat1[i];
+		pt.m_lateralFrictionDir2[i] = lat2[i];
+	}
+
+	pt.m_appliedImpulseLateral1 = latMag1;
+	pt.m_appliedImpulseLateral2 = latMag2;
+
+	pt.m_distance1 = cp.m_fDistance;
+	pt.m_appliedImpulse = cp.m_fImpulse;
+
+}
 
 inline void convertPalMatToBtTransform(btTransform& xform, const palMatrix4x4& palMat)
 {

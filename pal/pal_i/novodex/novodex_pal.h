@@ -68,30 +68,33 @@
 #define NOVODEX_ENABLE_FLUID
 #endif
 
-#include <NxPhysics.h>
+#include <PxPhysics.h>
+#include <common/PxErrors.h>
+using namespace physx;
+
 #if defined(_MSC_VER)
-////#pragma comment(lib, "NxFoundation.lib")
-////#pragma comment(lib, "NxPhysics.lib")
+////#pragma comment(lib, "PxFoundation.lib")
+////#pragma comment(lib, "PxPhysics.lib")
 //#pragma comment(lib, "PhysXLoader.lib")
-//#pragma comment(lib, "NxCooking.lib")
+//#pragma comment(lib, "PxCooking.lib")
 #pragma warning(disable : 4250) //dominance
 #endif
 
 
 /**
-*  /brief   Purpose: Error Reporting system used for ageia to tell you messed up...
-*                    passed into the ageia init routine
+*  /brief   Purpose: Error Reporting system used for PhysX to tell you messed up...
+*                    passed into the PhysX init routine
 */
-class palNovodexErrorReportingSystem : public NxUserOutputStream, public StatusObject
+class palNovodexErrorReportingSystem : public PxOutputStream, public StatusObject
 {
 public:
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	palNovodexErrorReportingSystem() {}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void reportError(NxErrorCode code, const char *message, const char* file, int line)
+	void reportError(PxErrorCode code, const char *message, const char* file, int line)
 	{
-		if (code < NXE_DB_INFO)
+		if (code < PXE_DB_INFO)
 		{
 			ErrorLog::GetInstance()->SetInfo(file,line,this,"Error");
 			ErrorLog::GetInstance()->Error("PhysX is stating error %s \n", message);
@@ -99,11 +102,11 @@ public:
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	NxAssertResponse reportAssertViolation(const char *message, const char *file,int line)
+	PxAssertResponse reportAssertViolation(const char *message, const char *file,int line)
 	{
 		ErrorLog::GetInstance()->SetInfo(file,line,this,"Error");
 		ErrorLog::GetInstance()->Error("PhysX is stating error %s \n", message);
-		return NX_AR_CONTINUE;
+		return PX_AR_CONTINUE;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -115,19 +118,19 @@ public:
 };
 
 
-class palNovodexMaterialUnique : public palMaterialUnique {
+class palNovodexMaterial : public palMaterial {
 public:
-	palNovodexMaterialUnique();
-	~palNovodexMaterialUnique();
+	palNovodexMaterial();
+	~palNovodexMaterial();
 	void Init(PAL_STRING name, const palMaterialDesc& desc);
 
 	virtual void SetParameters(const palMaterialDesc& matDesc);
 
-	NxMaterialDesc	m_MaterialDesc;
-	NxMaterial*	m_pMaterial;
-	NxMaterialIndex m_Index;
+	PxMaterialDesc	m_MaterialDesc;
+	PxMaterial*	m_pMaterial;
+	PxMaterialIndex m_Index;
 protected:
-	FACTORY_CLASS(palNovodexMaterialUnique,palMaterialUnique,Novodex,2);
+	FACTORY_CLASS(palNovodexMaterial,palMaterial,Novodex,2);
 };
 
 /** Novodex Physics Class
@@ -147,13 +150,13 @@ public:
 
 	//Novodex specific:
 	/** Returns the current Novodex Scene in use by PAL
-		\return A pointer to the current NxScene
+		\return A pointer to the current PxScene
 	*/
-	NxScene* NxGetScene();
+	PxScene* PxGetScene();
 	/** Returns the Novodex SDK used by PAL
-		\return A pointer to the NxPhysicsSDK
+		\return A pointer to the PxPhysicsSDK
 	*/
-	NxPhysicsSDK* NxGetPhysicsSDK();
+	PxPhysicsSDK* PxGetPhysicsSDK();
 
 	//colision detection functionality
 	virtual void SetCollisionAccuracy(Float fAccuracy);
@@ -181,7 +184,7 @@ protected:
 	//notification callbacks:
 	//virtual void NotifyGeometryAdded(palGeometry* pGeom);
 	//virtual void NotifyBodyAdded(palBodyBase* pBody);
-//	PAL_MAP<NxShape* , palGeometry* > m_Shapes;
+//	PAL_MAP<PxShape* , palGeometry* > m_Shapes;
 	FACTORY_CLASS(palNovodexPhysics,palPhysics,Novodex,1)
 private:
 	void PopulateDebugDraw();
@@ -208,19 +211,19 @@ public:
 
 	//Novodex specific:
 	/** Returns the Novodex Shape Descriptor used by PAL geometry
-		\return A pointer to the NxShapeDesc
+		\return A pointer to the PxShapeDesc
 	*/
-	NxShapeDesc* NxGetShapeDesc() {return m_pShape;}
+	PxShapeDesc* PxGetShapeDesc() {return m_pShape;}
 
 	/** Returns the Novodex Shape used by PAL bodies
-		\return A pointer to the NxShape
+		\return A pointer to the PxShape
 	*/
-	NxShape* NxGetShape() {return m_pCreatedShape;}
+	PxShape* PxGetShape() {return m_pCreatedShape;}
 
 protected:
 	virtual void ReCalculateOffset();
-	NxShape* m_pCreatedShape;
-	NxShapeDesc* m_pShape;
+	PxShape* m_pCreatedShape;
+	PxShapeDesc* m_pShape;
 };
 
 class palNovodexBoxGeometry : public palNovodexGeometry, public palBoxGeometry  {
@@ -231,7 +234,7 @@ public:
 
 
 protected:
-	NxBoxShapeDesc *m_pBoxShape;
+	PxBoxShapeDesc *m_pBoxShape;
 	FACTORY_CLASS(palNovodexBoxGeometry,palBoxGeometry,Novodex,1)
 };
 
@@ -258,13 +261,13 @@ public:
 
 	//Novodex specific:
 	/** Returns the Novodex Actor associated with the PAL body
-		\return A pointer to the NxActor
+		\return A pointer to the PxActor
 	*/
-	NxActor *NxGetActor() {return m_Actor;}
+	PxActor *PxGetActor() {return m_Actor;}
 protected:
-	NxActor *m_Actor;
-	NxBodyDesc m_BodyDesc;
-	NxActorDesc m_ActorDesc;
+	PxActor *m_Actor;
+	PxBodyDesc m_BodyDesc;
+	PxActorDesc m_ActorDesc;
 
 	// this is an internal utility function so that m_fSkinWidth doesn't need to be protected
 	Float GetSavedSkinWidth() const { return m_fSkinWidth; }
@@ -342,7 +345,7 @@ public:
 	void Init(const palMatrix4x4 &pos, Float radius, Float mass);
 
 protected:
-	NxSphereShapeDesc *m_pSphereShape;
+	PxSphereShapeDesc *m_pSphereShape;
 	FACTORY_CLASS(palNovodexSphereGeometry,palSphereGeometry,Novodex,1)
 };
 
@@ -370,7 +373,7 @@ public:
 	void Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass);
 
 protected:
-	NxCapsuleShapeDesc *m_pCapShape;
+	PxCapsuleShapeDesc *m_pCapShape;
 	//recalculates the m_mOffset (local) matrix given the specified location and body
 	virtual void ReCalculateOffset();
 	FACTORY_CLASS(palNovodexCapsuleGeometry,palCapsuleGeometry,Novodex,1)
@@ -404,8 +407,8 @@ public:
 	virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass);
 
 protected:
-	NxConvexMeshDesc  *m_pConvexMesh;
-	NxConvexShapeDesc *m_pConvexShape;
+	PxConvexMeshDesc  *m_pConvexMesh;
+	PxConvexShapeDesc *m_pConvexShape;
 	FACTORY_CLASS(palNovodexConvexGeometry,palConvexGeometry,Novodex,1)
 };
 
@@ -435,8 +438,8 @@ public:
 	virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass);
 
 protected:
-	NxTriangleMeshDesc  *m_pConcaveMesh;
-	NxTriangleMeshShapeDesc *m_pConcaveShape;
+	PxTriangleMeshDesc  *m_pConcaveMesh;
+	PxTriangleMeshShapeDesc *m_pConcaveShape;
 	FACTORY_CLASS(palNovodexConcaveGeometry,palConcaveGeometry,Novodex,1)
 };
 
@@ -467,12 +470,12 @@ public:
 
 	//Novodex specific:
 	/** Returns the Novodex Joint associated with the PAL link
-		\return A pointer to the NxJoint
+		\return A pointer to the PxJoint
 	*/
-	NxJoint *NxGetJoint();
+	PxJoint *PxGetJoint();
 protected:
-	NxJointDesc *m_Jdesc;
-	NxJoint *m_Joint;
+	PxJointDesc *m_Jdesc;
+	PxJoint *m_Joint;
 };
 
 class palNovodexRevoluteLink: public palRevoluteLink, public palNovodexLink {
@@ -484,8 +487,8 @@ public:
 	void SetLimits(Float lower_limit_rad, Float upper_limit_rad);
 
 protected:
-	NxRevoluteJoint *m_RJoint;
-	NxRevoluteJointDesc *m_RJdesc;
+	PxRevoluteJoint *m_RJoint;
+	PxRevoluteJointDesc *m_RJdesc;
 	FACTORY_CLASS(palNovodexRevoluteLink,palRevoluteLink,Novodex,1)
 };
 
@@ -502,8 +505,8 @@ public:
 	virtual void GetSpring(palSpringDesc& springDescOut) const;
 
 protected:
-	NxRevoluteJoint *m_RJoint;
-	NxRevoluteJointDesc *m_RJdesc;
+	PxRevoluteJoint *m_RJoint;
+	PxRevoluteJointDesc *m_RJdesc;
 	FACTORY_CLASS(palNovodexRevoluteSpringLink,palRevoluteSpringLink,Novodex,1)
 };
 
@@ -516,8 +519,8 @@ public:
 	void SetLimits(Float cone_limit_rad, Float twist_limit_rad);
 
 protected:
-	NxSphericalJoint  *m_SJoint;
-	NxSphericalJointDesc *m_SJdesc;
+	PxSphericalJoint  *m_SJoint;
+	PxSphericalJointDesc *m_SJdesc;
 	FACTORY_CLASS(palNovodexSphericalLink,palSphericalLink,Novodex,1)
 };
 
@@ -529,8 +532,8 @@ public:
 	void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z);
 
 protected:
-	NxPrismaticJoint *m_PJoint;
-	NxPrismaticJointDesc *m_PJdesc;
+	PxPrismaticJoint *m_PJoint;
+	PxPrismaticJointDesc *m_PJdesc;
 	FACTORY_CLASS(palNovodexPrismaticLink,palPrismaticLink,Novodex,1)
 };
 
@@ -544,11 +547,11 @@ public:
 		const palVector3& linearUpperLimits,
 		const palVector3& angularLowerLimits,
 		const palVector3& angularUpperLimits);
-	NxD6Joint* NovodexGetD6Joint() { return m_DJoint; }
-	NxD6JointDesc* NovodexGetD6JointDesc() { return m_DJdesc; }
+	PxD6Joint* NovodexGetD6Joint() { return m_DJoint; }
+	PxD6JointDesc* NovodexGetD6JointDesc() { return m_DJdesc; }
 protected:
-	NxD6Joint* m_DJoint;
-	NxD6JointDesc *m_DJdesc;
+	PxD6Joint* m_DJoint;
+	PxD6JointDesc *m_DJdesc;
 	FACTORY_CLASS(palNovodexGenericLink,palGenericLink,Novodex,1)
 };
 
@@ -558,8 +561,8 @@ public:
     virtual ~palNovodexRigidLink();
     void Init(palBodyBase *parent, palBodyBase *child);
 protected:
-    NxFixedJoint* m_fixedJoint;
-    NxFixedJointDesc* m_fixedJointDesc;
+    PxFixedJoint* m_fixedJoint;
+    PxFixedJointDesc* m_fixedJointDesc;
 	FACTORY_CLASS(palNovodexRigidLink,palRigidLink,Novodex,1)
 };
 
@@ -640,7 +643,7 @@ public:
 	virtual void Update(Float targetVelocity);
 	virtual void Apply();
 protected:
-	NxRevoluteJoint *m_j;
+	PxRevoluteJoint *m_j;
 	FACTORY_CLASS(palNovodexAngularMotor,palAngularMotor,Novodex,1)
 };
 
@@ -705,7 +708,7 @@ protected:
 	 * Creates the NX Actor, and will delete an existing actor if it exists.  This has to happen because
 	 * swapping between static and non-static requires a recreation of the actor.
 	 */
-	void CreateNxActor(const palMatrix4x4& pos);
+	void CreatePxActor(const palMatrix4x4& pos);
 	FACTORY_CLASS(palNovodexGenericBody,palGenericBody,Novodex,1);
 
 	bool m_bInitialized;
@@ -723,7 +726,7 @@ public:
 		Float x2, Float y2, Float z2,
 		Float rest_length, Float Ks, Float Kd);
 protected:
-	NxSpringAndDamperEffector *m_pSpring;
+	PxSpringAndDamperEffector *m_pSpring;
 };
 
 
@@ -745,13 +748,13 @@ public:
 protected:
 	palVector3 m_ppos;
 
-	NxU32 ParticleBufferCap;
-	NxU32 ParticleBufferNum;
+	PxU32 ParticleBufferCap;
+	PxU32 ParticleBufferNum;
 
 	// cache
 	mutable PAL_VECTOR<palVector3> pos;
-	PAL_VECTOR<NxVec3> vParticles;
-	NxFluid* fluid;
+	PAL_VECTOR<PxVec3> vParticles;
+	PxFluid* fluid;
 
 	FACTORY_CLASS(palNovodexFluid,palSPHFluid,Novodex,2)
 };
@@ -782,13 +785,13 @@ public:
 	virtual void Init(const Float *pParticles, const Float *pMass, const int nParticles, const int *pIndices, const int nIndices);
 	FACTORY_CLASS(palNovodexTetrahedralSoftBody,palTetrahedralSoftBody,Novodex,1)
 private:
-	bool cookMesh(NxSoftBodyMeshDesc& desc);
-	void releaseMeshDescBuffers(const NxSoftBodyMeshDesc& desc);
+	bool cookMesh(PxSoftBodyMeshDesc& desc);
+	void releaseMeshDescBuffers(const PxSoftBodyMeshDesc& desc);
 	void allocateReceiveBuffers(int numVertices, int numTetrahedra);
 
-	NxSoftBody *mSoftBody;
-	NxSoftBodyMesh *mSoftBodyMesh;
-	NxMeshData mReceiveBuffers;
+	PxSoftBody *mSoftBody;
+	PxSoftBodyMesh *mSoftBodyMesh;
+	PxMeshData mReceiveBuffers;
 };
 
 
@@ -796,8 +799,8 @@ class palNovodexPatchSoftBody: public palPatchSoftBody {
 	// Structure for the rendering buffer
 	struct RenderBufferVertexElement
 	{
-		NxVec3 position;
-		NxVec3 normal;
+		PxVec3 position;
+		PxVec3 normal;
 	//	float texCoord[2];
 	};
 
@@ -826,27 +829,27 @@ public:
 	PAL_VECTOR<palVector3> pos;
 	FACTORY_CLASS(palNovodexPatchSoftBody,palPatchSoftBody,Novodex,2)
 private:
-	bool cookMesh(NxClothMeshDesc& desc);
-	void releaseMeshDescBuffers(const NxClothMeshDesc& desc);
+	bool cookMesh(PxClothMeshDesc& desc);
+	void releaseMeshDescBuffers(const PxClothMeshDesc& desc);
 	void allocateReceiveBuffers(int numVertices, int numTriangles);
 
 	int m_nParticles;
 
-	NxMeshData mReceiveBuffers;
-	NxCloth *mCloth;
-	NxClothMesh *mClothMesh;
+	PxMeshData mReceiveBuffers;
+	PxCloth *mCloth;
+	PxClothMesh *mClothMesh;
 
 	RenderBufferVertexElement* mVertexRenderBuffer;
-	NxU32* mIndexRenderBuffer;
+	PxU32* mIndexRenderBuffer;
 
-	NxU32 mMaxVertices;
-	NxU32 mMaxIndices;
-	NxU32 mNumIndices;
-	NxU32 mNumParentIndices;
-	NxU32 mNumVertices;
-	NxU32 mLastNumVertices;
+	PxU32 mMaxVertices;
+	PxU32 mMaxIndices;
+	PxU32 mNumIndices;
+	PxU32 mNumParentIndices;
+	PxU32 mNumVertices;
+	PxU32 mLastNumVertices;
 
-	NxU32 mMeshDirtyFlags;
+	PxU32 mMeshDirtyFlags;
 	bool mTeared;
 };
 

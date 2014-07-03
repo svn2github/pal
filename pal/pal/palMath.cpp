@@ -37,18 +37,19 @@ Float vec_mag(const palVector3 *v ) {
 	return sqrt(vec_mag2(v));
 }
 
-void vec_norm(palVector3 *v) {
+Float vec_norm(palVector3 *v) {
 	Float a=vec_mag(v);
 	if (a<0.00001) {
-		v->x=0;
-		v->y=0;
-		v->z=0;
-		return;
+		v->x=Float(0.0);
+		v->y=Float(0.0);
+		v->z=Float(0.0);
+		return Float(0.0);
 	}
 	a=1/a;
 	v->x*=a;
 	v->y*=a;
 	v->z*=a;
+	return a;
 }
 
 Float vec_dot(const palVector3 *a, const palVector3 *b) {

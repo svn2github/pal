@@ -33,7 +33,7 @@ void palBulletVehicle::Init(palBody *chassis, Float MotorForce, Float BrakeForce
 	m_cBreakingForce = 0;
 	m_cVehicleSteering = 0;
 
-	palBulletPhysics *pbp = palBulletPhysics::GetInstance();
+	palBulletPhysics *pbp = static_cast<palBulletPhysics*>(GetParent());
 	m_dynamicsWorld = pbp->BulletGetDynamicsWorld();
 	palBulletBody *pbb = dynamic_cast<palBulletBody *>(chassis);
 	m_carChassis = pbb->BulletGetRigidBody();
@@ -55,7 +55,7 @@ void palBulletVehicle::Init(palBody *chassis, Float MotorForce, Float BrakeForce
 
 	m_dynamicsWorld->addVehicle(this);
 
-	unsigned int upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
+	unsigned int upAxis = static_cast<palPhysics*>(GetParent())->GetUpAxis();
 
 	int rightIndex = 0;
 	int upIndex = 1;

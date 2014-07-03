@@ -39,14 +39,13 @@
 
 #ifdef DOUBLE_PRECISION
 	typedef double Float;
+	#define PAL_FLOAT_EPSILON  DBL_EPSILON  /* smallest such that 1.0+FLT_EPSILON != 1.0 */
+	#define PAL_MAX_FLOAT DBL_MAX
 #else
 	typedef float Float;
+	#define PAL_FLOAT_EPSILON  FLT_EPSILON  /* smallest such that 1.0+FLT_EPSILON != 1.0 */
+	#define PAL_MAX_FLOAT FLT_MAX
 #endif
-
-#define FLOAT_EPSILON  1.192092896e-07  /* smallest such that 1.0+FLT_EPSILON != 1.0 */
-
-//need a define for infinity!
-//#define MAX_FLOAT 3.402823466e+38
 
 struct palVector3 {
 	static const unsigned int num_components = 3;
@@ -69,6 +68,20 @@ struct palVector3 {
 			z = toCopy.z;
 		}
 		return *this;
+	}
+
+	void Set(Float X = 0.0, Float Y = 0.0, Float Z = 0.0)
+	{
+		x = X;
+		y = Y;
+		z = Z;
+	}
+
+	void Get(Float& X, Float& Y, Float& Z)
+	{
+		X = x;
+		Y = y;
+		Z = z;
 	}
 
 	union
@@ -124,6 +137,21 @@ struct palVector4 {
 			w = toCopy.w;
 		}
 		return *this;
+	}
+
+	void Set(Float X = 0.0, Float Y = 0.0, Float Z = 0.0, Float W = 0.0)
+	{
+		x = X;
+		y = Y;
+		z = Z;
+	}
+
+	void Get(Float& X, Float& Y, Float& Z, Float& W)
+	{
+		X = x;
+		Y = y;
+		Z = z;
+		W = w;
 	}
 
 	union
@@ -185,7 +213,7 @@ extern Float vec_mag2(const palVector3 *v );
 /// length of a vector.
 extern Float vec_mag(const palVector3 *v);
 /// Normalizes a vector.
-extern void  vec_norm(palVector3 *v);
+extern Float  vec_norm(palVector3 *v);
 /// @return the dot product of two vectors.
 extern Float vec_dot(const palVector3 *a, const palVector3 *b);
 /// takes the cross product of a and b and stores it in the vector pointed to by v.
@@ -259,21 +287,24 @@ extern void rotz( palMatrix4x4 *m, float t );
 //what a waste:
 template <typename T> class std_matrix {
 public:
-	void Resize(int x, int y) {
+	void Resize(unsigned x, unsigned y) {
 		mat.resize(y);
-		for (unsigned int i=0;i<mat.size();i++)
+		for (unsigned i=0;i<mat.size();i++)
 			mat[i].resize(x);
 	}
-	T Get(int x, int y) {
+	const T& Get(unsigned x, unsigned y) const {
 		return mat[y][x];
 	}
-	void Set(int x, int y, T t) {
+	T& Get(unsigned x, unsigned y) {
+		return mat[y][x];
+	}
+	void Set(unsigned x, unsigned y, T t) {
 		mat[y][x]=t;
 	}
-	void GetDimensions(int &x, int &y) {
-		y=(int)mat.size();
+	void GetDimensions(unsigned& x, unsigned& y) const {
+		y=(unsigned)mat.size();
 		if (y>0)
-			x=(int)mat[0].size();
+			x=(unsigned)mat[0].size();
 		else
 			x=0;
 	}

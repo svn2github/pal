@@ -16,6 +16,7 @@
  TODO:
  -get to 1.0 (ie: same as pal.h)
  */
+#include <pal/pal.inl>
 
 #ifndef NDEBUG
 #ifdef MICROSOFT_VC
@@ -63,11 +64,10 @@ FACTORY_CLASS_IMPLEMENTATION_BEGIN_GROUP
 
 	FACTORY_CLASS_IMPLEMENTATION(palODEAngularMotor);
 
-	FACTORY_CLASS_IMPLEMENTATION(palODEMaterials);
 	FACTORY_CLASS_IMPLEMENTATION_END_GROUP;
-PAL_MAP<dGeomID, ODE_MATINDEXLOOKUP> palODEMaterials::g_IndexMap;
-std_matrix<palMaterial *> palODEMaterials::g_Materials;
-PAL_VECTOR<PAL_STRING> palODEMaterials::g_MaterialNames;
+//PAL_MAP<dGeomID, ODE_MATINDEXLOOKUP> palODEMaterials::g_IndexMap;
+//std_matrix<palMaterial *> palODEMaterials::g_Materials;
+//PAL_VECTOR<PAL_STRING> palODEMaterials::g_MaterialNames;
 
 static dWorldID g_world;
 static dSpaceID g_space;
@@ -129,17 +129,33 @@ const char* palODEPhysics::GetPALVersion() const {
 	return verbuf;
 }
 
+void palODEPhysics::GetPropertyDocumentation(PAL_MAP<PAL_STRING, PAL_STRING>& descriptions) const
+{
+	palPhysics::GetPropertyDocumentation(descriptions);
+	descriptions["ODE_NoInitOrShutdown"] = "Defaults to FALSE.  If set to true, the global ode init won't be called, nor the global shutdown.  This is so you can manage this yourself.";
+	descriptions["WorldERP"] = "The Global value of the Error Reduction Parameter. Default is 0.2. See http://www.ode.org/ode-latest-userguide.html#sec_3_8_2";
+	descriptions["WorldCFM"] = "The Global value of the Constraint Force Mixing Parameter. Default is 10^-5 (single) or 10^-10 (double).  See http://www.ode.org/ode-latest-userguide.html#sec_3_8_2";
+}
+
 void palODEPhysics::Init(const palPhysicsDesc& desc) {
 	palPhysics::Init(desc);
-	if (m_Properties["ODE_NoInitOrShutdown"] != "true") {
+	if (GetInitProperty("ODE_NoInitOrShutdown") != "true") {
 		dInitODE2(0);
 	}
+
 	g_world = dWorldCreate();
 	g_space = dHashSpaceCreate(0);
-	g_contactgroup = dJointGroupCreate(0); //0 happparently
+	g_contactgroup = dJointGroupCreate(0); //0 apparently
 	SetGravity(m_fGravityX, m_fGravityY, m_fGravityZ);
 	// enable auto disable because pal has support for it on bodies, and it generally helps performance.
 	dWorldSetAutoDisableFlag(g_world, 1);
+
+	dReal erp = GetInitProperty("WorldERP", dWorldGetERP(g_world), dReal(PAL_FLOAT_EPSILON), dReal(1.0));
+	dWorldSetERP (g_world, erp);
+
+	dReal cfm = GetInitProperty("WorldCFM", dWorldGetCFM(g_world), dReal(0.0), dReal(1.0));
+	dWorldSetCFM (g_world, cfm);
+
 	m_initialized = true;
 }
 ;
@@ -215,20 +231,13 @@ static void nearCallback(void *data, dGeomID o1, dGeomID o2) {
 	dBodyID b1 = dGeomGetBody(o1);
 	dBodyID b2 = dGeomGetBody(o2);
 
-	//		ODE_MATINDEXLOOKUP *sm1=palODEMaterials::GetMaterial(o1);
-	//		ODE_MATINDEXLOOKUP *sm2=palODEMaterials::GetMaterial(o2);
-	//		printf("material interaction: [%d %d][%d %d]",b1,b2,o1,o2);
-	//		printf("indexs::%d %d\n",*sm1,*sm2);
-	/*		if (sm1)
-	 printf("%s",sm1->c_str());
-	 printf(" with ");
-	 if (sm2)
-	 printf("%s",sm2->c_str());
-	 printf("\n");*/
+	palBodyBase* pb1 = NULL,* pb2 = NULL;
+	if (b1 != 0)
+		pb1 = static_cast<palBodyBase *> (dBodyGetData(b1));
+	if (b2 != 0)
+		pb2 = static_cast<palBodyBase *> (dBodyGetData(b2));
 
-	palMaterial *pm = palODEMaterials::GetODEMaterial(o1, o2);
-
-	if (b1 && b2 && dAreConnectedExcluding(b1, b2, dJointTypeContact))
+	if (b1 != 0 && b2 != 0 && dAreConnectedExcluding(b1, b2, dJointTypeContact))
 		return;
 
 	bool response = true;
@@ -237,77 +246,78 @@ static void nearCallback(void *data, dGeomID o1, dGeomID o2) {
 	if (b2)
 		response = response && IsCollisionResponseEnabled(b2);
 
-	for (i = 0; i < MAX_CONTACTS; i++) {
-		g_contactArray[i].surface.mode = dContactBounce //| dContactSoftERP | dContactSoftCFM
-					| dContactApprox1;
-		//remove dContactSoftCFM | dContactApprox1 for bounce..
-		if (pm) {
+	palMaterials* materials = palFactory::GetInstance()->GetActivePhysics()->GetMaterials();
 
-			g_contactArray[i].surface.mu = pm->m_fStatic;
-			g_contactArray[i].surface.bounce = pm->m_fRestitution;
-			if (pm->m_bEnableAnisotropicFriction)
-			{
-				g_contactArray[i].surface.mu = pm->m_fStatic * pm->m_vStaticAnisotropic[0];
-				g_contactArray[i].surface.mode |= dContactMu2;
-				g_contactArray[i].surface.mu2 = pm->m_fStatic * pm->m_vStaticAnisotropic[1];
-			}
-		} else {
-			g_contactArray[i].surface.mu = (dReal)dInfinity;
-			g_contactArray[i].surface.bounce = 0.1f;
-		}
-		//			const real minERP=(real)0.01;
-		//			const real maxERP=(real)0.99;
-		//g_contactArray[i].surface.slip1 = 0.1; // friction
-		//g_contactArray[i].surface.slip2 = 0.1;
-		//g_contactArray[i].surface.bounce_vel = 1;
-		//g_contactArray[i].surface.soft_erp = 0.5f;
-		//g_contactArray[i].surface.soft_cfm = 0.01f;
-	}
+	palMaterialDesc finalMaterial;
+	palMaterial * pm1 = pb1->GetMaterial();
+	palMaterial * pm2 = pb1->GetMaterial();
+
 	int numc = dCollide(o1, o2, MAX_CONTACTS, &g_contactArray[0].geom, sizeof(dContact));
 
 	if (numc > 0) {
 		for (i = 0; i < numc; i++) {
+			palContactPoint cp;
+
+			for (unsigned vidx = 0; vidx < 3; ++vidx)
+			{
+				cp.m_vContactPosition[vidx] = Float(g_contactArray[i].geom.pos[vidx]);
+				cp.m_vContactNormal[vidx] = Float(g_contactArray[i].geom.normal[vidx]);
+			}
+
+			cp.m_fDistance = Float(g_contactArray[i].geom.depth);
+
+			cp.m_pBody1 = pb1;
+			cp.m_pBody2 = pb2;
+
+			if (!materials->HandleCustomInteraction(pm1, pm2, finalMaterial, cp, true))
+			{
+				finalMaterial.m_fStatic = Float(dInfinity);
+				finalMaterial.m_fRestitution = Float(0.1);
+				finalMaterial.m_bEnableAnisotropicFriction = false;
+			}
+			else
+			{
+				for (unsigned vidx = 0; vidx < 3; ++vidx)
+				{
+					g_contactArray[i].geom.pos[vidx] = dReal(cp.m_vContactPosition[vidx]);
+					g_contactArray[i].geom.normal[vidx] = dReal(cp.m_vContactNormal[vidx]);
+				}
+				g_contactArray[i].geom.depth = dReal(cp.m_fDistance);
+			}
+
+			g_contactArray[i].surface.mode = dContactBounce //| dContactSoftERP | dContactSoftCFM
+						| dContactApprox1;
+			//remove dContactSoftCFM | dContactApprox1 for bounce..
+			g_contactArray[i].surface.mu = finalMaterial.m_fStatic;
+			g_contactArray[i].surface.bounce = finalMaterial.m_fRestitution;
+			if (finalMaterial.m_bEnableAnisotropicFriction)
+			{
+				g_contactArray[i].surface.mu = finalMaterial.m_fStatic * finalMaterial.m_vStaticAnisotropic[0];
+				g_contactArray[i].surface.mode |= dContactMu2;
+				g_contactArray[i].surface.mu2 = finalMaterial.m_fStatic * finalMaterial.m_vStaticAnisotropic[1];
+			}
+//			g_contactArray[i].surface.slip1 = 0.1; // friction
+//			g_contactArray[i].surface.slip2 = 0.1;
+//			g_contactArray[i].surface.bounce_vel = 1;
+//			g_contactArray[i].surface.soft_erp = 0.5f;
+//			g_contactArray[i].surface.soft_cfm = 0.01f;
 			if (response)
 			{
 				dJointID c = dJointCreateContact(g_world, g_contactgroup, &g_contactArray[i]);
 				dJointAttach(c, b1, b2);
 			}
 
-			//g_contactArray[i].fdir1;
-			dBodyID cb1 = dGeomGetBody(g_contactArray[i].geom.g1);
-			dBodyID cb2 = dGeomGetBody(g_contactArray[i].geom.g2);
-
-			palBodyBase *pcb1 = NULL;
-			if (cb1 != NULL)
-				pcb1 = static_cast<palBodyBase *> (dBodyGetData(cb1));
-			palBodyBase *pcb2 = NULL;
-			if (cb2 != NULL)
-				pcb2 = static_cast<palBodyBase *> (dBodyGetData(cb2));
-
 			bool dolisten = false;
-			if (pcb1 != NULL)
+			if (pb1 != NULL)
 			{
-				dolisten = listenCollision(pcb1, pcb2);
+				dolisten = listenCollision(pb1, pb2);
 			}
-			else if (pcb2 != NULL)
+			else if (pb2 != NULL)
 			{
-				dolisten = listenCollision(pcb2, pcb1);
+				dolisten = listenCollision(pb2, pb1);
 			}
 
 			if (!dolisten) continue;
-
-			palContactPoint cp;
-
-			cp.m_vContactPosition.x = g_contactArray[i].geom.pos[0];
-			cp.m_vContactPosition.y = g_contactArray[i].geom.pos[1];
-			cp.m_vContactPosition.z = g_contactArray[i].geom.pos[2];
-
-			cp.m_vContactNormal.x = g_contactArray[i].geom.normal[0];
-			cp.m_vContactNormal.y = g_contactArray[i].geom.normal[1];
-			cp.m_vContactNormal.z = g_contactArray[i].geom.normal[2];
-
-			cp.m_pBody1 = pcb1;
-			cp.m_pBody2 = pcb2;
 
 			g_contacts.push_back(cp);
 		}
@@ -409,7 +419,7 @@ static void OdeRayCallbackCallback(void* data, dGeomID o1, dGeomID o2) {
 }
 
 void palODEPhysics::RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range,
-			palRayHit& hit) {
+			palRayHit& hit) const {
 	dGeomID odeRayId = dCreateRay(0, range);
 	dGeomRaySet(odeRayId, x, y, z, dx, dy, dz);
 	dSpaceCollide2((dGeomID)ODEGetSpace(), odeRayId, &hit, &OdeRayCallback);
@@ -417,7 +427,7 @@ void palODEPhysics::RayCast(Float x, Float y, Float z, Float dx, Float dy, Float
 }
 
 void palODEPhysics::RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range,
-			palRayHitCallback& callback, palGroupFlags groupFilter) {
+			palRayHitCallback& callback, palGroupFlags groupFilter) const {
 	dGeomID odeRayId = dCreateRay(0, range);
 	dGeomRaySet(odeRayId, x, y, z, dx, dy, dz);
 	OdeCallbackData data;
@@ -551,7 +561,7 @@ void palODEPhysics::Cleanup() {
 		dJointGroupDestroy(g_contactgroup);
 		dSpaceDestroy(g_space);
 		dWorldDestroy(g_world);
-		if (m_Properties["ODE_NoInitOrShutdown"] != "true") {
+		if (GetInitProperty("ODE_NoInitOrShutdown") != "true") {
 			dCloseODE();
 		}
 	}
@@ -924,78 +934,6 @@ const std::bitset<palODEBody::DUMMY_ACTIVATION_SETTING_TYPE>& palODEBody::GetSup
 	return SUPPORTED_SETTINGS;
 }
 
-/////////////////
-palODEMaterials::palODEMaterials() {
-}
-
-palMaterial *palODEMaterials::GetODEMaterial(dGeomID odeGeomA, dGeomID odeGeomB) {
-	ODE_MATINDEXLOOKUP *a = GetMaterialIndex(odeGeomA);
-	ODE_MATINDEXLOOKUP *b = GetMaterialIndex(odeGeomB);
-	if (!a)
-		return NULL;
-	if (!b)
-		return NULL;
-	return g_Materials.Get(*a, *b);
-}
-
-palMaterialUnique* palODEMaterials::NewMaterial(PAL_STRING name, const palMaterialDesc& desc) {
-	if (GetIndex(name) != -1) //error
-		return NULL;
-
-	int size, check;
-	g_Materials.GetDimensions(size, check);
-	g_Materials.Resize(size + 1, size + 1);
-
-	return palMaterials::NewMaterial(name, desc);
-}
-
-void palODEMaterials::SetIndex(int posx, int posy, palMaterial *pm) {
-	//	printf("palODEMATERIALS setindex\n");
-	g_Materials.Set(posx, posy, pm);
-	palMaterials::SetIndex(posx, posy, pm);
-}
-
-void palODEMaterials::SetNameIndex(PAL_STRING name) {
-	g_MaterialNames.push_back(name);
-	palMaterials::SetNameIndex(name);
-}
-
-void palODEMaterials::InsertIndex(dGeomID odeBody, palMaterial *mat) {
-	palMaterialUnique *pmu = dynamic_cast<palMaterialUnique *> (mat);
-
-	int index = -1;
-	for (unsigned int i = 0; i < g_MaterialNames.size(); i++)
-		if (g_MaterialNames[i] == pmu->m_Name)
-			index = i;
-
-	if (index < 0) {
-		STATIC_SET_ERROR
-		("Could not insert index for material %s\n", pmu->m_Name.c_str());
-	}
-
-	g_IndexMap.insert(std::make_pair(odeBody, index));
-}
-
-ODE_MATINDEXLOOKUP* palODEMaterials::GetMaterialIndex(dGeomID odeBody) {
-	PAL_MAP<dGeomID, ODE_MATINDEXLOOKUP> ::iterator itr;
-	itr = g_IndexMap.find(odeBody);
-	if (itr == g_IndexMap.end()) {
-		return NULL;
-	}
-	return &itr->second;
-	//return m_IndexMap[odeBody];
-}
-
-////////////////
-void palODEBody::SetMaterial(palMaterial *material) {
-	for (unsigned int i = 0; i < m_Geometries.size(); i++) {
-		palODEGeometry *poG = dynamic_cast<palODEGeometry *> (m_Geometries[i]);
-		if (poG)
-			poG->SetMaterial(material);
-	}
-	palBody::SetMaterial(material);
-}
-
 palODEGeometry::palODEGeometry() {
 	m_pBody = 0;
 	odeGeom = 0;
@@ -1016,11 +954,6 @@ const palMatrix4x4& palODEGeometry::GetLocationMatrix() const {
 	}
 	return m_mLoc;
 }
-
-void palODEGeometry::SetMaterial(palMaterial *material) {
-	palODEMaterials::InsertIndex(odeGeom, material);
-}
-
 void palODEGeometry::SetPosition(const palMatrix4x4 &loc) {
 	palGeometry::SetPosition(loc);
 
@@ -1971,11 +1904,6 @@ palODETerrain::~palODETerrain() {
 	}
 }
 
-void palODETerrain::SetMaterial(palMaterial *material) {
-	if (odeGeom)
-		palODEMaterials::InsertIndex(odeGeom, material);
-}
-
 const palMatrix4x4& palODETerrain::GetLocationMatrix() const {
 	memset(&m_mLoc, 0, sizeof(m_mLoc));
 	m_mLoc._11 = 1;
@@ -2198,9 +2126,14 @@ void palODEAngularMotor::Init(palRevoluteLink *pLink, Float Max) {
 	}
 }
 
-void palODEAngularMotor::Update(Float targetVelocity) {
+void palODEAngularMotor::Update(Float targetVelocity, Float Max) {
 	if (odeJoint)
+	{
+		if (Max <= 0.0)
+			Max = m_fMax;
+		dJointSetHingeParam(odeJoint, dParamFMax, Max);
 		dJointSetHingeParam(odeJoint, dParamVel, targetVelocity);
+	}
 }
 
 void palODEAngularMotor::Apply() {

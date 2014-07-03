@@ -80,6 +80,13 @@ struct palPhysicsDesc {
 class palPhysics : public palFactoryObject {
 	friend class palFactory;
 public:
+
+	/**
+	 * Gets the properties supported by this physics engine api.
+	 * @param docOut an output parameter of property names mapped to documentation
+	 */
+	virtual void GetPropertyDocumentation(PAL_MAP<PAL_STRING, PAL_STRING>& docOut) const;
+
 	/**
 	Initializes the physics engine.
 	\param desc The description object defining the settings for this physics instance.
@@ -102,6 +109,7 @@ public:
 	This returns the physics engine name and physics engine version.
 	*/
 	virtual const char* GetVersion() const = 0;
+
 	/**
 	Returns the current simulation time
 	*/
@@ -141,10 +149,23 @@ public:
 	/// @return the debug draw instance.
 	virtual palDebugDraw* GetDebugDraw();
 
-	virtual palCollisionDetection* asCollisionDetection() { return 0; }
+	virtual palCollisionDetection* asCollisionDetection();
+
+	/**
+	 * @return the material system.
+	 */
+	palMaterials* GetMaterials() { return m_pMaterials; }
+
+	template<typename T>
+	T GetInitProperty( const PAL_STRING& name, T defaultVal, T min, T max ) const;
+
+	/**
+	 * @return the value of an init property.
+	 */
+	const PAL_STRING& GetInitProperty(const PAL_STRING& name, const PAL_STRING& defaultVal = PAL_STRING()) const;
+
 protected:
 	bool m_bListen; //!< If set to true, notify functions are called.
-	palMaterials *m_pMaterials;
 	virtual void Iterate(Float timestep) = 0;
 
 	///Call all actions.
@@ -155,7 +176,6 @@ protected:
 	Float m_fLastTimestep;
 	Float m_fTime; //dodgy?
 	palAxis m_nUpAxis;
-	PAL_MAP<PAL_STRING, PAL_STRING> m_Properties;
 
 	/** Construction, destruction, and Cleanup should only be done by
 	 * the palFactory. */
@@ -176,11 +196,12 @@ protected:
 //	palCollisionDetection *m_pCollision;
 //	palSolver *m_pSolver;
 
-	PAL_LIST<palAction*> m_Actions;
 private:
+	typedef PAL_MAP<PAL_STRING, PAL_STRING> PropertyMap;
+	PropertyMap m_Properties;
+	palMaterials *m_pMaterials;
 	palDebugDraw *m_pDebugDraw;
-	palPhysics(const palPhysics& pp) {}
-	palPhysics& operator=(palPhysics& pp) { return *this; }
+	PAL_LIST<palAction*> m_Actions;
 };
 
 /*!
@@ -219,7 +240,6 @@ public:
 
 	\subsection intro_imp_sec Available Implementations:
 	PAL is available for: (alphabetical listing)
-		- AGEIA PhysX http://www.ageia.com/ [* - same as NovodeX]
 		- Box2D http://www.box2d.org/ [* - experimental implementation]
 		- Bullet http://www.continuousphysics.com/Bullet/
 		- Dynamechs http://dynamechs.sourceforge.net/ [* - implementation permanently disabled]

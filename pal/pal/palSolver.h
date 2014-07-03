@@ -91,7 +91,7 @@ public:
 	virtual void WaitForIteration() = 0;
 
 	/** Set the number of concurrent physics processing elements the physics simulation may use.
-	eg: Threads.
+	eg: Threads.  In bullet, you have to enable multi-threading or this will do nothing.
 	*/
 	virtual void SetPE(int n) = 0;
 

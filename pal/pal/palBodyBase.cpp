@@ -44,6 +44,11 @@ void palBodyBase::ClearGeometryBody(palGeometry *pgeom) {
 		pgeom->m_pBody=NULL;
 }
 
+palMaterial* palBodyBase::GetMaterial()
+{
+	return m_pMaterial;
+}
+
 void palBodyBase::SetMaterial(palMaterial *material) {
 	m_pMaterial = material;
 }

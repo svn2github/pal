@@ -76,14 +76,14 @@ template<typename types>
  typedef OTTypes::math_policy::real_type  OTReal;
  typedef OTTypes::material_type OTMaterial;
 
-class palOpenTissueMaterialUnique : public palMaterialUnique {
+class palOpenTissueMaterial : public palMaterial {
 public:
-	palOpenTissueMaterialUnique();
+	palOpenTissueMaterial();
 	void Init(STRING name, const palMaterialDesc& desc);
 	OTMaterial m_material;
 	int m_idx;
 protected:
-	FACTORY_CLASS(palOpenTissueMaterialUnique,palMaterialUnique,OpenTissue,2);
+	FACTORY_CLASS(palOpenTissueMaterial,palMaterial,OpenTissue,2);
 };
 
 class palOpenTissuePhysics: public palPhysics {

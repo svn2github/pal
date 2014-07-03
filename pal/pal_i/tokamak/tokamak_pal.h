@@ -72,20 +72,20 @@ protected:
 */
 
 
-class palTokamakMaterialUnique : public palMaterialUnique {
+class palTokamakMaterial : public palMaterial {
 public:
-	palTokamakMaterialUnique();
+	palTokamakMaterial();
 	void Init(PAL_STRING name, const palMaterialDesc& desc);
 
 	int m_Index;
 protected:
-	FACTORY_CLASS(palTokamakMaterialUnique,palMaterialUnique,Tokamak,2);
+	FACTORY_CLASS(palTokamakMaterial,palMaterial,Tokamak,2);
 };
 
 class palTokamakMaterialInteraction : public palMaterialInteraction  {
 public:
 	palTokamakMaterialInteraction();
-	void Init(palMaterialUnique *pM1, palMaterialUnique *pM2, const palMaterialDesc& desc);
+	void Init(palMaterial *pM1, palMaterial *pM2, const palMaterialDesc& desc);
 protected:
 	FACTORY_CLASS(palTokamakMaterialInteraction,palMaterialInteraction,Tokamak,2);
 };

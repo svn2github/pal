@@ -81,20 +81,20 @@ protected:
 */
 //	void AddBuoyancyForce(float fluidDensity, float fluidLinearViscosity, float fluidAngularViscosity, float *plane = NULL);
 
-class palNewtonMaterialUnique : public palMaterialUnique {
+class palNewtonMaterial : public palMaterial {
 public:
-	palNewtonMaterialUnique();
+	palNewtonMaterial();
 	void Init(PAL_STRING name, const palMaterialDesc& desc);
 
 	int m_GroupID;
 protected:
-	FACTORY_CLASS(palNewtonMaterialUnique,palMaterialUnique,Newton,2);
+	FACTORY_CLASS(palNewtonMaterial,palMaterial,Newton,2);
 };
 
 class palNewtonMaterialInteraction : public palMaterialInteraction  {
 public:
 	palNewtonMaterialInteraction();
-	void Init(palMaterialUnique *pM1, palMaterialUnique *pM2, const palMaterialDesc& desc);
+	void Init(palMaterial *pM1, palMaterial *pM2, const palMaterialDesc& desc);
 protected:
 	FACTORY_CLASS(palNewtonMaterialInteraction,palMaterialInteraction,Newton,2);
 };

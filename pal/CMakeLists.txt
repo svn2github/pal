@@ -89,6 +89,11 @@ ENDIF()
 
 OPTION(PAL_BUILD_DOUBLE_PRECISION "Set to ON to make PAL build as double precision." OFF)
 
+set(bitness 32)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  set(bitness 64)
+endif()
+
 IF(UNIX AND NOT APPLE)
 	# Some Unicies need explicit linkage to the Math library or the build fails.
 	FIND_LIBRARY(MATH_LIBRARY m)
@@ -103,8 +108,6 @@ IF(PAL_BUILD_BOX2D AND PAL_CONFIG_HAS_BEEN_RUN_BEFORE)
 ENDIF()
 
 OPTION(PAL_BUILD_BULLET "Set to ON to build PAL BULLET." ${DEPENDENCIES_DEFAULT_OPTION})
-OPTION(BULLET_SINGLE_THREADED "Set to ON to search for BULLET library in single threaded mode (multi-threaded otherwise)." ON)
-OPTION(BULLET_DOUBLE_PRECISION "Set to ON if bullet has been build double precision." OFF)
 IF(PAL_BUILD_BULLET AND PAL_CONFIG_HAS_BEEN_RUN_BEFORE)
 	SET_ADDITIONAL_SEARCH_PATHS("bullet"  "bullet-2.82"  "bullet-2.81" "bullet-2.80" "bullet-2.79")
 	FIND_PACKAGE(BULLET)
@@ -559,9 +562,11 @@ ADD_SUBDIRECTORY(gtest)
 SET(GTEST_BOTH_LIBRARIES  gtest gtest_main)
 SET(GTEST_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/gtest/include)
 
-ENABLE_TESTING()
-INCLUDE(CTest)
-SET(TESTING_ENABLED TRUE)
+if (PAL_EXAMPLES_NO_DISPLAY)
+   ENABLE_TESTING()
+   INCLUDE(CTest)
+   SET(TESTING_ENABLED TRUE)
+endif()
 
 ADD_SUBDIRECTORY(pal)		# libpal
 ADD_SUBDIRECTORY(pal_i)		# libpal_ode and such

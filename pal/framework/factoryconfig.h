@@ -63,7 +63,7 @@ protected:
 
 #ifdef INTERNAL_DEBUG
 #define FACTORY_CLASS(name,ClassName,GroupName,Version) public: \
-	name(FactoryStaticRegisterVariable reg) { \
+	name(FactoryStaticRegisterVariable /*reg*/) { \
 		 RegisterWithFactory(PluggableFactory<myFactoryParameters>::sInfo());} \
 void RegisterWithFactory(PAL_VECTOR<myFactoryInfo> &lsInfo) { \
 		myFactoryInfo ri; \
@@ -79,7 +79,7 @@ myFactoryObject* Create() {return new name;} \
 	private:
 #else
 #define FACTORY_CLASS(name,ClassName,GroupName,Version) public: \
-name(FactoryStaticRegisterVariable reg) { \
+name(FactoryStaticRegisterVariable /*reg*/) { \
 		 RegisterWithFactory(PluggableFactory<myFactoryParameters>::sInfo());} \
 void RegisterWithFactory(PAL_VECTOR<myFactoryInfo> &lsInfo) { \
 		myFactoryInfo ri; \

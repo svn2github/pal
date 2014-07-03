@@ -50,14 +50,14 @@
 #endif
 
 #if (JIGLIB_V >= 830)
-class palJiggleMaterialUnique : public palMaterialUnique {
+class palJiggleMaterial : public palMaterial {
 public:
-	palJiggleMaterialUnique();
+	palJiggleMaterial();
 	void Init(PAL_STRING name, const palMaterialDesc& desc);
 	int m_idx;
 	JigLib::tMaterialProperties m_jProp;
 protected:
-	FACTORY_CLASS(palJiggleMaterialUnique,palMaterialUnique,Jiggle,2);
+	FACTORY_CLASS(palJiggleMaterial,palMaterial,Jiggle,2);
 };
 #endif
 

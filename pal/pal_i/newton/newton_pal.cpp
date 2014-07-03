@@ -32,7 +32,7 @@ NewtonWorld* palNewtonPhysics::NewtonGetWorld() {
 FACTORY_CLASS_IMPLEMENTATION_BEGIN_GROUP
 ;	FACTORY_CLASS_IMPLEMENTATION(palNewtonPhysics);
 
-	FACTORY_CLASS_IMPLEMENTATION(palNewtonMaterialUnique);
+	FACTORY_CLASS_IMPLEMENTATION(palNewtonMaterial);
 	FACTORY_CLASS_IMPLEMENTATION(palNewtonMaterialInteraction);
 
 	FACTORY_CLASS_IMPLEMENTATION(palNewtonBoxGeometry);
@@ -192,11 +192,11 @@ unsigned CDECL newtonRaycastPreFilter(const NewtonBody *body, const NewtonCollis
 	return 1;
 }
 
-palNewtonMaterialUnique::palNewtonMaterialUnique() {
+palNewtonMaterial::palNewtonMaterial() {
 }
 
-void palNewtonMaterialUnique::Init(PAL_STRING name, const palMaterialDesc& desc) {
-	palMaterialUnique::Init(name, desc);
+void palNewtonMaterial::Init(PAL_STRING name, const palMaterialDesc& desc) {
+	palMaterial::Init(name, desc);
 	m_GroupID = NewtonMaterialCreateGroupID(g_nWorld);
 
 	NewtonMaterialSetDefaultCollidable(g_nWorld, m_GroupID, m_GroupID, 1);
@@ -210,11 +210,11 @@ void palNewtonMaterialUnique::Init(PAL_STRING name, const palMaterialDesc& desc)
 palNewtonMaterialInteraction::palNewtonMaterialInteraction() {
 }
 
-void palNewtonMaterialInteraction::Init(palMaterialUnique *pM1, palMaterialUnique *pM2,
+void palNewtonMaterialInteraction::Init(palMaterial *pM1, palMaterial *pM2,
          const palMaterialDesc& desc) {
 	palMaterialInteraction::Init(pM1, pM2, desc);
-	palNewtonMaterialUnique *pNM1 = dynamic_cast<palNewtonMaterialUnique *> (pM1);
-	palNewtonMaterialUnique *pNM2 = dynamic_cast<palNewtonMaterialUnique *> (pM2);
+	palNewtonMaterial *pNM1 = dynamic_cast<palNewtonMaterial *> (pM1);
+	palNewtonMaterial *pNM2 = dynamic_cast<palNewtonMaterial *> (pM2);
 
 	NewtonMaterialSetDefaultCollidable(g_nWorld, pNM1->m_GroupID, pNM2->m_GroupID, 1);
 	NewtonMaterialSetDefaultElasticity(g_nWorld, pNM1->m_GroupID, pNM2->m_GroupID, m_fRestitution);
@@ -682,7 +682,7 @@ void palNewtonBody::SetAngularVelocity(const palVector3& velocity_rad) {
 void palNewtonBody::SetMaterial(palMaterial *material) {
 	if (!m_pntnBody)
 		return; //this may crash
-	palNewtonMaterialUnique * pnmU = dynamic_cast<palNewtonMaterialUnique *> (material);
+	palNewtonMaterial * pnmU = dynamic_cast<palNewtonMaterial *> (material);
 	NewtonBodySetMaterialGroupID(m_pntnBody, pnmU->m_GroupID);
 	palBody::SetMaterial(material);
 }
@@ -1272,7 +1272,7 @@ palNewtonTerrain::palNewtonTerrain() {
 }
 
 void palNewtonTerrain::SetMaterial(palMaterial *material) {
-	palNewtonMaterialUnique * pnmU = dynamic_cast<palNewtonMaterialUnique *> (material);
+	palNewtonMaterial * pnmU = dynamic_cast<palNewtonMaterial *> (material);
 	if (m_pntnBody)
 		NewtonBodySetMaterialGroupID(m_pntnBody, pnmU->m_GroupID);
 }

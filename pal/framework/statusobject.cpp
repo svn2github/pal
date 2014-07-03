@@ -48,3 +48,7 @@ void StatusObject::SetParent(StatusObject *pParent) {
 StatusObject *StatusObject::GetParent() {
 	return m_pParent;
 }
+
+const StatusObject *StatusObject::GetParent() const {
+	return m_pParent;
+}

@@ -97,7 +97,7 @@ const string getAngleInfo(palBulletSphericalLink* link) {
 TEST_F(palSphericalLinkTest, testConeLimits)
 {
 	cout.precision(4);
-	//link->SetLimits(M_PI, FLOAT_EPSILON);
+	//link->SetLimits(M_PI, PAL_FLOAT_EPSILON);
 	link->SetLimits(M_PI / 2.f, 0.0f); // negative numbers mean unconstrained
 	palVector3 floaterPos;
 	palVector3 anchorPos;

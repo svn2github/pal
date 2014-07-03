@@ -5,6 +5,8 @@
 
 INCLUDE(FindPackageTargetLibraries)
 
+OPTION(BULLET_DOUBLE_PRECISION "Set to ON if bullet has been build double precision." OFF)
+
 SET(BULLET_MSVC_LIB_DIR "")
 IF(CMAKE_GENERATOR MATCHES "Visual Studio")
 	IF (${CMAKE_GENERATOR} MATCHES "2008")
@@ -28,18 +30,23 @@ FIND_PATH(BULLET_INCLUDE_DIR btBulletDynamicsCommon.h
 	PATH_SUFFIXES include src include/bullet
 )
 
-IF(BULLET_SINGLE_THREADED)
-	# WARNING: BulletMath is the name found in MSVC prebuilt bojects, LinearMath is what is found using the CMake script. The case is handled below.
-	SET(BULLET_LIBS "BulletSoftBody" "BulletDynamics" "BulletCollision" "LinearMath" "BulletMath")		# Tested with Bullet 2.73
-ELSE()
-	SET(BULLET_LIBS "BulletSoftBody" "BulletDynamics" "BulletCollision" "LinearMath" "BulletMath" "BulletMultiThreaded")		# Tested with Bullet 2.73
-ENDIF()
+SET(BULLET_LIBS "BulletSoftBody" "BulletDynamics" "BulletCollision" "LinearMath" "BulletMultiThreaded")		# Tested with Bullet 2.82
+
 SET(BULLET_LIBRARIES)
 
 FOREACH(CUR_LIB ${BULLET_LIBS})
 	STRING(TOLOWER "${CUR_LIB}" CUR_LIB_LOWER)
+
+	if (${CUR_LIB} STREQUAL LinearMath)
+	    SET(ADDITIONAL_NAMES "LibBulletMath libbulletmath BulletMath bulletMath")
+	    SET(ADDITIONAL_NAMES_DEBUG "LibBulletMath_d libbulletmath_d BulletMath_d bulletMath_d LibBulletMath_debug libbulletmath_debug BulletMath_debug bulletMath_debug")
+ 	else()
+            SET(ADDITIONAL_NAMES "")
+	    SET(ADDITIONAL_NAMES_DEBUG "") 
+        endif()
+
 	FIND_LIBRARY(BULLET_LIBRARY_${CUR_LIB}
-		NAMES "Lib${CUR_LIB}" "lib${CUR_LIB_LOWER}" ${CUR_LIB} ${CUR_LIB_LOWER}
+		NAMES "Lib${CUR_LIB}" "lib${CUR_LIB_LOWER}" ${CUR_LIB} ${CUR_LIB_LOWER} ${ADDITIONAL_NAMES}
 		HINTS
 			$ENV{BULLET_DIR}
 			$ENV{BULLET_PATH}
@@ -48,7 +55,7 @@ FOREACH(CUR_LIB ${BULLET_LIBS})
 	)
 
 	FIND_LIBRARY(BULLET_LIBRARY_${CUR_LIB}_DEBUG
-		NAMES "Lib${CUR_LIB}d" "lib${CUR_LIB_LOWER}d" "${CUR_LIB}d" "${CUR_LIB_LOWER}d" "Lib${CUR_LIB}_d" "lib${CUR_LIB_LOWER}_d" "${CUR_LIB}_d" "${CUR_LIB_LOWER}_d" "lib${CUR_LIB_LOWER}" 
+		NAMES "Lib${CUR_LIB}d" "lib${CUR_LIB_LOWER}d" "${CUR_LIB}d" "${CUR_LIB_LOWER}d" "Lib${CUR_LIB}_d" "lib${CUR_LIB_LOWER}_d" "${CUR_LIB}_d" "${CUR_LIB_LOWER}_d" "${CUR_LIB_LOWER}_debug" "${CUR_LIB}_debug"  "lib${CUR_LIB_LOWER}" ${ADDITIONAL_NAMES_DEBUG} 
 		HINTS
 			$ENV{BULLET_DIR}
 			$ENV{BULLET_PATH}
@@ -56,7 +63,6 @@ FOREACH(CUR_LIB ${BULLET_LIBS})
 		PATH_SUFFIXES lib64 lib src "src/${CUR_LIB}" "src/${CUR_LIB_LOWER}" "out/debug_dll${BULLET_MSVC_LIB_DIR}/libs" "out/debug${BULLET_MSVC_LIB_DIR}/libs" "out/debug_dll${BULLET_MSVC_LIB_DIR}/build/lib${CUR_LIB_LOWER}" 
 	)
 
-	# Don't call FIND_PACKAGE_ADD_TARGET_LIBRARIES() here because of the LinearMath/BulletMath special case
 ENDFOREACH()
 
 
@@ -68,16 +74,6 @@ FOREACH(CUR_LIB ${BULLET_LIBS})
 	LIST(APPEND BULLET_LIBRARY_FULL_LIST "BULLET_LIBRARY_${CUR_LIB}")
 ENDFOREACH()
 
-# Handle special case: LinearMath and BulletMath are aliases to the same library. LinearMath is taken in account in priority here.
-IF(BULLET_LIBRARY_BulletMath AND NOT BULLET_LIBRARY_LinearMath)
-	# Use BulletMath if it exists and LinearMath doesn't
-	SET(USE_LINEAR_MATH_NAME FALSE)
-	LIST(REMOVE_ITEM BULLET_LIBRARY_FULL_LIST "BULLET_LIBRARY_LinearMath")
-ELSE()
-	# General case: use LinearMath
-	SET(USE_LINEAR_MATH_NAME TRUE)
-	LIST(REMOVE_ITEM BULLET_LIBRARY_FULL_LIST "BULLET_LIBRARY_BulletMath")
-ENDIF()
 
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(BULLET DEFAULT_MSG ${BULLET_LIBRARY_FULL_LIST} BULLET_INCLUDE_DIR)

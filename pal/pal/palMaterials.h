@@ -1,5 +1,8 @@
 #ifndef PALMATERIALS_H
 #define PALMATERIALS_H
+
+#include "palBase.h"
+
 //(c) Adrian Boeing 2007, see liscence.txt (BSD liscence)
 
 /** The Material definition structure.
@@ -26,7 +29,13 @@
 struct palMaterialDesc {
    palMaterialDesc();
 	virtual ~palMaterialDesc() {}
-   Float m_fStatic; //!< Static friction coefficient, defaults to 0.0
+
+	/*
+	 Sets the member variables.
+	*/
+	virtual void SetParameters(const palMaterialDesc& matDesc);
+
+	Float m_fStatic; //!< Static friction coefficient, defaults to 0.0
    Float m_fKinetic; //!< Kinetic friction coefficient for isotropic or inline with the direction of anisotropy, defaults to 0.0
    Float m_fRestitution; //!< Restitution coefficient defaults to 0.5
    palVector3 m_vStaticAnisotropic; //!< Anistropic friction vector 0-1 based on the friction coefficient.  Defaults to 1,1,1.
@@ -49,54 +58,62 @@ struct palMaterialDesc {
 	\todo
 */
 
+class palMaterial;
+class palMaterialInteraction;
+
 /** This is the base material class.
 	This class is only neccessary when constructing a new PAL physics implementation.
 	To obtain a pointer to a Material you need to access it via palMaterials::GetMaterial().
 */
 class palMaterial : public palFactoryObject, public palMaterialDesc {
 public:
-	palMaterial() {}
-	palMaterial(const palMaterial& m) {}
-	virtual ~palMaterial() {}
-	/*
-	 Sets the member variables.
-	*/
-	virtual void SetParameters(const palMaterialDesc& matDesc);
+	palMaterial();
+	palMaterial(const palMaterial& m);
+	virtual ~palMaterial();
+
+	virtual void Init(const PAL_STRING& name, const palMaterialDesc& desc); //api version 3
+
+	/// The id is used internally in the material system.
+	unsigned GetId() const { return m_Id; }
+	void SetId(unsigned newId) { m_Id = newId; }
+
+	const PAL_STRING& GetName() const;
+
+	// This is set when you create a custom interaction.
+	void SetHasCustomInteractions(bool enabled);
+	// Inline because it could be called for each contact.
+	bool GetHasCustomInteractions() const { return m_bHasCustomMaterialInteractions; }
+protected:
+	FACTORY_CLASS(palMaterial,palMaterial,*,1);
 private:
 	virtual palMaterial& operator=(const palMaterial& m) { return *this; };
+	PAL_STRING m_Name;//!< The name for this material. (eg:"wood")
+	unsigned m_Id;
+	bool m_bHasCustomMaterialInteractions; //!< material interactions are ignored by default.  This value
 };
 
+class palContactPoint;
 
-/** This class represents unique material interactions (eg: wood/wood). 
-	This class is only used internally by palMaterials, and should not be manually created.
- */
-class palMaterialUnique : virtual public palMaterial {
+class palMaterialInteractionCollisionCallback
+{
 public:
-	palMaterialUnique();
-	virtual ~palMaterialUnique() {}
-	//api version 1 have only static_friction (maybe restitution depending on)
-	//virtual void Init(Float static_friction);
-	//version two:
-	/*
-	Initializes the material
-	\param name The materials name
-	\param desc the material description
-	*/
-   virtual void Init(PAL_STRING name, const palMaterialDesc& desc); //api version 3
-
-	PAL_STRING m_Name;//!< The name for this material. (eg:"wood")	
-protected:
-	FACTORY_CLASS(palMaterialUnique,palMaterialUnique,*,1);
+	virtual ~palMaterialInteractionCollisionCallback();
+	/**
+	 * This is a custom collision callback for a specific material interaction.
+	 * @param pmi The material interaction, provided for your convenience if you need to use data from it.
+	 * @param materialToAdjust The material description.  You can change these as you wish.
+	 * @param contactToAdjust The contact that combines the two materials.  You may adjust this contact before the results are applied.
+	 * @return true if you actually changed the data.  if you return false, the changes won't be used.
+	 */
+	virtual bool operator()(const palMaterialInteraction& pmi, palMaterialDesc& materialToAdjust, palContactPoint& contactToAdjust) = 0;
 };
 
 /** This class represents two material interactions (eg: wood/metal).  
 	This class is only used internally by palMaterials, and should not be manually created 
  */
-class palMaterialInteraction : virtual public palMaterial {
+class palMaterialInteraction : public palFactoryObject, public palMaterialDesc {
 public:
 	palMaterialInteraction();
-	palMaterialInteraction(const palMaterialInteraction& pmi)
-	: palMaterial(pmi), m_pMaterial1(pmi.m_pMaterial1), m_pMaterial2(pmi.m_pMaterial2) {}
 
 	/*
 	Initializes the material
@@ -104,16 +121,27 @@ public:
 	\param pM2 a pointer to a unique material
    \param desc the material description
 	*/
-	virtual void Init(palMaterialUnique *pM1, palMaterialUnique *pM2, const palMaterialDesc& matDesc); //api version 2
-	virtual palMaterialInteraction& operator=(const palMaterialInteraction& pmi) {
-		 m_pMaterial1 = pmi.m_pMaterial1;
-		 m_pMaterial2 = pmi.m_pMaterial2;
-		 return *this;
-	}
-	palMaterial *m_pMaterial1;	//!< Pointers to the unique materials which interact
-	palMaterial *m_pMaterial2;	//!< Pointers to the unique materials which interact
+	virtual void Init(palMaterial *pM1, palMaterial *pM2, const palMaterialDesc& matDesc); //api version 2
+	virtual palMaterialInteraction& operator=(const palMaterialInteraction& pmi);
+
+	palMaterial* getMaterial1() { return m_pMaterial1; }
+	palMaterial* getMaterial2() { return m_pMaterial2; }
+
+	/**
+	 * This sets a custom collision interaction callback.
+	 * This callback allows one to compute custom material interactions and modify the collision contact.
+	 * Only some engines will actually use material interactions.
+	 */
+	void SetCollisionCallback(palMaterialInteractionCollisionCallback* callback) {m_pCollsionCallback = callback;}
+	palMaterialInteractionCollisionCallback* GetCollisionCallback() {return m_pCollsionCallback;}
 protected:
 	FACTORY_CLASS(palMaterialInteraction,palMaterialInteraction,*,1);
+private:
+	palMaterialInteraction(const palMaterialInteraction& pmi);
+
+	palMaterial* m_pMaterial1;	//!< Pointers to the unique materials which interact
+	palMaterial* m_pMaterial2;	//!< Pointers to the unique materials which interact
+	palMaterialInteractionCollisionCallback* m_pCollsionCallback;
 };
 
 
@@ -143,7 +171,7 @@ protected:
 
 	<br>
 	Developer Notes:
-	The materials management class employes the palMaterialInteraction and palMaterialUnique classes behind the scenes. 
+	The materials management class employes the palMaterialInteraction and palMaterial classes behind the scenes.
 	You should only need to implement the aforementioned classes. 
 */
 class palMaterials : public palFactoryObject {
@@ -156,41 +184,74 @@ public:
 	\param kinetic_friction Kinetic friction coefficient
 	\param restitution Restitution coefficient
 	*/
-	virtual palMaterialUnique *NewMaterial(PAL_STRING name, const palMaterialDesc& matDesc);
+	virtual palMaterial* NewMaterial(const PAL_STRING& name, const palMaterialDesc& matDesc);
+
+	/**
+	Retrievies a unique material from the materials database with a given name.
+	The Material inherits from the Material class.
+	\param name The material's name (eg:"wood")
+	\return A pointer to the material
+	*/
+	virtual palMaterial* GetMaterial(const PAL_STRING& name);
+
 	/**
 	Sets parameters for one materials interaction with another
 	\param name1 The first materials name (eg:"wood")
 	\param name2 The second materials name (eg:"metal")
-	\param static_friction Static friction coefficient
-	\param kinetic_friction Kinetic friction coefficient
-	\param restitution Restitution coefficient
+	\param matDesc the material data.
 	*/
-	virtual void SetMaterialInteraction(PAL_STRING name1, PAL_STRING name2, const palMaterialDesc& matDesc);
+	virtual void SetMaterialInteraction(const PAL_STRING& name1, const PAL_STRING& name2, const palMaterialDesc& matDesc);
 
 	/**
-	Retrievies a unique material from the materials database with a given name.
-	The MaterialUnique inherits from the Material class.
-	\param name The material's name (eg:"wood")
-	\return A pointer to the material
+	Sets parameters for one materials interaction with another
+	\param id1 The index of the first material
+	\param id2 The index of the second material
+	\param matDesc the material data.
 	*/
-	virtual palMaterialUnique *GetMaterial(PAL_STRING name);
+	virtual void SetMaterialInteraction(palMaterial* pm1, palMaterial* pm2, const palMaterialDesc& matDesc);
+
+	/**
+	 * This is to be called from the Physics Engine impl.
+	 * Does some sanity checking, tests for NULL, conversions to unique materials types, checks to see if interactions setup for each material, then
+	 * it looks up the interaction and returns it.  If either body has no material, it will return NULL.
+	 * If combine is true and no interaction is defined, it will combine them.  if combine is false and no interaction is defined
+	 * it will return NULL.
+	 * \param pm1 the first material.  You may pass NULL.
+	 * \param pm2 the second material.  You may pass NULL.
+	 */
+	bool HandleCustomInteraction(palMaterial* pm1, palMaterial* pm2, palMaterialDesc& matToAdjust, palContactPoint& contactToAdjust, bool combine);
 
 	/**
 	Retrievies an interaction for the two named materials, if it exists.
+	This function is not particularly fast.  The other version that takes two materials is O(1)
 	\param name1 The first material's name (eg:"wood")
 	\param name2 The second material's name (eg:"steel")
 	\return A pointer to the material interaction
 	*/
-	virtual palMaterialInteraction *GetMaterialInteraction(PAL_STRING name1, PAL_STRING name2);
-protected:
-	virtual int GetIndex(PAL_STRING name);
-	virtual void SetIndex(int posx, int posy, palMaterial *pm);
-	virtual void SetNameIndex(PAL_STRING name);
+	virtual palMaterialInteraction* GetMaterialInteraction(const PAL_STRING& name1, const PAL_STRING& name2);
+
+	/**
+	Retrievies an interaction for the two named materials, if it exists.
+	\param pm1 The first material
+	\param pm2 The second material
+	\return A pointer to the material interaction
+	*/
+	virtual palMaterialInteraction* GetMaterialInteraction(palMaterial* pm1, palMaterial* pm2);
+
 	// When defaulting the material interactions, this method combines them.
 	virtual void CombineMaterials(const palMaterialDesc& one, const palMaterialDesc& two, palMaterialDesc& result);
 
-	PAL_VECTOR<PAL_STRING> m_MaterialNames;
-	std_matrix<palMaterial *> m_Materials; //static? for each physics thou :~( or not?
+protected:
+
+	PAL_VECTOR<palMaterial*> m_Materials;
+	struct InteractionData
+	{
+		InteractionData(): m_pMatInteration(0) {}
+		palMaterialInteraction* m_pMatInteration;
+	};
+	std_matrix<InteractionData> m_MaterialInteractions;
+
+	virtual unsigned GetIndex(const PAL_STRING& name) const;
 
 	FACTORY_CLASS(palMaterials,palMaterials,*,1);
 };

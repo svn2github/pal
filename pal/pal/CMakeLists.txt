@@ -56,7 +56,6 @@ SET(HEADERS_BASE
 	palFluid.h
 	palGeometry.h
 	palLinks.h
-	palMaterials.h
 	palMath.h
 	palSensors.h
 	palSettings.h
@@ -79,6 +78,7 @@ SET(SOURCE_BASE
 	palFluid.cpp
 	palGeometry.cpp
 	palLinks.cpp
+	palMaterials.cpp
 	palMath.cpp
 	palSensors.cpp
 	palSolver.cpp

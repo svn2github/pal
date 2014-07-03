@@ -3,7 +3,7 @@
 FACTORY_CLASS_IMPLEMENTATION_BEGIN_GROUP;
 
 #if (JIGLIB_V >= 830)
-FACTORY_CLASS_IMPLEMENTATION(palJiggleMaterialUnique);
+FACTORY_CLASS_IMPLEMENTATION(palJiggleMaterial);
 #endif
 
 FACTORY_CLASS_IMPLEMENTATION(palJiggleBoxGeometry);
@@ -41,11 +41,11 @@ template <typename tBody, typename tVector> UpdateTracker {
 #if (JIGLIB_V >= 830)
 static int g_materialcount = 1;
 
-palJiggleMaterialUnique::palJiggleMaterialUnique() {
+palJiggleMaterial::palJiggleMaterial() {
 }
 
-void palJiggleMaterialUnique::Init(PAL_STRING name, const palMaterialDesc& desc) {
-	palMaterialUnique::Init(name, desc);
+void palJiggleMaterial::Init(PAL_STRING name, const palMaterialDesc& desc) {
+	palMaterial::Init(name, desc);
 	m_idx=g_materialcount;
 	m_jProp = tMaterialProperties(m_fRestitution, m_fStatic, m_fKinetic);
 
@@ -257,7 +257,7 @@ void palJiggleBody::SetMaterial(palMaterial *material) {
 			pjg->m_pjSkin->SetElasticity(material->m_fRestitution);
 			pjg->m_pjSkin->SetFriction(material->m_fStatic, material->m_fKinetic);
 #else
-//			palJiggleMaterialUnique *jmat = dynamic_cast<palJiggleMaterialUnique *>(material);
+//			palJiggleMaterial *jmat = dynamic_cast<palJiggleMaterial *>(material);
 //			pjg->m_pjSkin->SetMaterialProperties(jmat->m_idx,jmat->m_jProp);
 //			pjg->m_pjSkin->SetMaterialProperties(0,jmat->m_jProp);
 			pjg->m_pjSkin->SetMaterialProperties(0, tMaterialProperties(material->m_fRestitution, material->m_fStatic, material->m_fKinetic));

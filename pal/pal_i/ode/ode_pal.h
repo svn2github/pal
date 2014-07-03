@@ -13,6 +13,7 @@
 	Author:
 		Adrian Boeing
 	Revision History:
+		Version 0.1.11: 06/26/14 - DG - deleted the subclass of materials and added support for custom material callbacks.
 		Version 0.1.10: 16/09/09 - AB: Fixed some bugs, introduced a new bug to the compound body (4x3 vs 4x4)
 		Version 0.1.09: 18/02/09 - Public set/get for ODE functionality & documentation
 		Version 0.1.08: 30/09/08 - PAL Version
@@ -33,7 +34,6 @@
 		Version 0.0.93: 22/12/04 - SetPosition update
 		Version 0.0.92: 05/09/04 - Impulse
 		Version 0.0.91: 12/08/04 - Revolute link add torque & get angle
-		Version 0.0.9 : 04/08/04 - Materials
 		Version 0.0.8 : 12/07/04 - Geometries (sphere,cylinder,box) & body updates, bug fixes
 		Version 0.0.72: 21/06/04 - Revolute joint limits & spherical joint limits
 		Version 0.0.71: 15/06/04 - started prismatic link (anchor fix?)
@@ -75,27 +75,6 @@
 
 #define ODE_MATINDEXLOOKUP int
 
-class palODEMaterials : public palMaterials {
-public:
-	palODEMaterials();
-// todo: fill this in! =
-// have a opdebodyid-> material name ? map (or index => better!)
-	virtual palMaterialUnique *NewMaterial(PAL_STRING name, const palMaterialDesc& desc);
-	static void InsertIndex(dGeomID odeGeom, palMaterial *mat);
-
-	static palMaterial *GetODEMaterial(dGeomID odeGeomA, dGeomID odeGeomB);
-
-protected:
-	static ODE_MATINDEXLOOKUP* GetMaterialIndex(dGeomID odeGeom);
-	virtual void SetIndex(int posx, int posy, palMaterial *pm);
-	virtual void SetNameIndex(PAL_STRING name);
-
-	static PAL_VECTOR<PAL_STRING> g_MaterialNames;
-	static std_matrix<palMaterial *> g_Materials;
-	static PAL_MAP <dGeomID, ODE_MATINDEXLOOKUP> g_IndexMap; //or make this part of the global?  this is evil.
-	FACTORY_CLASS(palODEMaterials,palMaterials,ODE,2);
-};
-
 /** ODE Physics Class
 	Additionally Supports:
 		- Collision Detection
@@ -106,6 +85,7 @@ public:
 	virtual void Init(const palPhysicsDesc& desc);
 	void SetGravity(Float gravity_x, Float gravity_y, Float gravity_z);
 
+	/*override*/ void GetPropertyDocumentation(PAL_MAP<PAL_STRING, PAL_STRING>& docOut) const;
 
 	//colision detection functionality
 	virtual void SetCollisionAccuracy(Float fAccuracy);
@@ -113,9 +93,9 @@ public:
 	virtual void SetGroupCollision(palGroup a, palGroup b, bool enabled);
 	void SetGroupCollisionOnGeom(unsigned long bits, unsigned long otherBits, dGeomID geom, bool collide);
 
-	virtual void RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range, palRayHit& hit);
+	virtual void RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range, palRayHit& hit) const;
 	virtual void RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz,
-				Float range, palRayHitCallback& callback, palGroupFlags groupFilter = ~0);
+				Float range, palRayHitCallback& callback, palGroupFlags groupFilter = ~0) const;
 	virtual void NotifyCollision(palBodyBase *a, palBodyBase *b, bool enabled);
 	virtual void NotifyCollision(palBodyBase *pBody, bool enabled);
 	void CleanupNotifications(palBodyBase* geom);
@@ -198,8 +178,6 @@ public:
 
 	virtual void SetGroup(palGroup group);
 
-	virtual void SetMaterial(palMaterial *material);
-
 	//virtual void a() {};
 	virtual const palMatrix4x4& GetLocationMatrix() const;
 
@@ -252,7 +230,6 @@ public:
 	virtual const palMatrix4x4& GetLocationMatrix() const; //unfinished!
 	//ode abilites:
 	virtual void SetPosition(const palMatrix4x4 &pos);
-	virtual void SetMaterial(palMaterial *material);
 	//ODE specific:
 	/** Returns the ODE geometry associated with the PAL geometry
 		\return The ODE dGeomID
@@ -523,7 +500,6 @@ class palODETerrain : virtual public palTerrain {
 public:
 	palODETerrain();
 	virtual ~palODETerrain();
-	virtual void SetMaterial(palMaterial *material);
 	virtual const palMatrix4x4& GetLocationMatrix() const;
 //protected:
 	dGeomID odeGeom; // the ODE geometries representing this body
@@ -614,7 +590,7 @@ public:
 	palODEAngularMotor();
 	virtual ~palODEAngularMotor();
 	virtual void Init(palRevoluteLink *pLink, Float Max);
-	virtual void Update(Float targetVelocity);
+	virtual void Update(Float targetVelocity, Float Max);
 	virtual void Apply();
 protected:
 	dJointID odeJoint; //the ODE joint

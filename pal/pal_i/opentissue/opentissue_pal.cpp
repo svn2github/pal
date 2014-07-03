@@ -3,7 +3,7 @@
 FACTORY_CLASS_IMPLEMENTATION_BEGIN_GROUP;
 FACTORY_CLASS_IMPLEMENTATION(palOpenTissuePhysics);
 
-FACTORY_CLASS_IMPLEMENTATION(palOpenTissueMaterialUnique);
+FACTORY_CLASS_IMPLEMENTATION(palOpenTissueMaterial);
 
 FACTORY_CLASS_IMPLEMENTATION(palOpenTissueBoxGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palOpenTissueSphereGeometry);
@@ -59,12 +59,12 @@ OTTypes::material_library_type        g_library;
 
 static int g_materialcount = 1;
 ///////////////////////////////////////////////////////
-palOpenTissueMaterialUnique::palOpenTissueMaterialUnique() {
+palOpenTissueMaterial::palOpenTissueMaterial() {
 
 }
 
-void palOpenTissueMaterialUnique::Init(STRING name, const palMaterialDesc& desc) {
-	palMaterialUnique::Init(name, desc);
+void palOpenTissueMaterial::Init(STRING name, const palMaterialDesc& desc) {
+	palMaterial::Init(name, desc);
 	m_idx=g_materialcount;
 	m_material.set_material_indices(m_idx,m_idx);
 	m_material.set_friction_coefficient(m_fStatic);
@@ -159,7 +159,7 @@ palMatrix4x4& palOpenTissueBodyBase::GetLocationMatrix() {
 void palOpenTissueBodyBase::SetMaterial(palMaterial *material) {
 	if (!m_potBody)
 		return;
-	palOpenTissueMaterialUnique	*pm = dynamic_cast<palOpenTissueMaterialUnique *>(material);
+	palOpenTissueMaterial	*pm = dynamic_cast<palOpenTissueMaterial *>(material);
 	if (pm)
 		m_potBody->set_material_idx(pm->m_idx);
 }

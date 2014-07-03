@@ -37,7 +37,7 @@ public:
 	palVector3 m_vImpulseLateral1; //!< Impulse vector applied to the body based on friction in the direction of travel along the second body.
 	palVector3 m_vImpulseLateral2; //!< Impulse vector applied to the body based on friction in the direction normal to both the contact normal and the laterl1 vector
 
-    friend std::ostream& operator<<(std::ostream &os, const palContactPoint& cp);
+	friend std::ostream& operator<<(std::ostream &os, const palContactPoint& cp);
 };
 
 /** A contact
@@ -138,7 +138,7 @@ public:
 	\param range The maximum range to test
 	\param hit The ray hit information
 	*/
-	virtual void RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range, palRayHit& hit) = 0;
+	virtual void RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range, palRayHit& hit) const = 0;
 
 	/** Enables listening for a collision between two bodies.
 	\param a The first body
@@ -186,7 +186,7 @@ public:
 	 * @param groups An optional set of groups to use as a filter.
 	 */
 	virtual void RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range,
-	         palRayHitCallback& callback, palGroupFlags groupFilter = ~0) = 0;
+	         palRayHitCallback& callback, palGroupFlags groupFilter = ~0) const = 0;
 };
 #endif
 

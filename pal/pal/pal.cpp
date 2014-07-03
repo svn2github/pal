@@ -84,198 +84,6 @@ void paldebug_printvector3(palVector3 *pv) {
 //}
 #endif
 
-FACTORY_CLASS_IMPLEMENTATION(palMaterials);
-FACTORY_CLASS_IMPLEMENTATION(palMaterialUnique);
-FACTORY_CLASS_IMPLEMENTATION(palMaterialInteraction);
-
-palMaterialDesc::palMaterialDesc()
-: m_fStatic(0.0)
-, m_fKinetic(0.0)
-, m_fRestitution(0.5)
-, m_vDirAnisotropy(1.0f, 0.0f, 0.0f)
-, m_bEnableAnisotropicFriction(false)
-, m_bDisableStrongFriction(false)
-{
-	for (unsigned i = 0; i < 3; ++i)
-	{
-		m_vStaticAnisotropic._vec[i] = 1.0f;
-		m_vKineticAnisotropic._vec[i] = 1.0f;
-	}
-}
-
-void palMaterial::SetParameters(const palMaterialDesc& matDesc) {
-	m_fStatic = matDesc.m_fStatic;
-	m_fKinetic = matDesc.m_fKinetic;
-	m_fRestitution = matDesc.m_fRestitution;
-	m_vStaticAnisotropic = matDesc.m_vStaticAnisotropic;
-   m_vKineticAnisotropic = matDesc.m_vKineticAnisotropic;
-   m_vDirAnisotropy = matDesc.m_vDirAnisotropy;
-	m_bEnableAnisotropicFriction = matDesc.m_bEnableAnisotropicFriction;
-   m_bDisableStrongFriction = matDesc.m_bDisableStrongFriction;
-}
-
-palMaterialUnique::palMaterialUnique() : m_Name("") {
-}
-
-void palMaterialUnique::Init(const PAL_STRING name, const palMaterialDesc& matDesc) {
-	SetParameters(matDesc);
-	m_Name=name;
-}
-
-palMaterialInteraction::palMaterialInteraction()
-: m_pMaterial1(0), m_pMaterial2(0) {
-}
-
-void palMaterialInteraction::Init(palMaterialUnique *pM1, palMaterialUnique *pM2, const palMaterialDesc& matDesc) {
-	palMaterial::SetParameters(matDesc);
-	m_pMaterial1 = pM1;
-	m_pMaterial2 = pM2;
-}
-
-/*
-class palMaterials : public palFactoryObject {
-public:
-	void NewMaterial(PAL_STRING name, Float static_friction, Float kinetic_friction, Float restitution); //default values
-	void SetMaterialInteraction(PAL_STRING name1, PAL_STRING name2, Float static_friction, Float kinetic_friction, Float restitution);
-protected:
-	vector<PAL_STRING> m_MaterialNames;
-	std_matrix<palMaterial *> m_Materials;
-
-	FACTORY_CLASS(palMaterials,palMaterials,All,1);
-};
-*/
-
-palMaterials::palMaterials() {
-};
-
-int palMaterials::GetIndex(PAL_STRING name) {
-//	PAL_VECTOR<PAL_STRING>::iterator obj;
-//	obj = std::find(m_MaterialNames.begin(), m_MaterialNames.end(), name);
-	for (unsigned int i=0;i<m_MaterialNames.size();i++)
-		if (m_MaterialNames[i] == name)
-			return i;
-	return -1;
-}
-
-palMaterialUnique *palMaterials::GetMaterial(PAL_STRING name) {
-	int pos = GetIndex(name);
-	if (pos<0) return NULL;
-	palMaterial *pM= m_Materials.Get(pos,pos);
-	return dynamic_cast<palMaterialUnique *> (pM);
-}
-
-void palMaterials::SetIndex(int posx, int posy, palMaterial *pm) {
-	m_Materials.Set(posx,posy,pm);
-}
-
-void palMaterials::SetNameIndex(PAL_STRING name) {
-	m_MaterialNames.push_back(name);
-}
-
-void palMaterials::CombineMaterials(const palMaterialDesc& one, const palMaterialDesc& two, palMaterialDesc& result) {
-	result.m_bDisableStrongFriction = one.m_bDisableStrongFriction && two.m_bDisableStrongFriction;
-	result.m_fKinetic = one.m_fKinetic * two.m_fKinetic;
-	result.m_fStatic = one.m_fStatic * two.m_fStatic;
-	result.m_fRestitution = one.m_fRestitution * two.m_fRestitution;
-	result.m_bEnableAnisotropicFriction = one.m_bEnableAnisotropicFriction || two.m_bEnableAnisotropicFriction;
-
-	// Combining anisotropic friction makes no sense, so we pick one.
-	if (one.m_bEnableAnisotropicFriction) {
-		result.m_vKineticAnisotropic = one.m_vKineticAnisotropic;
-		result.m_vStaticAnisotropic = one.m_vStaticAnisotropic;
-	} else if (two.m_bEnableAnisotropicFriction) {
-		result.m_vKineticAnisotropic = two.m_vKineticAnisotropic;
-		result.m_vStaticAnisotropic = two.m_vStaticAnisotropic;
-	}
-}
-
-palMaterialUnique *palMaterials::NewMaterial(PAL_STRING name, const palMaterialDesc& matDesc) {
-	if (GetIndex(name)!=-1) {
-		SET_WARNING("Can not replace existing materials!");
-		return NULL;
-	}
-
-	palFactoryObject *pFO=PF->CreateObject("palMaterialUnique");
-	palMaterialUnique *pMU = dynamic_cast<palMaterialUnique *>(pFO);
-	if (pMU == NULL) {
-		SET_ERROR("Could not create material");
-		return NULL;
-	}
-	pMU->Init(name,matDesc);
-	//error?
-	SetNameIndex(name);
-
-	int size,check;
-	m_Materials.GetDimensions(size,check);
-	if (size!=check) {
-		SET_ERROR("Material size is non-equal. Might be out of memory");
-		delete pMU;
-		return NULL;
-	}
-	m_Materials.Resize(size+1,size+1);
-	//error?
-	m_Materials.GetDimensions(size,check);
-	if (size!=check) {
-		SET_ERROR("Material size is non-equal. Might be out of memory");
-		delete pMU;
-		return NULL;
-	}
-	int pos = GetIndex(name);
-	//m_Materials.Set(pos,pos,pMU);
-	SetIndex(pos,pos,pMU);
-
-	palMaterialDesc temp;
-
-	// or all the old materials, generate combined versions for the new one.
-	for (int i=0; i < size - 1; i++) {
-		palMaterialUnique* matUniq = dynamic_cast<palMaterialUnique*>(m_Materials.Get(i,i));
-		if (matUniq != NULL) {
-			CombineMaterials(*matUniq, *pMU, temp);
-			// The matrix handling code forces all othe
-			SetMaterialInteraction(matUniq->m_Name, pMU->m_Name, temp);
-		}
-		else
-		{
-			// Can't combine them for now if it's not a unique material, although this really shouldn't happen.
-			SetIndex(i,pos,pMU);
-			SetIndex(pos,i,pMU);
-		}
-	}
-	return pMU;
-}
-
-void palMaterials::SetMaterialInteraction(PAL_STRING name1, PAL_STRING name2, const palMaterialDesc& matDesc) {
-	if (name1==name2) {
-		palMaterial *pm=GetMaterial(name1);
-		pm->SetParameters(matDesc);
-	} else {
-		palFactoryObject *pFO=PF->CreateObject("palMaterialInteraction");
-		palMaterialInteraction *pMI = dynamic_cast<palMaterialInteraction *>(pFO);
-		pMI->Init(GetMaterial(name1),GetMaterial(name2),matDesc);
-		int p1=GetIndex(name1);
-		int p2=GetIndex(name2);
-		SetIndex(p1,p2,pMI);
-		SetIndex(p2,p1,pMI);
-		//m_Materials.Set(p1,p2,pMI);
-		//m_Materials.Set(p2,p1,pMI);
-	}
-}
-
-palMaterialInteraction *palMaterials::GetMaterialInteraction(PAL_STRING name1, PAL_STRING name2)
-{
-	int pos1 = GetIndex(name1);
-	if (pos1 < 0)
-		return NULL;
-	int pos2 = GetIndex(name2);
-	if (pos2 < 0)
-		return NULL;
-	palMaterial *pM = m_Materials.Get(pos1, pos2);
-	return dynamic_cast<palMaterialInteraction*> (pM);
-}
-
-////////////////////////////////////////
-
-
 void palSphere::GenericInit(palMatrix4x4 &pos, void *param_array) {
 	Float *p=(Float *)param_array;
 	Init(pos._41,pos._42,pos._43,p[0],p[1]);
@@ -385,16 +193,22 @@ void palPhysics::Init(const palPhysicsDesc& desc) {
 	}
 
 	m_Properties=desc.m_Properties;
+
+	m_pMaterials = palFactory::GetInstance()->CreateObject<palMaterials>("palMaterials");
 }
 
 palPhysics::palPhysics()
   : m_bListen(false), m_pMaterials(0), m_fGravityX(0), m_fGravityY(0), m_fGravityZ(0), m_fLastTimestep(0),
-    m_fTime(0), m_nUpAxis(PAL_X_AXIS), m_pDebugDraw(0) {
-//	m_pCollision = 0;
-//	m_pSolver = 0;
+    m_fTime(0), m_nUpAxis(PAL_Y_AXIS), m_pDebugDraw(0) {
 }
 
 palPhysics::~palPhysics() {
+	delete m_pMaterials;
+	m_pMaterials = 0;
+}
+
+void palPhysics::GetPropertyDocumentation(PAL_MAP<PAL_STRING, PAL_STRING>& docOut) const
+{
 }
 
 void palPhysics::Update(Float timestep) {
@@ -440,3 +254,16 @@ void palPhysics::NotifyGeometryAdded(palGeometry* pGeom) {
 void palPhysics::NotifyBodyAdded(palBodyBase* pBody) {
 	//m_Bodies.push_back(pBody);
 }
+
+const PAL_STRING& palPhysics::GetInitProperty(const PAL_STRING& name, const PAL_STRING& defaultVal) const
+{
+	PropertyMap::const_iterator i = m_Properties.find(name);
+	if (i == m_Properties.end())
+	{
+		return defaultVal;
+	}
+	return i->second;
+}
+
+palCollisionDetection* palPhysics::asCollisionDetection() { return 0; }
+

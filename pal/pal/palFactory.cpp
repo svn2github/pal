@@ -127,22 +127,6 @@ template <typename iType, typename fType> fType Cast(palFactoryObject *obj) {
 	return f;
 }
 
-palMaterials *palFactory::CreateMaterials() {
-	//myFactoryObject *pmFO = Construct("palMaterials");
-	//printf("%d\n",pmFO);
-	if (!m_active) return NULL; //is there an active physics?
-	if (m_active) { //there is
-		if (m_active->m_pMaterials) //does it have a material?
-			return m_active->m_pMaterials; //it does, return it
-	}
-	palFactoryObject *pmFO = CreateObject("palMaterials");
-	palMaterials *pm=dynamic_cast<palMaterials *> (pmFO);
-	if (m_active)
-		if (m_active->m_pMaterials == 0)
-			m_active->m_pMaterials=pm;
-	return pm;
-}
-
 unsigned int palFactory::GetPALAPIVersion() {
 	return PAL_SDK_VERSION_MAJOR << 16 | PAL_SDK_VERSION_MINOR << 8 | PAL_SDK_VERSION_BUGFIX;
 }
