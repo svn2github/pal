@@ -228,6 +228,9 @@ static bool CustomMaterialCombinerCallback(btManifoldPoint& mp, const btCollisio
 		palMaterial* mat0 = body0->GetMaterial();
 		palMaterial* mat1 = body1->GetMaterial();
 		palMaterialDesc matResult;
+		matResult.m_fStatic = mp.m_combinedFriction;
+		matResult.m_fKinetic = mp.m_combinedRollingFriction;
+		matResult.m_fRestitution = mp.m_combinedRestitution;
 		palContactPoint contactResult;
 		convertManifoldPtToContactPoint(mp, contactResult);
 		contactResult.m_pBody1 = body0;
@@ -237,7 +240,7 @@ static bool CustomMaterialCombinerCallback(btManifoldPoint& mp, const btCollisio
 			convertContactPointToManifoldPt(contactResult, mp);
 			mp.m_combinedFriction = matResult.m_fStatic;
 			mp.m_combinedRestitution = matResult.m_fRestitution;
-			mp.m_lateralFrictionInitialized = matResult.m_bEnableAnisotropicFriction;
+			mp.m_combinedRollingFriction = matResult.m_fKinetic;
 		}
 	}
 	//if (cp.m_contactCFM1)
