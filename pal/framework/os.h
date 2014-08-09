@@ -31,9 +31,9 @@ typedef OS_DynlibHandleClass* OS_DynlibHandle;
 
 void OS_Sleep(unsigned milisec);
 void OS_CriticalMessage(const char* msg);
-OS_DynlibHandle DYNLIB_LOAD(const char* file);
-void* DYNLIB_GETSYM(OS_DynlibHandle handle, const char* symbolName);
-bool DYNLIB_UNLOAD(OS_DynlibHandle handle);
+OS_DynlibHandle OS_DYNLIB_LOAD(const char* file);
+void* OS_DYNLIB_GETSYM(OS_DynlibHandle handle, const char* symbolName);
+bool OS_DYNLIB_UNLOAD(OS_DynlibHandle handle);
 
 #if defined (OS_WINDOWS) || defined(_WIN32)
 #undef BOOL

@@ -47,7 +47,7 @@ void myFactory::FreeObjects() {
 #pragma warning( disable : 4552) //disable warning from os portable DYNLIB macro
 #endif
 	for (i=0;i<svDlls.size();i++) {
-		DYNLIB_UNLOAD(svDlls[i]);
+		OS_DYNLIB_UNLOAD(svDlls[i]);
 	}
 #if defined (_WIN32)
 #pragma warning( default : 4552)
@@ -107,7 +107,7 @@ void myFactory::LoadObjects(const char *szPath , void * factoryPointer, void *fa
 #ifdef INTERNAL_DEBUG
                                 printf("%s:%d: about to load dynamic library %s\n",__FILE__,__LINE__,filename);
 #endif
-			OS_DynlibHandle hInst=DYNLIB_LOAD(full_location);
+			OS_DynlibHandle hInst=OS_DYNLIB_LOAD(full_location);
 			if (hInst==NULL) {
 #ifdef INTERNAL_DEBUG
 				#if defined (OS_LINUX)
@@ -145,12 +145,12 @@ void myFactory::LoadObjects(const char *szPath , void * factoryPointer, void *fa
 			*/
 
 			//group creation functions
-			pt2CreateGroupFunction fpg = (pt2CreateGroupFunction) DYNLIB_GETSYM(/*(HMODULE)*/hInst,"Group_CreateComponent");
+			pt2CreateGroupFunction fpg = (pt2CreateGroupFunction) OS_DYNLIB_GETSYM(/*(HMODULE)*/hInst,"Group_CreateComponent");
 			if (fpg == NULL) {
 //				LOG(SWARNING,"%s does not contain a valid factory group component",filename);
 			} else {
 
-				pt2SetFactory fps = (pt2SetFactory) DYNLIB_GETSYM(hInst,"Group_SetFactory");
+				pt2SetFactory fps = (pt2SetFactory) OS_DYNLIB_GETSYM(hInst,"Group_SetFactory");
 				if (fps)
 					fps(factoryPointer,factoryInfoPointer);
 				int *num = (int *)fpg(-1); //get the number of components in here.
@@ -166,7 +166,7 @@ void myFactory::LoadObjects(const char *szPath , void * factoryPointer, void *fa
 			}
 
 			//individual dll component creation functions
-			pt2CreateFunction fp = (pt2CreateFunction) DYNLIB_GETSYM(/*(HMODULE)*/hInst,"CreateComponent");
+			pt2CreateFunction fp = (pt2CreateFunction) OS_DYNLIB_GETSYM(/*(HMODULE)*/hInst,"CreateComponent");
 			if (fp==NULL) {
 //				LOG(SWARNING,"%s does not contain a valid factory component",filename);
 			} else {
@@ -181,7 +181,7 @@ void myFactory::LoadObjects(const char *szPath , void * factoryPointer, void *fa
 
 				bool serializable;
 				serializable=false;
-				pt2PropertiesFunction pfp = (pt2PropertiesFunction) DYNLIB_GETSYM(/*(HMODULE)*/hInst,"GetProperties");
+				pt2PropertiesFunction pfp = (pt2PropertiesFunction) OS_DYNLIB_GETSYM(/*(HMODULE)*/hInst,"GetProperties");
 				if (pfp==NULL) {
 					//serialization is not supported
 				} else {

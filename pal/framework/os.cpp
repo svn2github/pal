@@ -52,27 +52,27 @@ public:
 };
 
 
-OS_DynlibHandle DYNLIB_LOAD(const char* file) {
+OS_DynlibHandle OS_DYNLIB_LOAD(const char* file) {
 	OS_DynlibHandle handle = new OS_DynlibHandleClass;
 	handle->m_Handle = DYNLIB_LOAD_DEF(file);
 	return handle;
 }
 
-void* DYNLIB_GETSYM(OS_DynlibHandle handle, const char* symbolName) {
+void* OS_DYNLIB_GETSYM(OS_DynlibHandle handle, const char* symbolName) {
 	return (void*) DYNLIB_GETSYM_DEF(handle->m_Handle, symbolName);
 }
 
-bool DYNLIB_UNLOAD(OS_DynlibHandle handle) {
+bool OS_DYNLIB_UNLOAD(OS_DynlibHandle handle) {
 	bool result = DYNLIB_UNLOAD_DEF(handle->m_Handle) == 0;
 	delete handle;
 	handle = NULL;
 	return result;
 }
 
-void OS_Sleep(unsigned milisec) {
+void palOS_Sleep(unsigned milisec) {
 	OS_Sleep_DEF(milisec);
 }
 
-void OS_CriticalMessage(const char* msg) {
+void palOS_CriticalMessage(const char* msg) {
 	OS_CriticalMessage_DEF(msg);
 }
