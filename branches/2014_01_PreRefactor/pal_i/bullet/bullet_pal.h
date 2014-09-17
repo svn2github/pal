@@ -406,9 +406,20 @@ public:
 	virtual void Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass);
 	using palCapsuleGeometry::CalculateInertia;
 	using palCapsuleGeometry::GenericInit;
-	btCylinderShape *m_btCylinderShape;
+	btCapsuleShape *m_btCapsuleShape;
 protected:
 	FACTORY_CLASS(palBulletCapsuleGeometry,palCapsuleGeometry,Bullet,1)
+};
+
+class palBulletCylinderGeometry : public palCylinderGeometry, public palBulletGeometry {
+public:
+   palBulletCylinderGeometry();
+   virtual void Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass);
+   using palCylinderGeometry::CalculateInertia;
+   using palCylinderGeometry::GenericInit;
+   btCylinderShape *m_btCylinderShape;
+protected:
+   FACTORY_CLASS(palBulletCylinderGeometry,palCylinderGeometry,Bullet,1)
 };
 
 class palBulletBox : public palBulletBody, public palBox {

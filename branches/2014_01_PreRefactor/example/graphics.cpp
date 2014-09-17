@@ -71,6 +71,16 @@ GraphicsObject* BuildGraphics(palBodyBase *pb)
 				pSGcyl->CreateMesh(0,0,0,pCylG->m_fRadius,pCylG->m_fLength);
 				psg=pSGcyl;
 				break;
+         case PAL_GEOM_CYLINDER:
+            SDLGLCappedCylinder *pSGcyl;
+            palCylinderGeometry *pCylG;
+            pCylG=dynamic_cast<palCylinderGeometry *>(pg);
+            // TODO create a cylinder
+            pSGcyl = new SDLGLCappedCylinder;
+//          pSGcyl->Create(0,0,0,pCylG->m_fRadius,pCylG->m_fLength);
+            pSGcyl->CreateMesh(0,0,0,pCylG->m_fRadius,pCylG->m_fLength);
+            psg=pSGcyl;
+            break;
 			case PAL_GEOM_CONVEX:
 				SDLGLPoints *pSGp;
 				palConvexGeometry *pgc;

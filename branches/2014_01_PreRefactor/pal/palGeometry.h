@@ -35,8 +35,9 @@ typedef enum {
 	PAL_GEOM_BOX = 1, //!< Box geometry
 	PAL_GEOM_SPHERE = 2,//!< Sphere geometry
 	PAL_GEOM_CAPSULE = 3, //!< Capped Capsule geometry
-	PAL_GEOM_CONVEX = 4,  //!< Convex geometry
-	PAL_GEOM_CONCAVE = 5  //!< Concave geometry
+   PAL_GEOM_CYLINDER = 4, //!< Capsule geometry
+	PAL_GEOM_CONVEX = 5,  //!< Convex geometry
+	PAL_GEOM_CONCAVE = 6  //!< Concave geometry
 } palGeometryType;
 
 
@@ -196,7 +197,7 @@ protected:
 	A capped cylinder, is just like a normal cylinder, however it has rounded end pieces (ie: two hemispheres, one at the top, one at the bottom), as opposed to flat ones.
 	<img src="../pictures/capsule.jpg" alt="cylinder">
 	The diagram indicates the central point of the cylinder, as well as its length and radius.
-	The default orientation of the cylinder is such that the length is specified along the "y" axis.
+	The default orientation of the cylinder is such that the length is specified along the up axis.
 	The total length of the cylinder is the specified length plus double the radius.
 */
 class palCapsuleGeometry : virtual public palGeometry {
@@ -226,6 +227,38 @@ private:
 	void push_back3(Float *v, Float x, Float y, Float z);
 	int tppos; //temp
 };
+
+/** A  cylinder geometry
+   This represents a cylinder at a given position, with a given radius, length and mass.  The
+   length is along the up axis.
+*/
+class palCylinderGeometry : virtual public palGeometry {
+public:
+   palCylinderGeometry();
+   /**
+   Initializes the capsule
+   \param pos The transformation matrix representing the position and orientation of the Capsule
+   \param radius The radius of the Capsule
+   \param length The length of the Capsule
+   \param mass The Capsule's mass
+   ????NOTE: HOW IS THE CENTER OF THE Capsule DEFINED? DIAGRAM.
+   */
+   virtual void Init(const palMatrix4x4& pos, Float radius, Float length, Float mass);
+// virtual void Init(Float x, Float y, Float z, Float radius, Float length, Float mass);
+   virtual void CalculateInertia();
+   virtual void GenericInit(const palMatrix4x4& location, const void *param_array);
+   Float m_fRadius; //< The radius of the Capsule
+   Float m_fLength; //< The length of the Capsule
+protected:
+   int hstrip;
+   int vslice;
+   virtual Float *GenerateMesh_Vertices();
+   virtual int *GenerateMesh_Indices();
+private:
+   void push_back3(Float *v, Float x, Float y, Float z);
+   int tppos; //temp
+};
+
 /*
 //moment of inertia: parallel axis theorem:
 //Itotal = ICM + M*d� (ie: original inertia tensor plus mass times distance squared)

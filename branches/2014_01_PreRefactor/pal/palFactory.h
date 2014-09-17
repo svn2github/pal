@@ -141,6 +141,11 @@ public:
 	 */
 	palCapsuleGeometry *CreateCapsuleGeometry();
 
+	/** Creates a cylinder geometry.  This can be added to a compound or generic body
+    \return A new constructed cylinder geometry
+    */
+   palCylinderGeometry *CreateCylinderGeometry();
+
 	/** Creates a convex mesh geometry.  This can be added to a compound or generic body
 	 It will need to be given a set of vertices from which to create a convex hull.
 	 \return A new constructed convex hull geometry
@@ -290,6 +295,19 @@ public:
 	\return A newly constructed PAL object
 	*/
 	palFactoryObject *CreateObject(const PAL_STRING& name); //this is only to be used for user add-on functionality
+
+	/// Handy template CreateObject that can be used to create and cast an object for you.
+	template<typename T>
+	T* CreateObject(const PAL_STRING& name)
+	{
+		palFactoryObject* pfo = CreateObject(name);
+		T* result = dynamic_cast<T*>(pfo);
+		if (result == NULL)
+		{
+			delete pfo;
+		}
+		return result;
+	}
 
 	palPhysics *GetActivePhysics();
 	void SetActivePhysics(palPhysics *physics);

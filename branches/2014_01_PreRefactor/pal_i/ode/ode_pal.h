@@ -162,6 +162,7 @@ class palODEBody : virtual public palBody, virtual public palActivationSettings
 	friend class palODEBoxGeometry;
 	friend class palODESphereGeometry;
 	friend class palODECapsuleGeometry;
+   friend class palODECylinderGeometry;
 	friend class palODEConvexGeometry;
 	friend class palODEConcaveGeometry;
 public:
@@ -296,6 +297,19 @@ protected:
 	FACTORY_CLASS(palODECapsuleGeometry,palCapsuleGeometry,ODE,1)
 private:
 	unsigned int m_upAxis;
+};
+
+class palODECylinderGeometry : virtual public palCylinderGeometry, virtual public palODEGeometry {
+public:
+   palODECylinderGeometry();
+   virtual void Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass);
+   virtual const palMatrix4x4& GetLocationMatrix() const;
+   virtual void CalculateMassParams(dMass& odeMass, Float massScalar) const;
+protected:
+   virtual void ReCalculateOffset();
+   FACTORY_CLASS(palODECylinderGeometry,palCylinderGeometry,ODE,1)
+private:
+   unsigned int m_upAxis;
 };
 
 class palODEConvexGeometry : virtual public palConvexGeometry, virtual public palODEGeometry  {

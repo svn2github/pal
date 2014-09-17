@@ -52,6 +52,7 @@ FACTORY_CLASS_IMPLEMENTATION(palBulletPhysics);
 FACTORY_CLASS_IMPLEMENTATION(palBulletBoxGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palBulletSphereGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palBulletCapsuleGeometry);
+FACTORY_CLASS_IMPLEMENTATION(palBulletCylinderGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palBulletConvexGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palBulletConcaveGeometry);
 
@@ -1866,27 +1867,52 @@ void palBulletSphereGeometry::Init(const palMatrix4x4 &pos, Float radius, Float 
 }
 
 palBulletCapsuleGeometry::palBulletCapsuleGeometry()
-  : m_btCylinderShape(0) {}
+  : m_btCapsuleShape(0) {}
 
 void palBulletCapsuleGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
 	palCapsuleGeometry::Init(pos,radius,length,mass);
 	palAxis upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
 
+        
 	switch (upAxis) {
 	case PAL_Z_AXIS:
-		m_btCylinderShape = new btCylinderShapeZ(btVector3(radius, radius, length/2.0f)); //Half lengths
+		m_btCapsuleShape = new btCapsuleShapeZ(radius, length);
 		break;
 	case PAL_X_AXIS:
-		m_btCylinderShape = new btCylinderShapeX(btVector3(length/2.0f, radius, radius)); //Half lengths
+		m_btCapsuleShape = new btCapsuleShapeX(radius, length);
 		break;
 	case PAL_Y_AXIS:
-		m_btCylinderShape = new btCylinderShape(btVector3(radius,length/2.0f,radius)); //Half lengths
+		m_btCapsuleShape = new btCapsuleShape(radius, length);
 		break;
 	default:
 		throw new palException("Invalid axis is 'up'. This should never happen.");
 	}
-	m_pbtShape = m_btCylinderShape;
+	m_pbtShape = m_btCapsuleShape;
 	//m_pbtShape->setMargin(0.0f);
+}
+
+palBulletCylinderGeometry::palBulletCylinderGeometry()
+  : m_btCylinderShape(0) {}
+
+void palBulletCylinderGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
+   palCylinderGeometry::Init(pos,radius,length,mass);
+   palAxis upAxis = static_cast<palPhysics*>(GetParent())->GetUpAxis();
+
+   switch (upAxis) {
+   case PAL_Z_AXIS:
+      m_btCylinderShape = new btCylinderShapeZ(btVector3(radius, radius, length/2.0f)); //Half lengths
+      break;
+   case PAL_X_AXIS:
+      m_btCylinderShape = new btCylinderShapeX(btVector3(length/2.0f, radius, radius)); //Half lengths
+      break;
+   case PAL_Y_AXIS:
+      m_btCylinderShape = new btCylinderShape(btVector3(radius,length/2.0f,radius)); //Half lengths
+      break;
+   default:
+      throw new palException("Invalid axis is 'up'. This should never happen.");
+   }
+   m_pbtShape = m_btCylinderShape;
+   //m_pbtShape->setMargin(0.0f);
 }
 
 
