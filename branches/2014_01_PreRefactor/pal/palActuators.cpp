@@ -321,10 +321,10 @@ bool palFakeBuoyancy::IterateBuoyancy(const palVector3& relPos, Float radius, Fl
          result = true;
 
          impulse[upAxis] *= subDt;
-         printf("idx %d Start %f Cur %f VelMag %f ", i, worldPos._mat[4 * 3 + upAxis], heightPos, velMag);
-         printf("ApplyImpulse %f ", impulse[upAxis]);
+         //printf("idx %d Start %f Cur %f VelMag %f ", i, worldPos._mat[4 * 3 + upAxis], heightPos, velMag);
+         //printf("ApplyImpulse %f ", impulse[upAxis]);
          m_pBody->ApplyImpulseAtPosition(worldPos._41, worldPos._42, worldPos._43, impulse.x, impulse.y, impulse.z);
-         printf("\n");
+         //printf("\n");
       }
    }
    return result;
@@ -362,7 +362,7 @@ void palFakeBuoyancy::Apply(Float dt) {
          {
             vec_mat_mul(&tempTranslation, &offsetMatrix, &translation[i]);
             translation[i] = tempTranslation;
-            printf("Box Buoyancy Position [%d] %f %f %f\n", i, translation[i][0], translation[i][1], translation[i][2]);
+            //printf("Box Buoyancy Position [%d] %f %f %f\n", i, translation[i][0], translation[i][1], translation[i][2]);
          }
 
          bool result = false;;
@@ -372,11 +372,11 @@ void palFakeBuoyancy::Apply(Float dt) {
          }
          if (result && m_pDrag != 0)
          {
-            m_pBody->GetLinearVelocity(vel);
-            printf(" Pre drag %f", vel[upAxis]);
+            //m_pBody->GetLinearVelocity(vel);
+            //printf(" Pre drag %f", vel[upAxis]);
             m_pDrag->Apply(dt);
-            m_pBody->GetLinearVelocity(vel);
-            printf(" Post drag %f\n", vel[upAxis]);
+            //m_pBody->GetLinearVelocity(vel);
+            //printf(" Post drag %f\n", vel[upAxis]);
          }
 
       }
@@ -387,11 +387,11 @@ void palFakeBuoyancy::Apply(Float dt) {
          bool result = IterateBuoyancy(centerVec, psg->m_fRadius, dt);
          if (result && m_pDrag != 0)
          {
-            m_pBody->GetLinearVelocity(vel);
-            printf(" Pre drag %f", vel[upAxis]);
+            //m_pBody->GetLinearVelocity(vel);
+            //printf(" Pre drag %f", vel[upAxis]);
             m_pDrag->Apply(dt);
-            m_pBody->GetLinearVelocity(vel);
-            printf(" Post drag %f\n", vel[upAxis]);
+            //m_pBody->GetLinearVelocity(vel);
+            //printf(" Post drag %f\n", vel[upAxis]);
          }
       }
    }
