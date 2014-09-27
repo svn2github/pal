@@ -1158,7 +1158,7 @@ void palBulletBodyBase::AssignDynamicsType(palDynamicsType dynType, Float mass, 
 void palBulletBodyBase::SetPosition(const palMatrix4x4& location) {
 	if (m_pbtBody) {
 		btTransform newloc;
-	   convertPalMatToBtTransform(newloc, location);
+		convertPalMatToBtTransform(newloc, location);
 		if (m_pbtBody->getMotionState() != NULL)
 		{
 			m_pbtBody->getMotionState()->setWorldTransform(newloc);
@@ -1187,18 +1187,21 @@ const btTransform palBulletBodyBase::GetWorldTransform() const {
 	return xform;
 }
 
+const palMatrix4x4& palBulletBodyBase::GetLocationMatrixInterpolated() const
+{
+	if (m_pbtBody && m_pbtBody->getMotionState() != NULL)
+	{
+		btTransform xform;
+		m_pbtBody->getMotionState()->getWorldTransform(xform);
+		convertBtTransformToPalMat(m_mLoc, xform);
+		return m_mLoc;
+	}
+	return GetLocationMatrix();
+}                                        
+
 const palMatrix4x4& palBulletBodyBase::GetLocationMatrix() const {
 	if (m_pbtBody) {
-		if (m_pbtBody->getMotionState() != NULL)
-		{
-			btTransform xform;
-			m_pbtBody->getMotionState()->getWorldTransform(xform);
-			convertBtTransformToPalMat(m_mLoc, xform);
-		}
-		else
-		{
-			convertBtTransformToPalMat(m_mLoc, m_pbtBody->getWorldTransform());
-		}
+		convertBtTransformToPalMat(m_mLoc, m_pbtBody->getWorldTransform());
 	}
 
 	return m_mLoc;
@@ -2832,7 +2835,7 @@ void palBulletAngularMotor::Update(Float targetVelocity, Float Max) {
 	m_bhc->getRigidBodyB().activate();
 }
 
-void palBulletAngularMotor::Apply() {
+void palBulletAngularMotor::Apply(float dt) {
 
 }
 
@@ -2876,7 +2879,7 @@ void palBulletGenericLinkSpring::GetAngularSpring(palAxis axis, palSpringDesc& o
 	BaseClass::GetAngularSpring(axis, out);
 }
 
-void palBulletGenericLinkSpring::Apply() {
+void palBulletGenericLinkSpring::Apply(float dt) {
 
 }
 

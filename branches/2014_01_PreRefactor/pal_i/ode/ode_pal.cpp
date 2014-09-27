@@ -2293,6 +2293,6 @@ void palODEAngularMotor::Update(Float targetVelocity, Float Max) {
 	}
 }
 
-void palODEAngularMotor::Apply() {
+void palODEAngularMotor::Apply(float dt) {
 
 }

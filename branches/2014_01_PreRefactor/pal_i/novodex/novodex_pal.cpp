@@ -416,7 +416,7 @@ void palNovodexPhysics::Iterate(Float timestep) {
 #if 0
 	int i;
 	for (i=0;i<g_forces.size();i++) {
-	g_forces[i].Apply();
+	g_forces[i].Apply(float dt);
 	}
 #endif
 	if (m_fFixedTimeStep > 0.0) {
@@ -2313,7 +2313,7 @@ void palNovodexAngularMotor::Update(Float targetVelocity, Float max) {
 	motorDesc.maxForce = max;
 	m_j->setMotor(motorDesc);
 }
-void palNovodexAngularMotor::Apply() {
+void palNovodexAngularMotor::Apply(float dt) {
 }
 
 
@@ -2410,7 +2410,7 @@ void palNovodexGenericLinkSpring::GetAngularSpring(palAxis axis, palSpringDesc& 
 	BaseClass::GetAngularSpring(axis, out);
 }
 
-void palNovodexGenericLinkSpring::Apply() {
+void palNovodexGenericLinkSpring::Apply(float dt) {
 
 }
 

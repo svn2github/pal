@@ -201,6 +201,7 @@ public:
 	palBulletBodyBase();
 	virtual ~palBulletBodyBase();
 	virtual const palMatrix4x4& GetLocationMatrix() const;
+	virtual const palMatrix4x4& GetLocationMatrixInterpolated() const;
 	virtual void SetPosition(const palMatrix4x4& location);
 	virtual void SetMaterial(palMaterial *material);
 	virtual palGroup GetGroup() const;
@@ -768,7 +769,7 @@ public:
 	virtual ~palBulletAngularMotor() {};
 	virtual void Init(palRevoluteLink *pLink, Float Max);
 	virtual void Update(Float targetVelocity, Float Max);
-	virtual void Apply();
+	virtual void Apply(float dt);
 protected:
 	btHingeConstraint *m_bhc;
 	FACTORY_CLASS(palBulletAngularMotor,palAngularMotor,Bullet,1)
@@ -790,7 +791,7 @@ public:
 
 	virtual void GetAngularSpring(palAxis axis, palSpringDesc& out) const;
 
-	virtual void Apply();
+	virtual void Apply(float dt);
 
 	palBulletGenericLink* BulletGetLink() { return m_pBulletLink; }
 private:

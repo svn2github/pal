@@ -62,7 +62,7 @@ void palForceActuator::SetForce(Float force) {
 	m_fForce=force;
 }
 
-void palForceActuator::Apply() {
+void palForceActuator::Apply(Float dt) {
 	palMatrix4x4 m,resp;
 	mat_identity(&m);
 	mat_translate(&m,m_fRelativePosX,m_fRelativePosY,m_fRelativePosZ);
@@ -110,7 +110,7 @@ void palImpulseActuator::Init(palBody *pbody, Float px, Float py, Float pz, Floa
 	}
 
 
-void palImpulseActuator::Apply()
+void palImpulseActuator::Apply(Float dt)
 {
 	palMatrix4x4 m;
 	mat_identity(&m);
@@ -163,7 +163,7 @@ void palHydrofoil::Init(palBody *pbody, Float px, Float py, Float pz, Float o_ax
 	palImpulseActuator::Init(pbody,px,py,pz,lift_axis_x,lift_axis_y,lift_axis_z);
 }
 
-void palHydrofoil::Apply() {
+void palHydrofoil::Apply(Float dt) {
 			palMatrix4x4 m;
 			palMatrix4x4 out;
 			palVector3 V;
@@ -196,7 +196,7 @@ void palHydrofoil::Apply() {
 
 //			printf("lift%5.3f :%f, %f\n",lift,uvw.x,alpha);
 			SetImpulse(lift);
-			palImpulseActuator::Apply();
+			palImpulseActuator::Apply(dt);
 	}
 				
 
@@ -223,7 +223,7 @@ void palPropellor::Update(Float voltage) {
 		thrust =  Ct * temp * fabs(temp); //use yoergers model to calculate propellor thrust
 		printf("thrust:%f (%f)\n",thrust,temp);
 		SetImpulse(thrust); 
-		palImpulseActuator::Apply();//apply the force
+		palImpulseActuator::Apply(Float dt);//apply the force
 	} else {
 		printf("no physics!\n");
 	}
@@ -242,104 +242,161 @@ ie
 \f[ T_A(t) = K_T\frac{V_a(t)-K_b.\omega_n(t)}{R_a} \f]
 */
 
-Float CalcSphereForce(Float radius,Float hpos,Float density, Float volume = -1) {
-	hpos += radius;
-	if (hpos < radius*2) {
-		Float hunder;
-		hunder = radius*2 - hpos;
-		if (hunder > radius * 2)
-			hunder = radius*2;
+Float CalcSphereForce(Float radius,Float hpos,Float density, Float waterHeight = 0.0, Float gravityAcc = 9.8f, Float volume = -1) {
+   Float diameter = radius * Float(2.0);
+   Float bottom = hpos - radius;
+   if (bottom < waterHeight) {
+      Float hunder;
+      hunder = waterHeight - bottom;
+      // Once you go beneath the radius, it has no move water to come back up.
+      if (hunder > diameter)
+         hunder = diameter;
 
-		if (volume < 0)
-			volume =  (Float)M_PI * hunder * (3 * radius * hunder - hunder*hunder) / 3.0f;
-		Float gravity = 9.8f;
-		Float fb = volume * gravity * density;
-		return fb;
-	}
-	return 0;
+      if (hunder < Float(0.0))
+         hunder = Float(0.0);
+
+      if (volume < 0)
+         volume =  (Float)M_PI * hunder * (3 * radius * hunder - hunder*hunder) / Float(3.0);
+      Float fb = volume * gravityAcc * density;
+      return fb;
+   }
+   return 0;
 }
 
-void palFakeBuoyancy::Apply() {
-		palMatrix4x4 m;
-		m=m_pBody->GetLocationMatrix();
-		palBoxGeometry *pbg;
-		pbg = dynamic_cast<palBoxGeometry *>(m_pBody->m_Geometries[0]);
-		if (pbg ){
-			/*
-			float box_height = pbg->m_fHeight;
-			if (m._42 < box_height) {
-				float hunder = box_height - m._42; //how much of the box's height is under water?
-				if (hunder > box_height) hunder = box_height; //maximum is box height
+palFakeBuoyancy::palFakeBuoyancy()
+   : m_pBody(0), m_density(0.0f), m_pWaterHeightQuery(0)
+   {};
 
-				float volume = pbg->m_fWidth*pbg->m_fDepth * hunder;
+void palFakeBuoyancy::Init(palBody *pbody, Float density, palLiquidDrag* drag) {
+   m_pBody = pbody;
+   m_density = density;
+   m_pDrag = drag;
+}
 
-				float gravity = 9.8f;
+void palFakeBuoyancy::SetWaterHeightQuery(palWaterHeightQuery* query)
+{
+   m_pWaterHeightQuery = query;
+}
 
-				float fb = volume * gravity * m_density;
+palWaterHeightQuery* palFakeBuoyancy::GetWaterHeightQuery()
+{
+   return m_pWaterHeightQuery;
+}
 
-				m_pBody->AddForce(0,fb,0);
-			}
-			*/
-			Float volume = pbg->m_fWidth*pbg->m_fDepth * pbg->m_fHeight;
-			Float quatervolume = volume/4;
-			Float quatersphereradius = (Float) pow((3/4.0)*quatervolume / M_PI,1/3.0);
+bool palFakeBuoyancy::IterateBuoyancy(const palVector3& relPos, Float radius, Float dt)
+{
+   bool result = false;
 
-			Float r = quatersphereradius;
-			//r = pbg->m_fHeight
+   palMatrix4x4 m, worldPos;
+   palMatrix4x4 bodypos=m_pBody->GetLocationMatrix();
 
-			palMatrix4x4 m;
-			palMatrix4x4 bodypos = m_pBody->GetLocationMatrix();
-			palMatrix4x4 out;
+   mat_identity(&m);
+   mat_translate(&m,relPos.x, relPos.y, relPos.z);
+   mat_multiply(&worldPos,&bodypos,&m);
 
-			mat_identity(&m);
-			mat_translate(&m,pbg->m_fWidth*0.5f,0,0);
-			mat_multiply(&out,&bodypos,&m);
-			m_pBody->ApplyForceAtPosition(out._41,out._42,out._43,0,
-				CalcSphereForce(r,out._42,m_density),0);
-//					CalcSphereForce(pbg->m_fHeight,out._42,m_density,volume*0.5f),0);
+   unsigned int upAxis = static_cast<palPhysics*>(m_pBody->GetParent())->GetUpAxis();
+   palVector3 gravVec;
+   static_cast<palPhysics*>(m_pBody->GetParent())->GetGravity(gravVec);
+   float gravity = vec_mag(&gravVec);
 
-			mat_identity(&m);
-			mat_translate(&m,-pbg->m_fWidth*0.5f,0,0);
-			mat_multiply(&out,&bodypos,&m);
-			m_pBody->ApplyForceAtPosition(out._41,out._42,out._43,0,
-					CalcSphereForce(r,out._42,m_density),0);
-//					CalcSphereForce(pbg->m_fHeight,out._42,m_density,volume*0.5f),0);
+   palVector3 impulse;
+   palVector3 vel;
+   m_pBody->GetLinearVelocityAtLocalPosition(vel, relPos);
 
-			//the following are the z-axis floats:
-			mat_identity(&m);
-			mat_translate(&m,0,0,pbg->m_fDepth*0.5f);
-			mat_multiply(&out,&bodypos,&m);
-			m_pBody->ApplyForceAtPosition(out._41,out._42,out._43,0,
-				CalcSphereForce(r,out._42,m_density),0);
+   // Start at the current pos if it's leaving the water
+   float heightPos = worldPos._mat[4 * 3 + upAxis];
 
-			mat_identity(&m);
-			mat_translate(&m,0,0,-pbg->m_fDepth*0.5f);
-			mat_multiply(&out,&bodypos,&m);
-			m_pBody->ApplyForceAtPosition(out._41,out._42,out._43,0,
-				CalcSphereForce(r,out._42,m_density),0);
+   Float waterHeight = m_pWaterHeightQuery == NULL ? Float(0.0) : m_pWaterHeightQuery->GetWaterHeight(worldPos._41, worldPos._42, worldPos._43);
 
-		} 
-		palSphereGeometry *psg;
-		psg = dynamic_cast<palSphereGeometry *>(m_pBody->m_Geometries[0]);
-		if (psg) {
-			m_pBody->ApplyForce(0,
-				CalcSphereForce(psg->m_fRadius,m._42,m_density),0);
-			/*
-			float sphere_radius = psg->m_fRadius;
-			if (m._42 < sphere_radius*2) {
-				float hunder = sphere_radius*2 - m._42; //how much of the box's height is under water?
-				if (hunder > sphere_radius*2) hunder = sphere_radius*2; //maximum is box height
-				//float volume = sphere_radius*sphere_radius * hunder; //wrong wrong wrong.
+   Float subDt = dt / 40.0f;
+   for (int i = 0 ; i < 40; ++i)
+   {
+      m_pBody->GetLinearVelocityAtLocalPosition(vel, relPos);
+      Float velMag = vel[upAxis];
+      heightPos +=  velMag * subDt;
 
-				float volume =  M_PI * hunder * (3 * sphere_radius * hunder - hunder*hunder) / 3.0f;
+      impulse[upAxis] = CalcSphereForce(radius, heightPos, m_density, waterHeight, gravity);
+      if (std::abs(impulse[upAxis]) > PAL_FLOAT_EPSILON)
+      {
+         result = true;
 
-				float gravity = 9.8f;
-				float fb = volume * gravity * m_density;
-				m_pBody->AddForce(0,fb,0);
-			}
-			*/
-		}
-	}
+         impulse[upAxis] *= subDt;
+         printf("idx %d Start %f Cur %f VelMag %f ", i, worldPos._mat[4 * 3 + upAxis], heightPos, velMag);
+         printf("ApplyImpulse %f ", impulse[upAxis]);
+         m_pBody->ApplyImpulseAtPosition(worldPos._41, worldPos._42, worldPos._43, impulse.x, impulse.y, impulse.z);
+         printf("\n");
+      }
+   }
+   return result;
+}
+
+
+void palFakeBuoyancy::Apply(Float dt) {
+   palVector3 vel;
+   unsigned int upAxis = static_cast<palPhysics*>(m_pBody->GetParent())->GetUpAxis();
+   palVector3 gravVec;
+   static_cast<palPhysics*>(m_pBody->GetParent())->GetGravity(gravVec);
+   float gravity = vec_mag(&gravVec);
+
+   for (unsigned i = 0; i < m_pBody->m_Geometries.size(); ++i)
+   {
+      palMatrix4x4 offsetMatrix = m_pBody->m_Geometries[i]->GetOffsetMatrix();
+
+      palBoxGeometry* pbg = dynamic_cast<palBoxGeometry *>(m_pBody->m_Geometries[i]);
+      if (pbg != 0){
+         unsigned int upAxis = static_cast<palPhysics*>(m_pBody->GetParent())->GetUpAxis();
+         Float volume = pbg->m_fWidth*pbg->m_fDepth * pbg->m_fHeight;
+         Float quatervolume = volume/4.0f;
+         Float quatersphereradius = (Float) pow((3.0f/4.0f)*quatervolume / M_PI, 1.0f/3.0f);
+
+         palVector3 translation[4];
+         palVector3 force, tempTranslation;
+         palVector3 xyzdim = pbg->GetXYZDimensions();
+         int firstAxis = upAxis == 0 ? 1 : 0;
+         int secondAxis = upAxis == 1 ? 2 : 1;
+         translation[0][firstAxis] = xyzdim[firstAxis]*0.5f;
+         translation[1][firstAxis] = -xyzdim[firstAxis]*0.5f;
+         translation[2][secondAxis] = xyzdim[secondAxis]*0.5f;
+         translation[3][secondAxis] = -xyzdim[secondAxis]*0.5f;
+         for (unsigned i = 0; i < 4; ++i)
+         {
+            vec_mat_mul(&tempTranslation, &offsetMatrix, &translation[i]);
+            translation[i] = tempTranslation;
+            printf("Box Buoyancy Position [%d] %f %f %f\n", i, translation[i][0], translation[i][1], translation[i][2]);
+         }
+
+         bool result = false;;
+         for (unsigned i = 0; i < 4; ++i)
+         {
+            result = IterateBuoyancy(translation[i], quatersphereradius, dt) || result;
+         }
+         if (result && m_pDrag != 0)
+         {
+            m_pBody->GetLinearVelocity(vel);
+            printf(" Pre drag %f", vel[upAxis]);
+            m_pDrag->Apply(dt);
+            m_pBody->GetLinearVelocity(vel);
+            printf(" Post drag %f\n", vel[upAxis]);
+         }
+
+      }
+      palSphereGeometry* psg = dynamic_cast<palSphereGeometry *>(m_pBody->m_Geometries[i]);
+      if (psg != 0) {
+         palVector3 centerVec;
+         mat_get_translation(&offsetMatrix, &centerVec);
+         bool result = IterateBuoyancy(centerVec, psg->m_fRadius, dt);
+         if (result && m_pDrag != 0)
+         {
+            m_pBody->GetLinearVelocity(vel);
+            printf(" Pre drag %f", vel[upAxis]);
+            m_pDrag->Apply(dt);
+            m_pBody->GetLinearVelocity(vel);
+            printf(" Post drag %f\n", vel[upAxis]);
+         }
+      }
+   }
+
+}
 
 void palLiquidDrag::Init(palBody *pbody, Float area, Float CD, Float density) {
 		m_pBody=pbody;
@@ -348,21 +405,36 @@ void palLiquidDrag::Init(palBody *pbody, Float area, Float CD, Float density) {
 		m_area=area;
 	}
 
-void palLiquidDrag::Apply() {
+void Drag(palVector3& V,palVector3& impulseOut, Float density, Float cd, Float area, Float mass, Float dt)
+{
+   Float mag2 = vec_mag2(&V);
+   Float drag = Float(0.5) * density * cd * area* mag2 * dt;
+   if (drag * drag > mag2 * mass * mass)
+   {
+      drag = sqrt(mag2) * mass;
+   }
+   vec_norm(&V);
+   vec_const_mul(&impulseOut,&V,drag);
+}
+
+void palLiquidDrag::Apply(Float dt) {
 		palVector3 vout,V;
+		if (dt <= PAL_FLOAT_EPSILON)
+		{
+		   return;
+		}
+		Float mass = m_pBody->m_fMass;
 		//linear drag
 		m_pBody->GetLinearVelocity(V);
-		Float drag = Float(0.5) * m_density * m_CD * m_area * vec_mag(&V) * vec_mag(&V);
-		vec_const_mul(&vout,&V,drag);
+		Drag(V, vout, m_density, m_CD, m_area, mass, dt);
 		m_pBody->ApplyImpulse(-vout.x,-vout.y,-vout.z);
 		//angular drag
 		m_pBody->GetAngularVelocity(V);
-		drag = Float(0.5) * m_density * m_CD * m_area * vec_mag(&V) * vec_mag(&V);
-		vec_const_mul(&vout,&V,drag);
+		Drag(V, vout, m_density, m_CD, m_area, mass, dt);
 		m_pBody->ApplyAngularImpulse(-vout.x,-vout.y,-vout.z);
 	}
 /*
-void palLiquidDrag::Apply(){
+void palLiquidDrag::Apply(Float dt){
 		palVector3 vout,V;
 		m_pBody->GetLinearVelocity(V);
 		Float drag = Float(0.5) * m_density * m_CD * m_area * vec_mag(&V) * vec_mag(&V);
@@ -492,7 +564,7 @@ void palPropeller::Init(palBody *pbody, Float px, Float py, Float pz, Float axis
  }
 
 
-void palPropeller::Apply() {
+void palPropeller::Apply(Float dt) {
 
 	palMatrix4x4 m;
 	mat_identity(&m);
@@ -512,10 +584,10 @@ void palPropeller::Apply() {
 
 	Float thrust = m_Voltage*m_a_l;
 	SetImpulse(thrust);
-	palImpulseActuator::Apply();
+	palImpulseActuator::Apply(dt);
 }
 
-void palSpring::Apply() {
+void palSpring::Apply(Float dt) {
 	palVector3 p1,p2;
 	m_pBody1->GetPosition(p1);
 	m_pBody2->GetPosition(p2);
@@ -587,7 +659,7 @@ void palGenericLinkSpring::GetAngularSpring(palAxis axis, palSpringDesc& out) co
 	out = m_SpringDescAngular[axis];
 }
 
-void palGenericLinkSpring::Apply() {
+void palGenericLinkSpring::Apply(Float dt) {
 	// TODO generic version.
 //	for (unsigned i = 0; i < 3; ++i) {
 //		palSpringDesc curSpring = m_SpringDescLinear[i];

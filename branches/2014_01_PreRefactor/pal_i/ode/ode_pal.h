@@ -630,7 +630,7 @@ public:
 	virtual ~palODEAngularMotor();
 	virtual void Init(palRevoluteLink *pLink, Float Max);
 	virtual void Update(Float targetVelocity, Float Max);
-	virtual void Apply();
+	virtual void Apply(float dt);
 protected:
 	dJointID odeJoint; //the ODE joint
 	FACTORY_CLASS(palODEAngularMotor,palAngularMotor,ODE,1)

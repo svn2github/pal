@@ -48,7 +48,7 @@ public:
 	virtual ~palActuator() {}
 	/** Ensures the actuator operates for the current time step
 	*/
-	virtual void Apply() = 0;
+	virtual void Apply(Float dt) = 0;
 	palActuatorType m_Type;
 protected:
 	palActuator()
@@ -95,7 +95,7 @@ public:
 	palForceActuator();
 	virtual void Init(palBody *pbody, Float px, Float py, Float pz, Float axis_x, Float axis_y, Float axis_z);
 	virtual void SetForce(Float force);
-	virtual void Apply();
+	virtual void Apply(Float dt);
 
 	Float m_fRelativePosX;
 	Float m_fRelativePosY;
@@ -137,7 +137,7 @@ public:
 	virtual void SetImpulse(Float impulse) {
 		m_fImpulse = impulse;
 	}
-	virtual void Apply();
+	virtual void Apply(Float dt);
 protected:
 	Float m_fRelativePosX;
 	Float m_fRelativePosY;
@@ -261,7 +261,7 @@ public:
 	virtual void SetVoltage(Float voltage) {
 		m_Voltage=voltage;
 	}
-	virtual void Apply();
+	virtual void Apply(Float dt);
 protected:
 	Float m_Voltage;
 	Float m_a_l;
@@ -314,7 +314,7 @@ public:
 		m_Voltage=voltage;
 	}
 
-	virtual void Apply() {
+	virtual void Apply(Float dt) {
 		Float torque =  m_torque_constant*(m_Voltage -
                         m_pRLink->GetAngularVelocity()*m_back_EMF_constant)/m_armature_resistance;	
 		m_pRLink->ApplyTorque(torque);
@@ -383,7 +383,7 @@ public:
 	}
 
 	//f=-kx (hookes law)
-	void Apply();
+	void Apply(Float dt);
 protected:
 	palBody *m_pBody1;
 	palBody *m_pBody2;
@@ -432,7 +432,7 @@ public:
 	virtual void GetAngularSpring(palAxis axis, palSpringDesc& out) const;
 
 	/// applies the spring.  This may do nothing for some implementations as the physics engine may do the work internally.
-	virtual void Apply();
+	virtual void Apply(Float dt);
 
 	palGenericLink* GetLink() { return m_pLink; }
 
@@ -468,7 +468,7 @@ public:
 	\param density The fluid density
 	*/
 	virtual void Init(palBody *pbody, Float area, Float CD, Float density=0.99829f);
-	virtual void Apply();
+	virtual void Apply(Float dt);
 protected:
 	palBody *m_pBody;
 	Float m_density;
@@ -527,7 +527,7 @@ public:
 		m_alpha=alpha;
 	}
 	
-	virtual void Apply(); 
+	virtual void Apply(Float dt); 
 
 protected:
 	Float m_row;
@@ -544,24 +544,35 @@ protected:
 };
 
 
-//temporary solution to allow faked buoyancy
+/// water height query class to use with the buoyancy operator.
+class palWaterHeightQuery
+{
+public:
+   virtual ~palWaterHeightQuery() {}
+   // The up vector must be properly surmized by this function and the height, on the proper axis, must be
+   // returned
+   virtual float GetWaterHeight(Float x, Float y, Float z) = 0;
+};
+
 class palFakeBuoyancy : public palActuator {
 public:
-	palFakeBuoyancy()
-		: m_pBody(0), m_density(0.0f)
-		{};
+   palFakeBuoyancy();
 
-	virtual void Init(palBody *pbody, Float density=998.29f) {
-		m_pBody=pbody;
-		m_density=density;
-	}
-	virtual void Apply();
+   virtual void Init(palBody *pbody, Float density=998.29f, palLiquidDrag* drag = NULL);
+
+   void SetWaterHeightQuery(palWaterHeightQuery* query);
+   palWaterHeightQuery* GetWaterHeightQuery();
+
+   virtual void Apply(Float dt);
 protected:
-	palBody *m_pBody;
-	Float m_density;
+   palBody *m_pBody;
+   Float m_density;
+   palWaterHeightQuery* m_pWaterHeightQuery;
+   palLiquidDrag* m_pDrag;
 
-	FACTORY_CLASS(palFakeBuoyancy,palFakeBuoyancy,*,1);
+   FACTORY_CLASS(palFakeBuoyancy,palFakeBuoyancy,*,1);
 private:
+   bool IterateBuoyancy(const palVector3& relPos, Float radius, Float dt);
 };
 
 #endif
