@@ -458,9 +458,7 @@ private:
 */
 class palLiquidDrag : public palActuator {
 public:
-	palLiquidDrag()
-		: m_pBody(0), m_density(0.0f), m_CD(0.0f), m_area(0.0f)
-		{};
+	palLiquidDrag();
 	/** Initializes the liquid drag
 	\param pbody The body to which the drag is applied.
 	\param area The frontal area of the body to which the drag is applied
@@ -565,14 +563,16 @@ public:
 
    virtual void Apply(Float dt);
 protected:
-   palBody *m_pBody;
-   Float m_density;
-   palWaterHeightQuery* m_pWaterHeightQuery;
-   palLiquidDrag* m_pDrag;
 
    FACTORY_CLASS(palFakeBuoyancy,palFakeBuoyancy,*,1);
 private:
    bool IterateBuoyancy(const palVector3& relPos, Float radius, Float dt);
+
+   palBody *m_pBody;
+   Float m_density;
+   palWaterHeightQuery* m_pWaterHeightQuery;
+   palLiquidDrag* m_pDrag;
+   unsigned m_subSteps;
 };
 
 #endif

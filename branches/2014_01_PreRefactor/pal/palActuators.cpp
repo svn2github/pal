@@ -1,4 +1,5 @@
 #include "palActuators.h"
+#include "palSolver.h"
 //(c) Adrian Boeing 2004, see liscence.txt (BSD liscence)
 /*
 	Abstract:
@@ -264,13 +265,19 @@ Float CalcSphereForce(Float radius,Float hpos,Float density, Float waterHeight =
 }
 
 palFakeBuoyancy::palFakeBuoyancy()
-   : m_pBody(0), m_density(0.0f), m_pWaterHeightQuery(0)
+   : m_pBody(0), m_density(0.0f), m_pWaterHeightQuery(0), m_subSteps(40)
    {};
 
-void palFakeBuoyancy::Init(palBody *pbody, Float density, palLiquidDrag* drag) {
-   m_pBody = pbody;
-   m_density = density;
-   m_pDrag = drag;
+void palFakeBuoyancy::Init(palBody *pbody, Float density, palLiquidDrag* drag)
+{
+	m_pBody = pbody;
+	m_density = density;
+	m_pDrag = drag;
+        palSolver* solver = static_cast<palPhysics*>(m_pBody->GetParent())->asSolver();
+        if (solver != 0)
+        {
+        	m_subSteps = solver->GetSolverAccuracy();
+        }
 }
 
 void palFakeBuoyancy::SetWaterHeightQuery(palWaterHeightQuery* query)
@@ -282,6 +289,7 @@ palWaterHeightQuery* palFakeBuoyancy::GetWaterHeightQuery()
 {
    return m_pWaterHeightQuery;
 }
+
 
 bool palFakeBuoyancy::IterateBuoyancy(const palVector3& relPos, Float radius, Float dt)
 {
@@ -308,8 +316,8 @@ bool palFakeBuoyancy::IterateBuoyancy(const palVector3& relPos, Float radius, Fl
 
    Float waterHeight = m_pWaterHeightQuery == NULL ? Float(0.0) : m_pWaterHeightQuery->GetWaterHeight(worldPos._41, worldPos._42, worldPos._43);
 
-   Float subDt = dt / 40.0f;
-   for (int i = 0 ; i < 40; ++i)
+   Float subDt = dt / Float(m_subSteps);
+   for (unsigned i = 0 ; i < m_subSteps; ++i)
    {
       m_pBody->GetLinearVelocityAtLocalPosition(vel, relPos);
       Float velMag = vel[upAxis];
@@ -321,6 +329,12 @@ bool palFakeBuoyancy::IterateBuoyancy(const palVector3& relPos, Float radius, Fl
          result = true;
 
          impulse[upAxis] *= subDt;
+         // Hack, If the velocity is upward, take a bit away.
+         if (velMag > PAL_FLOAT_EPSILON)
+         {
+            impulse[upAxis] *= Float(0.95);
+         }
+
          //printf("idx %d Start %f Cur %f VelMag %f ", i, worldPos._mat[4 * 3 + upAxis], heightPos, velMag);
          //printf("ApplyImpulse %f ", impulse[upAxis]);
          m_pBody->ApplyImpulseAtPosition(worldPos._41, worldPos._42, worldPos._43, impulse.x, impulse.y, impulse.z);
@@ -346,21 +360,22 @@ void palFakeBuoyancy::Apply(Float dt) {
       if (pbg != 0){
          unsigned int upAxis = static_cast<palPhysics*>(m_pBody->GetParent())->GetUpAxis();
          Float volume = pbg->m_fWidth*pbg->m_fDepth * pbg->m_fHeight;
-         Float quatervolume = volume/4.0f;
-         Float quatersphereradius = (Float) pow((3.0f/4.0f)*quatervolume / M_PI, 1.0f/3.0f);
+         Float quatervolume = volume/Float(4.0);
+         Float quatersphereradius = (Float) std::pow(Float((3.0/4.0)*quatervolume / M_PI), Float(1.0f/3.0f));
 
          palVector3 translation[4];
          palVector3 force, tempTranslation;
          palVector3 xyzdim = pbg->GetXYZDimensions();
          int firstAxis = upAxis == 0 ? 1 : 0;
          int secondAxis = upAxis == 1 ? 2 : 1;
-         translation[0][firstAxis] = xyzdim[firstAxis]*0.5f;
-         translation[1][firstAxis] = -xyzdim[firstAxis]*0.5f;
-         translation[2][secondAxis] = xyzdim[secondAxis]*0.5f;
-         translation[3][secondAxis] = -xyzdim[secondAxis]*0.5f;
+         Float half(0.5f);
+         translation[0][firstAxis] = xyzdim[firstAxis]*half;
+         translation[1][firstAxis] = -xyzdim[firstAxis]*half;
+         translation[2][secondAxis] = xyzdim[secondAxis]*half;
+         translation[3][secondAxis] = -xyzdim[secondAxis]*half;
          for (unsigned i = 0; i < 4; ++i)
          {
-            vec_mat_mul(&tempTranslation, &offsetMatrix, &translation[i]);
+            vec_mat_transform(&tempTranslation, &offsetMatrix, &translation[i]);
             translation[i] = tempTranslation;
             //printf("Box Buoyancy Position [%d] %f %f %f\n", i, translation[i][0], translation[i][1], translation[i][2]);
          }
@@ -397,6 +412,14 @@ void palFakeBuoyancy::Apply(Float dt) {
    }
 
 }
+
+palLiquidDrag::palLiquidDrag()
+: m_pBody(0)
+, m_density(0.0f)
+, m_CD(0.0f)
+, m_area(0.0f)
+{}
+
 
 void palLiquidDrag::Init(palBody *pbody, Float area, Float CD, Float density) {
 		m_pBody=pbody;
