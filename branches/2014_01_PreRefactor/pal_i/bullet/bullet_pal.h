@@ -115,7 +115,7 @@ public:
 	/*override*/ const char* GetPALVersion() const;
 	/*override*/ const char* GetVersion() const;
 	/*override*/ palCollisionDetection* asCollisionDetection() { return this; }
-
+	/*override*/ palSolver* asSolver() { return this; }
 	//extra methods provided by Bullet abilities:
 	/** Returns the current Bullet World in use by PAL
 		\return A pointer to the current btDynamicsWorld
@@ -165,6 +165,7 @@ public:
 	virtual void RemoveAction(palAction *action);
 
 	PAL_VECTOR<short> m_CollisionMasks;
+	
 protected:
 
 	virtual void Iterate(Float timestep);

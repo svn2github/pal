@@ -149,6 +149,7 @@ public:
 	/// @return the debug draw instance.
 	virtual palDebugDraw* GetDebugDraw();
 
+	virtual palSolver* asSolver() { return 0; }
 	virtual palCollisionDetection* asCollisionDetection() { return 0; }
 
 
