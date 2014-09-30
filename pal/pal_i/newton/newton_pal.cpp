@@ -1154,7 +1154,7 @@ void palNewtonAngularMotor::Update(Float targetVelocity) {
 	}
 }
 
-void palNewtonAngularMotor::Apply() {
+void palNewtonAngularMotor::Apply(float dt) {
 }
 
 palNewtonRevoluteLink::palNewtonRevoluteLink() {

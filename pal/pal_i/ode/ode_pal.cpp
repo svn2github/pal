@@ -36,6 +36,7 @@ FACTORY_CLASS_IMPLEMENTATION_BEGIN_GROUP
 	FACTORY_CLASS_IMPLEMENTATION(palODEBoxGeometry);
 	FACTORY_CLASS_IMPLEMENTATION(palODESphereGeometry);
 	FACTORY_CLASS_IMPLEMENTATION(palODECapsuleGeometry);
+   FACTORY_CLASS_IMPLEMENTATION(palODECylinderGeometry);
 	FACTORY_CLASS_IMPLEMENTATION(palODEConvexGeometry);
    FACTORY_CLASS_IMPLEMENTATION(palODEConcaveGeometry);
 
@@ -1037,7 +1038,7 @@ void palODECapsuleGeometry::Init(const palMatrix4x4 &pos, Float radius, Float le
 	m_upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
 	palCapsuleGeometry::Init(pos,radius,length,mass);
 	memset(&odeGeom ,0,sizeof(odeGeom));
-	odeGeom = dCreateCCylinder(g_space, m_fRadius, m_fLength+m_fRadius);
+	odeGeom = dCreateCapsule(g_space, m_fRadius, m_fLength+m_fRadius);
 	//odeGeom = dCreateCylinder(g_space, m_fRadius, m_fLength);
 
 	if (m_pBody) {
@@ -1095,6 +1096,73 @@ const palMatrix4x4& palODECapsuleGeometry::GetLocationMatrix() const {
 
 void palODECapsuleGeometry::CalculateMassParams(dMass& odeMass, Float massScalar) const {
 	dMassSetCapsuleTotal(&odeMass, massScalar, m_upAxis, m_fRadius, m_fLength);
+}
+
+palODECylinderGeometry::palODECylinderGeometry() {
+   m_upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
+}
+
+void palODECylinderGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
+   m_upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
+   palCylinderGeometry::Init(pos,radius,length,mass);
+   memset(&odeGeom ,0,sizeof(odeGeom));
+   odeGeom = dCreateCylinder(g_space, m_fRadius, m_fLength);
+
+   if (m_pBody) {
+      palODEBody *pob = dynamic_cast<palODEBody *> (m_pBody);
+      if (pob) {
+         if (pob->odeBody) {
+            dGeomSetBody(odeGeom, pob->odeBody);
+         }
+      }
+   }
+   SetPosition(pos);
+}
+
+void palODECylinderGeometry::ReCalculateOffset() {
+   palODEGeometry::ReCalculateOffset();
+   if (m_pBody) {
+      palODEBody *pob = dynamic_cast<palODEBody *> (m_pBody);
+      if (pob) {
+         if (pob->odeBody) {
+            dMatrix3 R;
+            if (m_upAxis == 1) {
+               dRFromAxisAndAngle(R,1,0,0,M_PI/2);
+            }
+            else if (m_upAxis == 0) {
+               dRFromAxisAndAngle(R,0,1,0,M_PI/2);
+            }
+            else {
+               dRSetIdentity(R);
+            }
+            dReal pos[3];
+            dReal offsetR[12];
+
+            convODEFromPAL(pos, offsetR, m_mOffset);
+
+            dMultiply0(R, offsetR, R, 3, 3, 3);
+            dGeomSetOffsetRotation(odeGeom,R);
+         }
+      }
+   }
+}
+
+const palMatrix4x4& palODECylinderGeometry::GetLocationMatrix() const {
+   if (odeGeom) {
+      const dReal *pos = dGeomGetPosition(odeGeom);
+      const dReal *R = dGeomGetRotation(odeGeom);
+      convODEToPAL(pos, R, m_mLoc);
+      if (m_upAxis == 1) {
+         mat_rotate(&m_mLoc, -90, 1, 0, 0);
+      } else if (m_upAxis == 0) {
+         mat_rotate(&m_mLoc, -90, 0, 1, 0);
+      }
+   }
+   return m_mLoc;
+}
+
+void palODECylinderGeometry::CalculateMassParams(dMass& odeMass, Float massScalar) const {
+   dMassSetCylinderTotal(&odeMass, massScalar, m_upAxis, m_fRadius, m_fLength);
 }
 
 palODEConvexGeometry::palODEConvexGeometry() {
@@ -2136,6 +2204,6 @@ void palODEAngularMotor::Update(Float targetVelocity, Float Max) {
 	}
 }
 
-void palODEAngularMotor::Apply() {
+void palODEAngularMotor::Apply(float dt) {
 
 }

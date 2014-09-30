@@ -492,7 +492,7 @@ public:
 	palNewtonAngularMotor();
 	virtual void Init(palRevoluteLink *pLink, Float Max);
 	virtual void Update(Float targetVelocity);
-	virtual void Apply();
+	virtual void Apply(float dt);
 protected:
 	palNewtonRevoluteLink *m_pnrl;
 	FACTORY_CLASS(palNewtonAngularMotor,palAngularMotor,Newton,1)

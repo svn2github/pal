@@ -229,6 +229,11 @@ palCapsuleGeometry *palFactory::CreateCapsuleGeometry() {
    return Cast<palGeometry *,palCapsuleGeometry *>(pmFO);
 }
 
+palCylinderGeometry *palFactory::CreateCylinderGeometry() {
+   palFactoryObject *pmFO = CreateObject("palCylinderGeometry");
+   return Cast<palGeometry *,palCylinderGeometry *>(pmFO);
+}
+
 palConvexGeometry *palFactory::CreateConvexGeometry() {
    palFactoryObject *pmFO = CreateObject("palConvexGeometry");
    return Cast<palGeometry *,palConvexGeometry *>(pmFO);

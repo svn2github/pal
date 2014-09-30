@@ -146,8 +146,8 @@ public:
 
 	const char* GetPALVersion() const;
 	const char* GetVersion() const;
-	virtual palCollisionDetection* asCollisionDetection() { return this; }
-
+	/*override*/ palCollisionDetection* asCollisionDetection() { return this; }
+	/*override*/ palSolver* asSolver() { return this; }
 	//Novodex specific:
 	/** Returns the current Novodex Scene in use by PAL
 		\return A pointer to the current PxScene
@@ -641,7 +641,7 @@ public:
 	palNovodexAngularMotor();
 	virtual void Init(palRevoluteLink *pLink, Float Max);
 	virtual void Update(Float targetVelocity);
-	virtual void Apply();
+	virtual void Apply(float dt);
 protected:
 	PxRevoluteJoint *m_j;
 	FACTORY_CLASS(palNovodexAngularMotor,palAngularMotor,Novodex,1)
@@ -663,7 +663,7 @@ public:
 
 	virtual void GetAngularSpring(palAxis axis, palSpringDesc& out) const;
 
-	virtual void Apply();
+	virtual void Apply(float dt);
 
 	palNovodexGenericLink* NovodexGetLink() { return m_pNovodexLink; }
 private:

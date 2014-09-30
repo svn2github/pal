@@ -72,9 +72,18 @@ public:
 	palBodyBase();
 	virtual ~palBodyBase();
 
-	/** Retrieves the position and orientation of the body as a 4x4 transformation matrix.
-	*/
+	/**
+	 * Retrieves the position and orientation of the body as a 4x4 transformation matrix.
+	 */
 	virtual const palMatrix4x4& GetLocationMatrix() const = 0;
+
+	/**
+	 * Retrieves the position and orientation of the body as a 4x4 transformation matrix.
+	 * But interpolated to account for the difference between the visual and simulated transform.
+	 * Not all engines support this, but in cases where it does not, it will return the normat location matrix.
+	 */
+	virtual const palMatrix4x4& GetLocationMatrixInterpolated() const { return GetLocationMatrix(); };
+
 
 	/** Retrieves the position of the body as a 3 dimensional vector.
 	\param pos A three dimensional vector representing the bodies position

@@ -108,7 +108,7 @@ public:
 	/*override*/ const char* GetPALVersion() const;
 	/*override*/ const char* GetVersion() const;
 	/*override*/ palCollisionDetection* asCollisionDetection() { return this; }
-
+	/*override*/ palSolver* asSolver() { return this; }
 	//extra methods provided by Bullet abilities:
 	/** Returns the current Bullet World in use by PAL
 		\return A pointer to the current btDynamicsWorld
@@ -158,6 +158,7 @@ public:
 	virtual void RemoveAction(palAction *action);
 
 	PAL_VECTOR<short> m_CollisionMasks;
+	
 protected:
 
 	virtual void Iterate(Float timestep);
@@ -194,6 +195,7 @@ public:
 	palBulletBodyBase();
 	virtual ~palBulletBodyBase();
 	virtual const palMatrix4x4& GetLocationMatrix() const;
+	virtual const palMatrix4x4& GetLocationMatrixInterpolated() const;
 	virtual void SetPosition(const palMatrix4x4& location);
 	virtual void SetMaterial(palMaterial *material);
 	virtual palGroup GetGroup() const;
@@ -399,9 +401,20 @@ public:
 	virtual void Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass);
 	using palCapsuleGeometry::CalculateInertia;
 	using palCapsuleGeometry::GenericInit;
-	btCylinderShape *m_btCylinderShape;
+	btCapsuleShape *m_btCapsuleShape;
 protected:
 	FACTORY_CLASS(palBulletCapsuleGeometry,palCapsuleGeometry,Bullet,1)
+};
+
+class palBulletCylinderGeometry : public palCylinderGeometry, public palBulletGeometry {
+public:
+   palBulletCylinderGeometry();
+   virtual void Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass);
+   using palCylinderGeometry::CalculateInertia;
+   using palCylinderGeometry::GenericInit;
+   btCylinderShape *m_btCylinderShape;
+protected:
+   FACTORY_CLASS(palBulletCylinderGeometry,palCylinderGeometry,Bullet,1)
 };
 
 class palBulletBox : public palBulletBody, public palBox {
@@ -750,7 +763,7 @@ public:
 	virtual ~palBulletAngularMotor() {};
 	virtual void Init(palRevoluteLink *pLink, Float Max);
 	virtual void Update(Float targetVelocity, Float Max);
-	virtual void Apply();
+	virtual void Apply(float dt);
 protected:
 	btHingeConstraint *m_bhc;
 	FACTORY_CLASS(palBulletAngularMotor,palAngularMotor,Bullet,1)
@@ -772,7 +785,7 @@ public:
 
 	virtual void GetAngularSpring(palAxis axis, palSpringDesc& out) const;
 
-	virtual void Apply();
+	virtual void Apply(float dt);
 
 	palBulletGenericLink* BulletGetLink() { return m_pBulletLink; }
 private:

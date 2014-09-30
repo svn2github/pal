@@ -139,6 +139,11 @@ public:
 	 */
 	palCapsuleGeometry *CreateCapsuleGeometry();
 
+	/** Creates a cylinder geometry.  This can be added to a compound or generic body
+    \return A new constructed cylinder geometry
+    */
+   palCylinderGeometry *CreateCylinderGeometry();
+
 	/** Creates a convex mesh geometry.  This can be added to a compound or generic body
 	 It will need to be given a set of vertices from which to create a convex hull.
 	 \return A new constructed convex hull geometry

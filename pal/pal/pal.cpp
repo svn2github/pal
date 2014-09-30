@@ -265,5 +265,6 @@ const PAL_STRING& palPhysics::GetInitProperty(const PAL_STRING& name, const PAL_
 	return i->second;
 }
 
+palSolver* palPhysics::asSolver() { return 0; }
 palCollisionDetection* palPhysics::asCollisionDetection() { return 0; }
 

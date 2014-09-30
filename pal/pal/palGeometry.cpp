@@ -63,6 +63,26 @@ palGeometry::~palGeometry() {
 	delete [] m_pIndices;
 	m_pIndices = NULL;
 }
+
+void palGeometry::CalculateBoxInertia(const palVector3& xyz, Float m_fMass, palVector3 tensorOut)
+{
+/*	Float i0= 1/(12 * (ly*ly + lz*lz));
+	Float i1= 1/(12 * (lx*lx + lz*lz));
+	Float i2= 1/(12 * (lx*lx + ly*ly));*/
+
+	Float lx = xyz.x;
+	Float ly = xyz.y;
+	Float lz = xyz.z;
+        
+        Float twelth = Float(1)/Float(12);
+	Float i0 = twelth * (ly*ly + lz*lz);
+	Float i1 = twelth * (lx*lx + lz*lz);
+	Float i2 = twelth * (lx*lx + ly*ly);
+
+	tensorOut = palVector3(m_fMass * i0, m_fMass * i1, m_fMass * i2);
+}
+
+
 /*
 void palGeometry::SetPosition(Float x, Float y, Float z) {
 	m_fPosX = x;
@@ -157,6 +177,11 @@ void palCapsuleGeometry::GenericInit(const palMatrix4x4& pos, const void *param_
 	Init(pos,p[0],p[1],p[2]);
 }
 
+void palCylinderGeometry::GenericInit(const palMatrix4x4& pos, const void *param_array) {
+   Float *p = (Float *)param_array;
+   Init(pos,p[0],p[1],p[2]);
+}
+
 /*
 void palSphereGeometry::iGenericInit(void *param,va_list arg_ptr) {
 }
@@ -183,22 +208,15 @@ void palBoxGeometry::Init(const palMatrix4x4 &pos, Float width, Float height, Fl
 	CalculateInertia();
 }
 
+
 void palBoxGeometry::CalculateInertia() {
 	palVector3 xyz = GetXYZDimensions();
-	Float lx = xyz.x;
-	Float ly = xyz.y;
-	Float lz = xyz.z;
-/*	Float i0= 1/(12 * (ly*ly + lz*lz));
-	Float i1= 1/(12 * (lx*lx + lz*lz));
-	Float i2= 1/(12 * (lx*lx + ly*ly));*/
+	palVector3 result;
+	CalculateBoxInertia(xyz, m_fMass, result); 
 
-	Float i0= (1/Float(12)) * (ly*ly + lz*lz);
-	Float i1= (1/Float(12)) * (lx*lx + lz*lz);
-	Float i2= (1/Float(12)) * (lx*lx + ly*ly);
-
-	m_fInertiaXX = m_fMass * i0;
-	m_fInertiaYY = m_fMass * i1;
-	m_fInertiaZZ = m_fMass * i2;
+	m_fInertiaXX = result.x;
+	m_fInertiaYY = result.y;
+	m_fInertiaZZ = result.z;
 }
 
 palVector3 palBoxGeometry::GetXYZDimensions() const {
@@ -232,7 +250,6 @@ palVector3 palBoxGeometry::GetXYZDimensions() const {
    NewtonBodySetMassMatrix (body, mass, Ixx, Iyy, Izz);
 */
 
-//void palCapsuleGeometry::Init(Float x, Float y, Float z, Float radius, Float length, Float mass) {
 void palCapsuleGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
 	m_Type = PAL_GEOM_CAPSULE;
 //	palGeometry::SetPosition(x,y,z);
@@ -250,6 +267,25 @@ void palCapsuleGeometry::CalculateInertia() {
 	m_fInertiaXX = m_fMass * i0;
 	m_fInertiaYY = m_fMass * i0;
 	m_fInertiaZZ = m_fMass * i2;
+}
+
+void palCylinderGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
+   m_Type = PAL_GEOM_CYLINDER;
+// palGeometry::SetPosition(x,y,z);
+   palGeometry::SetPosition(pos);//m_Loc = pos;
+   m_fRadius = radius;
+   m_fLength = length;
+   palGeometry::SetMass(mass);
+   CalculateInertia();
+}
+
+void palCylinderGeometry::CalculateInertia() {
+   Float d = m_fRadius*2;
+   Float i0 = 1/Float(48) * (3 * d * d + 4 * m_fLength * m_fLength);
+   Float i2 = d * d / Float(8);
+   m_fInertiaXX = m_fMass * i0;
+   m_fInertiaYY = m_fMass * i0;
+   m_fInertiaZZ = m_fMass * i2;
 }
 
 void palConvexGeometry::Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass) {
@@ -652,6 +688,7 @@ void palCapsuleGeometry::push_back3(Float *v,Float x, Float y, Float z) {
 Float *palCapsuleGeometry::GenerateMesh_Vertices() {
 	if (m_pVertices)
 		return m_pVertices;
+   // This is wrong.  It assumes Y up
 	tppos=0;
 	float fX1, fY1, fX2, fY2, fX3, fY3, fX4, fY4;	// The vertex positions around each quad we calculate
 	float fAngle,fY,fYNext;
@@ -661,6 +698,8 @@ Float *palCapsuleGeometry::GenerateMesh_Vertices() {
 	float fSineAngle = 0;
 	float fSineAdd = 180.0f / (hstrip-1);
 	int i,j;
+
+	palAxis upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
 
 	m_pVertices = new Float[m_nVertices*3];
 	Float *verts = new Float[m_nVertices*3];
@@ -697,13 +736,34 @@ Float *palCapsuleGeometry::GenerateMesh_Vertices() {
 			fY4 = cosf((fAngle+fAngleAdd) * (Float)DEG2RAD) * fRadius * sinf((fSineAngle + fSineAdd) * (Float)DEG2RAD);
 			fAngle += fAngleAdd;
 
-		push_back3(verts, fX1, fY    , fY1);
-		push_back3(verts, fX4, fYNext, fY4);
-		push_back3(verts, fX2, fY    , fY2);
-		push_back3(verts, fX1, fY    , fY1);
-		push_back3(verts, fX3, fYNext, fY3);
-		push_back3(verts, fX4, fYNext, fY4);
-
+			switch (upAxis) {
+			case PAL_X_AXIS:
+			   push_back3(verts, fY,     fY1, fX1);
+			   push_back3(verts, fYNext, fY4, fX4);
+			   push_back3(verts, fY    , fY2, fX2);
+			   push_back3(verts, fY    , fY1, fX1);
+			   push_back3(verts, fYNext, fY3, fX3);
+			   push_back3(verts, fYNext, fY4, fX4);
+			   break;
+			case PAL_Y_AXIS:
+			   push_back3(verts, fX1, fY    , fY1);
+			   push_back3(verts, fX4, fYNext, fY4);
+			   push_back3(verts, fX2, fY    , fY2);
+			   push_back3(verts, fX1, fY    , fY1);
+			   push_back3(verts, fX3, fYNext, fY3);
+			   push_back3(verts, fX4, fYNext, fY4);
+			   break;
+			case PAL_Z_AXIS:
+			   push_back3(verts, -fX1, fY1, fY);
+			   push_back3(verts, -fX4, fY4, fYNext);
+			   push_back3(verts, -fX2, fY2, fY);
+			   push_back3(verts, -fX1, fY1, fY);
+			   push_back3(verts, -fX3, fY3, fYNext);
+			   push_back3(verts, -fX4, fY4, fYNext);
+			   break;
+			default:
+			   throw new palException("Invalid axis is 'up'. This should never happen.");
+			}
 		}
 
 
@@ -712,20 +772,21 @@ Float *palCapsuleGeometry::GenerateMesh_Vertices() {
 
 
 	for (i=0;i<m_nVertices;i++) {
-		palVector3 v;
-		v._vec[0] = verts[i*3+0];
-		v._vec[1] = verts[i*3+1];
-		v._vec[2] = verts[i*3+2];
-		palVector3 r;
-		vec_mat_transform(&r,&m_mOffset,&v);
-		m_pVertices[i*3+0] = r.x;
-		m_pVertices[i*3+1] = r.y;
-		m_pVertices[i*3+2] = r.z;
+	   palVector3 v;
+	   v._vec[0] = verts[i*3+0];
+	   v._vec[1] = verts[i*3+1];
+	   v._vec[2] = verts[i*3+2];
+	   palVector3 r;
+	   vec_mat_transform(&r,&m_mOffset,&v);
+	   m_pVertices[i*3+0] = r.x;
+	   m_pVertices[i*3+1] = r.y;
+	   m_pVertices[i*3+2] = r.z;
 	}
 
 	delete [] verts;
 
 	return m_pVertices;
+
 }
 int *palCapsuleGeometry::GenerateMesh_Indices() {
 	if (m_pIndices)
@@ -735,6 +796,151 @@ int *palCapsuleGeometry::GenerateMesh_Indices() {
 	for (i=0;i<m_nIndices;i++)
 		m_pIndices[i]=i;
 	return m_pIndices;
+}
+////////////////////////////////////////////////////////////////////////////////
+palCylinderGeometry::palCylinderGeometry() {
+   hstrip = 10;
+   vslice = 10;
+
+   m_nVertices = hstrip*vslice*6;
+   m_nIndices = hstrip*vslice*6;
+
+}
+
+void palCylinderGeometry::push_back3(Float *v,Float x, Float y, Float z) {
+   palAxis upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
+   switch (upAxis) {
+   case PAL_X_AXIS:
+      v[tppos++] = y;
+      v[tppos++] = -x;
+      v[tppos++] = z;
+      break;
+   case PAL_Y_AXIS:
+      v[tppos++] = x;
+      v[tppos++] = y;
+      v[tppos++] = z;
+      break;
+   case PAL_Z_AXIS:
+      v[tppos++] = -x;
+      v[tppos++] = z;
+      v[tppos++] = y;
+      break;
+   default:
+      throw new palException("Invalid axis is 'up'. This should never happen.");
+   }
+}
+
+Float *palCylinderGeometry::GenerateMesh_Vertices() {
+   if (m_pVertices)
+      return m_pVertices;
+   // This is wrong.  It is for a capsule, and it assumes Y up
+   tppos=0;
+   float fX1, fY1, fX2, fY2, fX3, fY3, fX4, fY4;   // The vertex positions around each quad we calculate
+   float fAngle,fY,fYNext;
+   float fRadius=m_fRadius;
+   float fHeight=m_fLength;
+   float fAngleAdd = 360.0f / (float)vslice;
+   float fSineAngle = 0;
+   float fSineAdd = 180.0f / (hstrip-1);
+   int i,j;
+
+   palAxis upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
+
+   m_pVertices = new Float[m_nVertices*3];
+   Float *verts = new Float[m_nVertices*3];
+   // Loop around our sphere
+   for (i=0; i<hstrip; i++)
+   {
+      // Reset the angle for this slice
+      fAngle = 0;
+
+      fY = cosf(fSineAngle * (Float)DEG2RAD) * fRadius;
+      fYNext = cosf((fSineAngle+fSineAdd) * (Float)DEG2RAD) * fRadius;
+
+      // If we're above the midpoint, add half the height to the vertex positions.
+      // Otherwise subtract half the height.
+      if (i<=(hstrip/2)-1)
+         fY += fHeight/2;
+      else
+         fY -= fHeight/2;
+      if (i<=(hstrip/2)-2)
+         fYNext += fHeight/2;
+      else
+         fYNext -= fHeight/2;
+
+      for (j=0; j<vslice; j++)
+      {
+         // Calculate the X and Y position for the sphere (as if it were a circle viewed from above)
+         fX1 = sinf(fAngle * (Float)DEG2RAD) * fRadius * sinf(fSineAngle * (Float)DEG2RAD);
+         fY1 = cosf(fAngle * (Float)DEG2RAD) * fRadius * sinf(fSineAngle * (Float)DEG2RAD);
+         fX2 = sinf((fAngle+fAngleAdd) * (Float)DEG2RAD) * fRadius * sinf(fSineAngle * (Float)DEG2RAD);
+         fY2 = cosf((fAngle+fAngleAdd) * (Float)DEG2RAD) * fRadius * sinf(fSineAngle * (Float)DEG2RAD);
+         fX3 = sinf(fAngle * (Float)DEG2RAD) * fRadius * sinf((fSineAngle + fSineAdd) * (Float)DEG2RAD);
+         fY3 = cosf(fAngle * (Float)DEG2RAD) * fRadius * sinf((fSineAngle + fSineAdd) * (Float)DEG2RAD);
+         fX4 = sinf((fAngle+fAngleAdd) * (Float)DEG2RAD) * fRadius * sinf((fSineAngle + fSineAdd) * (Float)DEG2RAD);
+         fY4 = cosf((fAngle+fAngleAdd) * (Float)DEG2RAD) * fRadius * sinf((fSineAngle + fSineAdd) * (Float)DEG2RAD);
+         fAngle += fAngleAdd;
+
+         switch (upAxis) {
+         case PAL_X_AXIS:
+            push_back3(verts, fY,     fY1, fX1);
+            push_back3(verts, fYNext, fY4, fX4);
+            push_back3(verts, fY    , fY2, fX2);
+            push_back3(verts, fY    , fY1, fX1);
+            push_back3(verts, fYNext, fY3, fX3);
+            push_back3(verts, fYNext, fY4, fX4);
+            break;
+         case PAL_Y_AXIS:
+            push_back3(verts, fX1, fY    , fY1);
+            push_back3(verts, fX4, fYNext, fY4);
+            push_back3(verts, fX2, fY    , fY2);
+            push_back3(verts, fX1, fY    , fY1);
+            push_back3(verts, fX3, fYNext, fY3);
+            push_back3(verts, fX4, fYNext, fY4);
+            break;
+         case PAL_Z_AXIS:
+            push_back3(verts, -fX1, fY1, fY);
+            push_back3(verts, -fX4, fY4, fYNext);
+            push_back3(verts, -fX2, fY2, fY);
+            push_back3(verts, -fX1, fY1, fY);
+            push_back3(verts, -fX3, fY3, fYNext);
+            push_back3(verts, -fX4, fY4, fYNext);
+            break;
+         default:
+            throw new palException("Invalid axis is 'up'. This should never happen.");
+         }
+
+      }
+
+
+      fSineAngle += fSineAdd;
+   }
+
+
+   for (i=0;i<m_nVertices;i++) {
+      palVector3 v;
+      v._vec[0] = verts[i*3+0];
+      v._vec[1] = verts[i*3+1];
+      v._vec[2] = verts[i*3+2];
+      palVector3 r;
+      vec_mat_transform(&r,&m_mOffset,&v);
+      m_pVertices[i*3+0] = r.x;
+      m_pVertices[i*3+1] = r.y;
+      m_pVertices[i*3+2] = r.z;
+   }
+
+   delete [] verts;
+
+   return m_pVertices;
+}
+int *palCylinderGeometry::GenerateMesh_Indices() {
+   if (m_pIndices)
+      return m_pIndices;
+   m_pIndices = new int[m_nIndices];
+   int i;
+   for (i=0;i<m_nIndices;i++)
+      m_pIndices[i]=i;
+   return m_pIndices;
 }
 
 

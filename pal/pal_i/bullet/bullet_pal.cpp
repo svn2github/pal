@@ -52,6 +52,7 @@ FACTORY_CLASS_IMPLEMENTATION(palBulletPhysics);
 FACTORY_CLASS_IMPLEMENTATION(palBulletBoxGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palBulletSphereGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palBulletCapsuleGeometry);
+FACTORY_CLASS_IMPLEMENTATION(palBulletCylinderGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palBulletConvexGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palBulletConcaveGeometry);
 
@@ -1172,7 +1173,7 @@ void palBulletBodyBase::AssignDynamicsType(palDynamicsType dynType, Float mass, 
 void palBulletBodyBase::SetPosition(const palMatrix4x4& location) {
 	if (m_pbtBody) {
 		btTransform newloc;
-	   convertPalMatToBtTransform(newloc, location);
+		convertPalMatToBtTransform(newloc, location);
 		if (m_pbtBody->getMotionState() != NULL)
 		{
 			m_pbtBody->getMotionState()->setWorldTransform(newloc);
@@ -1201,18 +1202,21 @@ const btTransform palBulletBodyBase::GetWorldTransform() const {
 	return xform;
 }
 
+const palMatrix4x4& palBulletBodyBase::GetLocationMatrixInterpolated() const
+{
+	if (m_pbtBody && m_pbtBody->getMotionState() != NULL)
+	{
+		btTransform xform;
+		m_pbtBody->getMotionState()->getWorldTransform(xform);
+		convertBtTransformToPalMat(m_mLoc, xform);
+		return m_mLoc;
+	}
+	return GetLocationMatrix();
+}                                        
+
 const palMatrix4x4& palBulletBodyBase::GetLocationMatrix() const {
 	if (m_pbtBody) {
-		if (m_pbtBody->getMotionState() != NULL)
-		{
-			btTransform xform;
-			m_pbtBody->getMotionState()->getWorldTransform(xform);
-			convertBtTransformToPalMat(m_mLoc, xform);
-		}
-		else
-		{
-			convertBtTransformToPalMat(m_mLoc, m_pbtBody->getWorldTransform());
-		}
+		convertBtTransformToPalMat(m_mLoc, m_pbtBody->getWorldTransform());
 	}
 
 	return m_mLoc;
@@ -1881,27 +1885,52 @@ void palBulletSphereGeometry::Init(const palMatrix4x4 &pos, Float radius, Float 
 }
 
 palBulletCapsuleGeometry::palBulletCapsuleGeometry()
-  : m_btCylinderShape(0) {}
+  : m_btCapsuleShape(0) {}
 
 void palBulletCapsuleGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
 	palCapsuleGeometry::Init(pos,radius,length,mass);
 	palAxis upAxis = static_cast<palPhysics*>(GetParent())->GetUpAxis();
 
+        
 	switch (upAxis) {
 	case PAL_Z_AXIS:
-		m_btCylinderShape = new btCylinderShapeZ(btVector3(radius, radius, length/2.0f)); //Half lengths
+		m_btCapsuleShape = new btCapsuleShapeZ(radius, length);
 		break;
 	case PAL_X_AXIS:
-		m_btCylinderShape = new btCylinderShapeX(btVector3(length/2.0f, radius, radius)); //Half lengths
+		m_btCapsuleShape = new btCapsuleShapeX(radius, length);
 		break;
 	case PAL_Y_AXIS:
-		m_btCylinderShape = new btCylinderShape(btVector3(radius,length/2.0f,radius)); //Half lengths
+		m_btCapsuleShape = new btCapsuleShape(radius, length);
 		break;
 	default:
 		throw new palException("Invalid axis is 'up'. This should never happen.");
 	}
-	m_pbtShape = m_btCylinderShape;
+	m_pbtShape = m_btCapsuleShape;
 	//m_pbtShape->setMargin(0.0f);
+}
+
+palBulletCylinderGeometry::palBulletCylinderGeometry()
+  : m_btCylinderShape(0) {}
+
+void palBulletCylinderGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
+   palCylinderGeometry::Init(pos,radius,length,mass);
+   palAxis upAxis = static_cast<palPhysics*>(GetParent())->GetUpAxis();
+
+   switch (upAxis) {
+   case PAL_Z_AXIS:
+      m_btCylinderShape = new btCylinderShapeZ(btVector3(radius, radius, length/2.0f)); //Half lengths
+      break;
+   case PAL_X_AXIS:
+      m_btCylinderShape = new btCylinderShapeX(btVector3(length/2.0f, radius, radius)); //Half lengths
+      break;
+   case PAL_Y_AXIS:
+      m_btCylinderShape = new btCylinderShape(btVector3(radius,length/2.0f,radius)); //Half lengths
+      break;
+   default:
+      throw new palException("Invalid axis is 'up'. This should never happen.");
+   }
+   m_pbtShape = m_btCylinderShape;
+   //m_pbtShape->setMargin(0.0f);
 }
 
 
@@ -2821,7 +2850,7 @@ void palBulletAngularMotor::Update(Float targetVelocity, Float Max) {
 	m_bhc->getRigidBodyB().activate();
 }
 
-void palBulletAngularMotor::Apply() {
+void palBulletAngularMotor::Apply(float dt) {
 
 }
 
@@ -2865,7 +2894,7 @@ void palBulletGenericLinkSpring::GetAngularSpring(palAxis axis, palSpringDesc& o
 	BaseClass::GetAngularSpring(axis, out);
 }
 
-void palBulletGenericLinkSpring::Apply() {
+void palBulletGenericLinkSpring::Apply(float dt) {
 
 }
 

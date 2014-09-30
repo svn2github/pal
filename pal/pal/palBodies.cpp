@@ -50,6 +50,15 @@ void palBody::SetPosition(Float x, Float y, Float z, Float roll, Float pitch, Fl
 	SetPosition(loc);
 }
 
+void palBody::GetLinearVelocityAtLocalPosition(palVector3& vecOut, const palVector3& relPos) const
+{
+	palVector3 linV, angV, crossV;
+	GetLinearVelocity(linV);
+	GetAngularVelocity(angV);
+	
+	vec_cross(&crossV, &angV, &relPos);
+	vec_add(&vecOut, &linV, &crossV);
+}
 
 void palBody::ApplyImpulse(Float fx, Float fy, Float fz) {
 	Float im = 1/m_fMass;

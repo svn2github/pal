@@ -72,60 +72,6 @@ public:
 	void SetOrientation(Float roll, Float pitch, Float yaw);
 
 
-#if 0
-	/** Sets the material applied to this body.
-	A material pointer can be retrieved using the palMaterials::GetMaterial() method.
-	*/
-	virtual void SetMaterial(palMaterial *material);
-#endif
-#if 0
-	/** Sets the force acting on a body.
-	In classical physics force is related to the acceleration of a body by \f$F=m.a\f$, where F is the force, m is the Mass, and a is the Acceleration.
-	Sets the force vector applied to a body, regardless of what force was previously calculated by the physics engine.
-	\param fx The force vector (x)
-	\param fy The force vector (y)
-	\param fz The force vector (z)
-	*/
-	virtual void SetForce(Float fx, Float fy, Float fz);
-
-	/** Gets the force acting on a body.
-	\param force The force vector
-	*/
-	virtual void GetForce(palVector3& force) = 0;
-
-	/** Adds a force to the body.
-	This applies a force with the direction and strength represented by the input vector.
-	If you have a normalized vector, you will need to multiply it by the magnitude of the force to get the desired result.
-	\param fx The force vector (x)
-	\param fy The force vector (y)
-	\param fz The force vector (z)
-	*/
-	virtual void AddForce(Float fx, Float fy, Float fz); //direction of force (vector);
-	/** Adds a force to the body, at a specified, global, position.
-	This applies a force at a given position on the body, with the direction and strength represented by the input vector.
-	This has the result of adding both a force and a torque to the body (ie: results in a spin on the object).
-	\param px The position (x)
-	\param py The position (y)
-	\param pz The position (z)
-	\param fx The force vector (x)
-	\param fy The force vector (y)
-	\param fz The force vector (z)
-	*/
-	virtual void AddForceAtPosition(Float px, Float py, Float pz, Float fx, Float fy, Float fz); //direction of force (vector);
-
-	/** Sets the torque acting on a body.
-	In classical physics, torque is related to angular acceleration by \f$T=I.\alpha\f$ where T is the Torque, I is the moment of inertia, and \f$\alpha\f$ is angular acceleration.
-	*/
-	virtual void SetTorque(Float tx, Float ty, Float tz); //PALI
-	/** Gets the torque acting on a body
-	*/
-	virtual void GetTorque(palVector3& torque) = 0;
-
-	/** Adds torque to the body
-	*/
-	virtual void AddTorque(Float tx, Float ty, Float tz);
-#endif
-
 	/** Applies a force to the body.
 	This applies a force with the direction and strength represented by the input vector.
 	If you have a normalized vector, you will need to multiply it by the magnitude of the force to get the desired result.
@@ -190,6 +136,11 @@ public:
 	/** Gets the angular velocity of the body
 	*/
 	virtual void GetAngularVelocity(palVector3& velocity_rad) const = 0;
+	
+	/**
+	 * Get's the linear velocity of the rigid body at the local position specified.
+	 */
+	virtual void GetLinearVelocityAtLocalPosition(palVector3& velocityOut, const palVector3& relPos) const;
 
 	/** Sets the linear velocity of the body
 	*/
