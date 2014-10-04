@@ -89,6 +89,13 @@ ENDIF()
 
 OPTION(PAL_BUILD_DOUBLE_PRECISION "Set to ON to make PAL build as double precision." OFF)
 
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE CACHE STRING "Build with install names and rpaths set.")
+
+set(bitness 32)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  set(bitness 64)
+endif()
+
 IF(UNIX AND NOT APPLE)
 	# Some Unicies need explicit linkage to the Math library or the build fails.
 	FIND_LIBRARY(MATH_LIBRARY m)

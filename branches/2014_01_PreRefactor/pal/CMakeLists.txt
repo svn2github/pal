@@ -56,7 +56,6 @@ SET(HEADERS_BASE
 	palFluid.h
 	palGeometry.h
 	palLinks.h
-	palMaterials.h
 	palMath.h
 	palSensors.h
 	palSettings.h
@@ -66,7 +65,7 @@ SET(HEADERS_BASE
 	palStringable.h
 	palTerrain.h
 	palVehicle.h
-        palCharacter.h
+   palCharacter.h
 )
 SET(SOURCE_BASE
 	pal.cpp
@@ -116,6 +115,21 @@ ADD_LIBRARY(
 # Remove the "lib" prefix since the library is already named "libpal".
 SET_TARGET_PROPERTIES(${LIB_NAME} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${LIB_NAME} PROPERTIES IMPORT_PREFIX "")
+
+if (APPLE)
+   SET(PAL_DYLIB_INSTALL_NAME_DIR "@executable_path/../lib" CACHE STRING "install name dir for compiled dylibs and bundles")
+   
+   if (PAL_DYLIB_INSTALL_NAME_DIR)
+      SET_TARGET_PROPERTIES(${LIB_NAME} PROPERTIES
+         INSTALL_NAME_DIR "${PAL_DYLIB_INSTALL_NAME_DIR}"
+      )
+   else()
+      set(CMAKE_INSTALL_RPATH "${INSTALL_INCDIR}/${LIB_NAME}")
+      SET_TARGET_PROPERTIES(${LIB_NAME} PROPERTIES
+         INSTALL_NAME_DIR "${INSTALL_INCDIR}/${LIB_NAME}"
+      )
+   endif()
+endif()
 
 TARGET_LINK_LIBRARIES( ${LIB_NAME} ${MATH_LIBRARY} ${DL_LIBRARY} )
 IF(UNIX)
