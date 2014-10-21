@@ -844,16 +844,16 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 			processCollisionTask,
 			createCollisionLocalStoreMemory,
 			maxNumOutstandingTasks));
+      m_threadSupportCollision->startSPU();
 #else
 		const char* threadName = "collision";
 		PosixThreadSupport::ThreadConstructionInfo tcInfo(
-			strdup(threadName),
+			threadName,
 			processCollisionTask,
 			createCollisionLocalStoreMemory,
 			maxNumOutstandingTasks);
 		m_threadSupportCollision = new PosixThreadSupport(tcInfo);
 #endif
-		m_threadSupportCollision->startSPU();
 		m_dispatcher = new	SpuGatheringCollisionDispatcher(m_threadSupportCollision,maxNumOutstandingTasks,m_collisionConfiguration);
 		const char* solverName = "solver";
 		btThreadSupportInterface*	 threadSupportSolver = 0;
@@ -863,6 +863,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 			SolverThreadFunc,
 			SolverlsMemoryFunc,
 			maxNumOutstandingTasks));
+      threadSupportSolver->startSPU();
 #else
 		PosixThreadSupport::ThreadConstructionInfo tcInfoSolver(
 			// Does bullet ever modify this? Probably not, but it's not a
@@ -873,7 +874,6 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 			maxNumOutstandingTasks);
 		threadSupportSolver = new PosixThreadSupport(tcInfoSolver);
 #endif
-		threadSupportSolver->startSPU();
 		m_solver = new btParallelConstraintSolver(threadSupportSolver);
 		//this solver requires the contacts to be in a contiguous pool, so avoid dynamic allocation
 		m_dispatcher->setDispatcherFlags(btCollisionDispatcher::CD_DISABLE_CONTACTPOOL_DYNAMIC_ALLOCATION);
@@ -926,7 +926,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 
 	m_dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration = btScalar(0.0001);
 
-	//m_dynamicsWorld->getSimulationIslandManager()->setSplitIslands(false);
+	m_dynamicsWorld->getSimulationIslandManager()->setSplitIslands(!parallel_solver);
 	m_dynamicsWorld->getDispatchInfo().m_enableSPU = parallel_solver;
 
 				// Reset so it assigns it to the world properly
@@ -966,7 +966,7 @@ void palBulletPhysics::Cleanup() {
 void palBulletPhysics::StartIterate(Float timestep) {
 	ClearContacts();
 
-	if (m_dynamicsWorld) {
+	if (m_dynamicsWorld && m_dynamicsWorld->getCollisionObjectArray().size() > 0) {
 
 		palDebugDraw* debugDraw = GetDebugDraw();
 		if (debugDraw != NULL) {
