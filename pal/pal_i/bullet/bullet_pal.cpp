@@ -913,7 +913,8 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 			| SOLVER_RANDMIZE_ORDER | SOLVER_USE_WARMSTARTING | SOLVER_SIMD;
 #else
 			SOLVER_USE_WARMSTARTING | SOLVER_USE_2_FRICTION_DIRECTIONS | SOLVER_FRICTION_SEPARATE
-			| SOLVER_RANDMIZE_ORDER | SOLVER_ENABLE_FRICTION_DIRECTION_CACHING | SOLVER_SIMD;
+			| SOLVER_RANDMIZE_ORDER | SOLVER_ENABLE_FRICTION_DIRECTION_CACHING | SOLVER_SIMD
+			| SOLVER_INTERLEAVE_CONTACT_AND_FRICTION_CONSTRAINTS | SOLVER_ALLOW_ZERO_LENGTH_FRICTION_DIRECTIONS;
 #endif
 
 	m_dynamicsWorld->getSolverInfo().m_erp = GetInitProperty("WorldERP", m_dynamicsWorld->getSolverInfo().m_erp, btScalar(PAL_FLOAT_EPSILON), btScalar(1.0));
@@ -1089,6 +1090,7 @@ void palBulletBodyBase::SetMaterial(palMaterial *material) {
 		//m_pbtBody->
 		m_pbtBody->setFriction(material->m_fStatic);
 		m_pbtBody->setRestitution(material->m_fRestitution);
+		m_pbtBody->setRollingFriction(0.0f);
 		if (material->m_bEnableAnisotropicFriction)
 		{
 			btVector3 btVec;
