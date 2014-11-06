@@ -90,9 +90,8 @@ void palBulletVehicle::Finalize() {
 		// I have no idea why.
 
 		wheel.m_suspensionStiffness = m_vWheels[i]->m_WheelInfo.m_fSuspension_Ks / mass;
-		wheel.m_wheelsDampingRelaxation = m_vWheels[i]->m_WheelInfo.m_fSuspension_Kd / mass;
-		// TODO configure or figure out a good calc for the compression suspension value.
-		wheel.m_wheelsDampingCompression = (m_vWheels[i]->m_WheelInfo.m_fSuspension_Kd * 1.6f) / mass;
+		wheel.m_wheelsDampingRelaxation = (m_vWheels[i]->m_WheelInfo.m_fSuspension_Kd / mass) * 1.5;
+		wheel.m_wheelsDampingCompression = (m_vWheels[i]->m_WheelInfo.m_fSuspension_Kd / mass) * 0.666667;
 		//wheel.m_frictionSlip = wheelFriction;
 		wheel.m_rollInfluence = m_vWheels[i]->m_WheelInfo.m_fRoll_Influence;
 		// Make the max force equal to 3 times approximate curb load for each wheel.
