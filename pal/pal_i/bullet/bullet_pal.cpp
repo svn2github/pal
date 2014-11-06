@@ -24,7 +24,7 @@
 #include <iostream>
 #endif
 
-#include <BulletMultiThreaded/SpuGatheringCollisionDispatcher.h>
+/*#include <BulletMultiThreaded/SpuGatheringCollisionDispatcher.h>
 #include <BulletMultiThreaded/PlatformDefinitions.h>
 
 #ifdef USE_LIBSPE2
@@ -45,7 +45,7 @@
 #endif //USE_LIBSPE2
 
 #include "BulletMultiThreaded/btParallelConstraintSolver.h"
-
+*/
 FACTORY_CLASS_IMPLEMENTATION_BEGIN_GROUP;
 FACTORY_CLASS_IMPLEMENTATION(palBulletPhysics);
 
@@ -780,11 +780,10 @@ bool palBulletPhysics::GetHardware(void) const {
 void palBulletPhysics::GetPropertyDocumentation(PAL_MAP<PAL_STRING, PAL_STRING>& descriptions) const
 {
 	palPhysics::GetPropertyDocumentation(descriptions);
-	descriptions["Bullet_UseMultithreadedDispatcher"] = "Enables the multithreaded physics solver.  See palSolver::SetPE.  This defaults to false.";
+	//descriptions["Bullet_UseMultithreadedDispatcher"] = "Enables the multithreaded physics solver.  See palSolver::SetPE.  This defaults to false.";
 	descriptions["Bullet_UseInternalEdgeUtility"] = "Enables the callback for the internal edge checked on the collision detection. Defaults false"
 			"This is extra overhead, but it prevents issues related to colliding with the back side and internal edges of triangle meshes."
 			"This defaults to false";
-	descriptions["Bullet_UseMultithreadedDispatcher"] = "Enables the multithreaded physics solver.  See palSolver::SetPE.  This defaults to false.";
 	descriptions["Bullet_UseAxisSweepBroadphase"] = "Enables the axis sweep broadphase as opposed to the dynamic bounding volume tree version (Dvbt).  This defaults to false.";
 	descriptions["Bullet_AxisSweepBroadphase_RangeX"] = "If Bullet_UseAxisSweepBroadphase is true, this is the X range -X to +X. It defaults to 1000.";
 	descriptions["Bullet_AxisSweepBroadphase_RangeY"] = "If Bullet_UseAxisSweepBroadphase is true, this is the Y range -Y to +Y. It defaults to 1000";
@@ -835,7 +834,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	}
 	else
 	{
-		int maxNumOutstandingTasks = set_pe;
+/*		int maxNumOutstandingTasks = set_pe;
 		btThreadSupportInterface*		m_threadSupportCollision = 0;
 #ifdef OS_WINDOWS
 		char* collisionName = "collision";
@@ -877,6 +876,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 		m_solver = new btParallelConstraintSolver(threadSupportSolver);
 		//this solver requires the contacts to be in a contiguous pool, so avoid dynamic allocation
 		m_dispatcher->setDispatcherFlags(btCollisionDispatcher::CD_DISABLE_CONTACTPOOL_DYNAMIC_ALLOCATION);
+		*/
 	}
 
 
@@ -2568,8 +2568,15 @@ void palBulletConvexGeometry::InternalInit(const Float *pVertices, unsigned int 
 	m_pbtConvexShape = new btConvexHullShape();
 	for (unsigned i = 0; i < nVertices; ++i)
 		{
+#if BT_BULLET_VERSION < 282
 			m_pbtConvexShape->addPoint(btVector3(pVertices[3*i + 0], pVertices[3*i + 1], pVertices[3*i + 2]));
+#else
+			m_pbtConvexShape->addPoint(btVector3(pVertices[3*i + 0], pVertices[3*i + 1], pVertices[3*i + 2]), false);
+#endif
 		}
+#if BT_BULLET_VERSION > 281
+	m_pbtConvexShape->recalcLocalAabb();
+#endif
 #endif
 //	}
 	// default margin is 0.04
