@@ -80,6 +80,8 @@ bool palBulletCharacterController::Init(const palCharacterControllerDesc& desc) 
 			m_pKinematicCharacterController->setFallSpeed(desc.m_fFallSpeed);
 			m_pKinematicCharacterController->setGravity(desc.m_fGravity);
 			m_pKinematicCharacterController->setMaxSlope(btRadians(desc.m_fMaxInclineAngle));
+                        // Put it into velocity mode.
+                        m_pKinematicCharacterController->setVelocityForTimeInterval(btVector3(btScalar(0.0), btScalar(0.0), btScalar(0.0)), btScalar(0.0));
 			world->addCharacter(m_pKinematicCharacterController);
 			validData = true;
 		}
@@ -113,9 +115,9 @@ palGroup palBulletCharacterController::GetGroup() const {
 }
 
 void palBulletCharacterController::Move(const palVector3& displacement) {
-	if (m_pKinematicCharacterController != NULL) {
-		m_pKinematicCharacterController->setWalkDirection(
-					btVector3(displacement.x, displacement.y, displacement.z));
+        btVector3 btDisp(displacement.x, displacement.y, displacement.z);
+	if (m_pKinematicCharacterController != NULL && !btDisp.fuzzyZero()) {
+		m_pKinematicCharacterController->setWalkDirection(btDisp);
 	}
 }
 
@@ -128,7 +130,7 @@ void palBulletCharacterController::Walk(const palVector3& walkVelocity, Float ti
 
 void palBulletCharacterController::WalkClear() {
 	if (m_pKinematicCharacterController != NULL) {
-#if BT_BULLET_VERSION < 280
+#if BT_BULLET_VERSION < 282
 		m_pKinematicCharacterController->reset();
 #else
 		m_pKinematicCharacterController->reset(static_cast<palBulletPhysics*>(GetParent())->BulletGetDynamicsWorld());
