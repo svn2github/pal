@@ -64,7 +64,7 @@ palGeometry::~palGeometry() {
 	m_pIndices = NULL;
 }
 
-void palGeometry::CalculateBoxInertia(const palVector3& xyz, Float m_fMass, palVector3 tensorOut)
+void palGeometry::CalculateBoxInertia(const palVector3& xyz, Float m_fMass, palVector3& tensorOut)
 {
 /*	Float i0= 1/(12 * (ly*ly + lz*lz));
 	Float i1= 1/(12 * (lx*lx + lz*lz));
@@ -73,8 +73,8 @@ void palGeometry::CalculateBoxInertia(const palVector3& xyz, Float m_fMass, palV
 	Float lx = xyz.x;
 	Float ly = xyz.y;
 	Float lz = xyz.z;
-        
-        Float twelth = Float(1)/Float(12);
+
+	Float twelth = Float(1)/Float(12);
 	Float i0 = twelth * (ly*ly + lz*lz);
 	Float i1 = twelth * (lx*lx + lz*lz);
 	Float i2 = twelth * (lx*lx + ly*ly);
