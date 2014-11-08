@@ -55,7 +55,7 @@ protected:
 public:
 	virtual ~palGeometry();
 	
-	static void CalculateBoxInertia(const palVector3& xyz, Float m_fMass, palVector3 tensorOut);
+	static void CalculateBoxInertia(const palVector3& xyz, Float m_fMass, palVector3& tensorOut);
 	
 //	void SetPosition(Float x, Float y, Float z);
 //	void SetPosition(Float x, Float y, Float z, Float roll, Float pitch, Float yaw);
