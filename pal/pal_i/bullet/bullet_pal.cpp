@@ -1012,7 +1012,9 @@ void palBulletBodyBase::SetMaterial(palMaterial *material) {
 		//m_pbtBody->
 		m_pbtBody->setFriction(material->m_fStatic);
 		m_pbtBody->setRestitution(material->m_fRestitution);
-		m_pbtBody->setRollingFriction(0.0f);
+#if BT_BULLET_VERSION > 280
+		m_pbtBody->setRollingFriction(material->m_fKinetic);
+#endif
 		if (material->m_bEnableAnisotropicFriction)
 		{
 			btVector3 btVec;
