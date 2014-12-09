@@ -594,6 +594,14 @@ void q_q_mul(palQuaternion *q, const palQuaternion *a, const palQuaternion *b) {
 	q->w = a->w * b->w - a->x * b->x - a->y * b->y - a->z * b->z;
 }
 
+void q_set_axis_angle(palQuaternion *q, const palVector3 *axis, Float angle)
+{
+	Float d = vec_mag(axis);
+	Float s = std::sin(angle * Float(0.5)) / d;
+	q_set(q, axis->x * s, axis->y * s, axis->z * s,
+		std::cos(angle * Float(0.5)));
+}
+
 void plane_normalize(palPlane *p) {
 	Float m = vec_mag(&p->n );
 	Float im=1/m;

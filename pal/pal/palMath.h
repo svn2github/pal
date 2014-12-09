@@ -276,6 +276,7 @@ extern void q_q_mul(palQuaternion *q, const palQuaternion *a, const palQuaternio
 extern void q_inverse(palQuaternion *q);
 extern void q_shortestArc(palQuaternion *q, const palVector3 *a, const palVector3 *b);
 extern void vec_q_rotate(palVector3 *v, const palQuaternion *a, const palVector3 *b);
+extern void q_set_axis_angle(palQuaternion *q, const palVector3 *axis, Float angle);
 
 extern void printPalQuaternion(palQuaternion &src);
 //from thorsten

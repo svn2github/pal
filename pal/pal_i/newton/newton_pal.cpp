@@ -1139,17 +1139,18 @@ void palNewtonSphericalLink::SetLimits(Float cone_limit_rad, Float twist_limit_r
  */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-palNewtonAngularMotor::palNewtonAngularMotor() {
+palNewtonAngularMotor::palNewtonAngularMotor()
+: m_pnrl(0)
+{
 }
 
-void palNewtonAngularMotor::Init(palRevoluteLink *pLink, Float Max) {
-	palAngularMotor::Init(pLink, Max);
-	m_pnrl = dynamic_cast<palNewtonRevoluteLink *> (m_link);
+void palNewtonAngularMotor::Init(palLink *pLink, int axis) {
+	m_pnrl = dynamic_cast<palNewtonRevoluteLink *> (pLink);
 }
 
-void palNewtonAngularMotor::Update(Float targetVelocity) {
+void palNewtonAngularMotor::Update(Float targetVelocity, Float Max) {
 	if (m_pnrl) {
-		m_pnrl->m_callbackdata.motor_force = m_fMax;
+		m_pnrl->m_callbackdata.motor_force = Max;
 		m_pnrl->m_callbackdata.motor_velocity = -targetVelocity;
 	}
 }

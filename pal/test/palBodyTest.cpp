@@ -27,7 +27,7 @@ template <typename T> void assertEquals(T expect, T actual,
 int main(int argc, char* argv[])
 {
 	PF->LoadPhysicsEngines();
-	PF->SelectEngine("Bullet");		 // Here is the name of the physics engine you wish to use. You could replace DEFAULT_ENGINE with "Tokamak", "ODE", etc...
+	PF->SelectEngine("ODE");		 // Here is the name of the physics engine you wish to use. You could replace DEFAULT_ENGINE with "Tokamak", "ODE", etc...
 	palPhysics *pp = PF->CreatePhysics(); //create the main physics class
 	if (pp == NULL) {
 		std::cerr << "Failed to create the physics engine. Check to see if you spelt the engine name correctly, or that the engine DLL is in the right location" << std::endl;
@@ -36,8 +36,15 @@ int main(int argc, char* argv[])
 	palPhysicsDesc desc;
 	pp->Init(desc); //initialize it, set the main gravity vector
 
-	palBox* box = PF->CreateBox();
-	box->Init(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+	palGenericBody* box;
+	palMatrix4x4 mat;
+	mat_identity(&mat);
+	box = PF->CreateGenericBody(mat);
+	palBoxGeometry* boxGeom = PF->CreateBoxGeometry();
+	boxGeom->Init(mat, 1.0, 1.0, 1.0, 1.0f);
+	box->SetMass(1.0f);
+	box->ConnectGeometry(boxGeom);
+	box->SetDynamicsType(PALBODY_DYNAMIC); // the default.
 
 	Float x = rand() / float(RAND_MAX) * FLT_MAX;
 	Float y = rand() / float(RAND_MAX) * FLT_MAX;
@@ -51,6 +58,7 @@ int main(int argc, char* argv[])
 	assert(pos.z == z);
 
 	delete box;
+	delete boxGeom;
 	
 	PF->Cleanup();
 	std::cout << "success" << std::endl;

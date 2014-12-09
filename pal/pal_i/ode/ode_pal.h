@@ -45,7 +45,7 @@
 		-collision notify between two specific bodies
 		-fix cylinder inertia matrix calc => build from pal inertias?
 	notes:
-*/
+ */
 
 #include <pal/pal.h>
 #include <pal/palFactory.h>
@@ -78,7 +78,7 @@
 /** ODE Physics Class
 	Additionally Supports:
 		- Collision Detection
-*/
+ */
 class palODEPhysics: public palPhysics, public palCollisionDetectionExtended {
 public:
 	palODEPhysics();
@@ -95,7 +95,7 @@ public:
 
 	virtual void RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range, palRayHit& hit) const;
 	virtual void RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz,
-				Float range, palRayHitCallback& callback, palGroupFlags groupFilter = ~0) const;
+			Float range, palRayHitCallback& callback, palGroupFlags groupFilter = ~0) const;
 	virtual void NotifyCollision(palBodyBase *a, palBodyBase *b, bool enabled);
 	virtual void NotifyCollision(palBodyBase *pBody, bool enabled);
 	void CleanupNotifications(palBodyBase* geom);
@@ -103,8 +103,8 @@ public:
 	virtual void GetContacts(palBodyBase *a, palBodyBase *b, palContact& contact) const;
 	virtual void ClearContacts();
 
-//	void SetDefaultMaterial(palMaterial *pmat);
-//	void SetGroundPlane(bool enabled, Float size);
+	//	void SetDefaultMaterial(palMaterial *pmat);
+	//	void SetGroundPlane(bool enabled, Float size);
 	const char* GetPALVersion() const;
 	virtual const char* GetVersion() const;
 	virtual palCollisionDetection* asCollisionDetection() { return this; }
@@ -112,11 +112,11 @@ public:
 	//ODE specific:
 	/** Returns the current ODE World in use by PAL
 		\return A pointer to the current ODE dWorldID
-	*/
+	 */
 	dWorldID ODEGetWorld() const;
 	/** Returns the current ODE Space in use by PAL
 		\return A pointer to the current ODE dSpaceID
-	*/
+	 */
 	dSpaceID ODEGetSpace() const;
 
 	virtual void Cleanup();
@@ -131,7 +131,7 @@ protected:
 };
 
 /** The ODE Body class
-*/
+ */
 class palODEBody : virtual public palBody, virtual public palActivationSettings
 {
 	friend class palODERigidLink;
@@ -141,7 +141,7 @@ class palODEBody : virtual public palBody, virtual public palActivationSettings
 	friend class palODEBoxGeometry;
 	friend class palODESphereGeometry;
 	friend class palODECapsuleGeometry;
-   friend class palODECylinderGeometry;
+	friend class palODECylinderGeometry;
 	friend class palODEConvexGeometry;
 	friend class palODEConcaveGeometry;
 public:
@@ -172,7 +172,7 @@ public:
 	virtual void SetLinearVelocity(const palVector3& velocity);
 	virtual void SetAngularVelocity(const palVector3& velocity_rad);
 
-  //@return if the body is active or sleeping
+	//@return if the body is active or sleeping
 	virtual bool IsActive() const;
 
 	virtual void SetActive(bool active);
@@ -186,21 +186,21 @@ public:
 
 	/***** Pal Activation ****/
 	virtual Float GetActivationLinearVelocityThreshold() const;
-   virtual void SetActivationLinearVelocityThreshold(Float);
+	virtual void SetActivationLinearVelocityThreshold(Float);
 
-   virtual Float GetActivationAngularVelocityThreshold() const;
-   virtual void SetActivationAngularVelocityThreshold(Float);
+	virtual Float GetActivationAngularVelocityThreshold() const;
+	virtual void SetActivationAngularVelocityThreshold(Float);
 
-   virtual Float GetActivationTimeThreshold() const;
-   virtual void SetActivationTimeThreshold(Float);
+	virtual Float GetActivationTimeThreshold() const;
+	virtual void SetActivationTimeThreshold(Float);
 
-   virtual const std::bitset<DUMMY_ACTIVATION_SETTING_TYPE>& GetSupportedActivationSettings() const;
-   /***** Pal Activation ****/
+	virtual const std::bitset<DUMMY_ACTIVATION_SETTING_TYPE>& GetSupportedActivationSettings() const;
+	/***** Pal Activation ****/
 
 	//ODE specific:
 	/** Returns the ODE body associated with the PAL body
 		\return The ODE dBodyID
-	*/
+	 */
 	dBodyID ODEGetBody() const {return odeBody;}
 	/**
 	 *  Same as IsCollisionResponseEnabled.  Added a fast inline so the internal code won't have to call a virtual method
@@ -220,9 +220,8 @@ private:
 };
 
 /** The ODE Geometry class
-*/
+ */
 class palODEGeometry : virtual public palGeometry {
-	friend class palODECompoundBody;
 	friend class palODEPhysics;
 	friend class palODEBody;
 public:
@@ -234,7 +233,7 @@ public:
 	//ODE specific:
 	/** Returns the ODE geometry associated with the PAL geometry
 		\return The ODE dGeomID
-	*/
+	 */
 	dGeomID ODEGetGeom() const {return odeGeom;}
 
 	virtual void CalculateMassParams(dMass& odeMass, Float massScalar) const = 0;
@@ -277,15 +276,15 @@ private:
 
 class palODECylinderGeometry : virtual public palCylinderGeometry, virtual public palODEGeometry {
 public:
-   palODECylinderGeometry();
-   virtual void Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass);
-   virtual const palMatrix4x4& GetLocationMatrix() const;
-   virtual void CalculateMassParams(dMass& odeMass, Float massScalar) const;
+	palODECylinderGeometry();
+	virtual void Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass);
+	virtual const palMatrix4x4& GetLocationMatrix() const;
+	virtual void CalculateMassParams(dMass& odeMass, Float massScalar) const;
 protected:
-   virtual void ReCalculateOffset();
-   FACTORY_CLASS(palODECylinderGeometry,palCylinderGeometry,ODE,1)
+	virtual void ReCalculateOffset();
+	FACTORY_CLASS(palODECylinderGeometry,palCylinderGeometry,ODE,1)
 private:
-   unsigned int m_upAxis;
+	unsigned int m_upAxis;
 };
 
 class palODEConvexGeometry : virtual public palConvexGeometry, virtual public palODEGeometry  {
@@ -301,59 +300,12 @@ protected:
 class palODEConcaveGeometry : virtual public palConcaveGeometry, virtual public palODEGeometry  {
 public:
 	palODEConcaveGeometry();
-   virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass);
+	virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass);
 	virtual void CalculateMassParams(dMass& odeMass, Float massScalar) const;
 protected:
 	FACTORY_CLASS(palODEConcaveGeometry,palConcaveGeometry,ODE,1)
 };
 
-class palODEBox : virtual public palBox, virtual public palODEBody {
-public:
-	palODEBox();
-	//void SetPosition(Float x, Float y, Float z); //duplicate to ensure dominance
-	virtual void Init(Float x, Float y, Float z, Float width, Float height, Float depth, Float mass);
-	//extra methods provided by ODE abilities:
-	void SetMass(Float mass);
-protected:
-	FACTORY_CLASS(palODEBox,palBox,ODE,1)
-};
-
-class palODEStaticBox : public palStaticBox {
-public:
-	palODEStaticBox();
-	~palODEStaticBox();
-	virtual void Init(const palMatrix4x4 &pos, Float width, Float height, Float depth);
-	virtual const palMatrix4x4& GetLocationMatrix() const {
-		return m_mLoc;
-	}
-protected:
-	FACTORY_CLASS(palODEStaticBox,palStaticBox,ODE,1)
-};
-
-
-class palODESphere : virtual public palSphere, virtual public palODEBody {
-public:
-	palODESphere();
-	virtual void Init(Float x, Float y, Float z, Float radius, Float mass);
-	//extra methods provided by ODE abilities:
-	void SetMass(Float mass);
-	//void SetRadius(Float radius);
-protected:
-	FACTORY_CLASS(palODESphere,palSphere,ODE,1)
-};
-
-
-
-class palODECylinder : virtual public palCapsule, virtual public palODEBody {
-public:
-	palODECylinder();
-	virtual void Init(Float x, Float y, Float z, Float radius, Float length, Float mass);
-	//extra methods provided by ODE abilities:
-	//void SetRadiusLength(Float radius, Float length);
-	void SetMass(Float mass);
-protected:
-	FACTORY_CLASS(palODECylinder,palCapsule,ODE,1)
-};
 
 class palODEGenericBody : virtual public palODEBody, virtual public palGenericBody {
 public:
@@ -391,36 +343,8 @@ protected:
 	FACTORY_CLASS(palODEGenericBody, palGenericBody, ODE, 1);
 };
 
-class palODEStaticConvex: public palStaticConvex {
-public:
-	palODEStaticConvex();
-	virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices);
-	virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices);
-	virtual const palMatrix4x4& GetLocationMatrix() const {return m_mLoc;}
-protected:
-	FACTORY_CLASS(palODEStaticConvex,palStaticConvex,ODE,1)
-};
-
-class palODEStaticCylinder:public palStaticCapsule {
-public:
-	palODEStaticCylinder();
-	virtual void Init(const palMatrix4x4 &pos, Float radius, Float length);
-	virtual const palMatrix4x4& GetLocationMatrix() const {return m_mLoc;}
-protected:
-	FACTORY_CLASS(palODEStaticCylinder,palStaticCapsule,ODE,1)
-};
-
-class palODEStaticSphere:public palStaticSphere {
-public:
-	palODEStaticSphere();
-	virtual void Init(const palMatrix4x4 &pos, Float radius);
-	virtual const palMatrix4x4& GetLocationMatrix() const {return m_mLoc;}
-protected:
-	FACTORY_CLASS(palODEStaticSphere,palStaticSphere,ODE,1)
-};
-
 /** The ODE Link class
-*/
+ */
 class palODELinkData {
 public:
 	palODELinkData();
@@ -429,10 +353,11 @@ public:
 	//ODE specific:
 	/** Returns the ODE joint associated with the PAL link
 		\return The ODE dJointID
-	*/
+	 */
 	dJointID ODEGetJointID() const {
 		return odeJoint;
 	}
+
 protected:
 	dJointID odeJoint; //the ODE joint
 	dJointID odeMotorJoint; //the ODE motorised joint
@@ -441,38 +366,58 @@ protected:
 class palODESphericalLink : public palSphericalLink, public palODELinkData {
 public:
 	palODESphericalLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
-                      bool disableCollisionsBetweenLinkedBodies);
-	void SetAnchor(Float x, Float y, Float z);
-   /*override*/ bool SetParam(int parameterCode, Float value, int axis = -1);
-   /*override*/ Float GetParam(int parameterCode, int axis = -1);
-   /*override*/ bool SupportsParameters() const;
-   /*override*/ bool SupportsParametersPerAxis() const;
+	virtual void Init(palBodyBase *parent, palBodyBase *child,
+			const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame, bool disableCollisionsBetweenLinkedBodies);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies);
+
+	virtual void ComputeFrameParent(palMatrix4x4& frameOut) const;
+	virtual void ComputeFrameChild(palMatrix4x4& frameOut) const;
+
+	void GetAnchor(palVector3& anchor) const;
+	void SetAnchor(const palVector3& anchor);
+
+	/*override*/ bool SetParam(int parameterCode, Float value, int axis = -1);
+	/*override*/ Float GetParam(int parameterCode, int axis = -1);
+	/*override*/ bool SupportsParameters() const;
+	/*override*/ bool SupportsParametersPerAxis() const;
 protected:
 	void InitMotor();
 	FACTORY_CLASS(palODESphericalLink,palSphericalLink,ODE,1)
+private:
+	// Have to store these because it's a big mess to compute them.
+	palMatrix4x4 m_FrameA, m_FrameB;
 };
 
 class palODERigidLink: public palRigidLink, public palODELinkData {
 public:
 	palODERigidLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child, bool disableCollisionsBetweenLinkedBodies);
-   /*override*/ bool SetParam(int parameterCode, Float value, int axis = -1);
-   /*override*/ Float GetParam(int parameterCode, int axis = -1);
-   /*override*/ bool SupportsParameters() const;
-   /*override*/ bool SupportsParametersPerAxis() const;
+
+	virtual void Init(palBodyBase *parent, palBodyBase *child,
+			const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame, bool disableCollisionsBetweenLinkedBodies);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies);
+
+	virtual void ComputeFrameParent(palMatrix4x4& frameOut) const;
+	virtual void ComputeFrameChild(palMatrix4x4& frameOut) const;
+
+	/*override*/ bool SetParam(int parameterCode, Float value, int axis = -1);
+	/*override*/ Float GetParam(int parameterCode, int axis = -1);
+	/*override*/ bool SupportsParameters() const;
+	/*override*/ bool SupportsParametersPerAxis() const;
 protected:
 	FACTORY_CLASS(palODERigidLink,palRigidLink,ODE,1)
+private:
+	// Have to store these because it's a big mess to compute them.
+	palMatrix4x4 m_FrameA, m_FrameB;
 };
 
 class odeRevoluteLinkFeedback : public palLinkFeedback {
-  public:
+public:
 	odeRevoluteLinkFeedback(dJointID odeJoint);
 	virtual ~odeRevoluteLinkFeedback();
 	virtual bool IsEnabled() const;
 	virtual bool SetEnabled(bool enable);
 	virtual Float GetValue() const;
-  protected:
+protected:
 	dJointID m_odeJoint;
 	dJointFeedback* m_odeFeedback;
 };
@@ -481,16 +426,22 @@ class palODERevoluteLink: public palRevoluteLink, public palODELinkData {
 public:
 	palODERevoluteLink();
 	virtual ~palODERevoluteLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies);
-	virtual void SetLimits(Float lower_limit_rad, Float upper_limit_rad);
+	virtual void Init(palBodyBase *parent, palBodyBase *child,
+			const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame, bool disableCollisionsBetweenLinkedBodies);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies);
+
+	virtual void ComputeFrameParent(palMatrix4x4& frameOut) const;
+	virtual void ComputeFrameChild(palMatrix4x4& frameOut) const;
+
 	virtual void AddTorque(Float torque);
 	//extra methods provided by ODE abilities:
-	virtual void SetAnchorAxis(Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z);
+	virtual void SetAnchorAxis(const palVector3& anchor, const palVector3& axis);
+	virtual void GetAnchorAxis(palVector3& anchor, palVector3& axis) const;
 	virtual palLinkFeedback* GetFeedback() const throw(palIllegalStateException);
-   /*override*/ bool SetParam(int parameterCode, Float value, int axis = -1);
-   /*override*/ Float GetParam(int parameterCode, int axis = -1);
-   /*override*/ bool SupportsParameters() const;
-   /*override*/ bool SupportsParametersPerAxis() const;
+	/*override*/ bool SetParam(int parameterCode, Float value, int axis = -1);
+	/*override*/ Float GetParam(int parameterCode, int axis = -1);
+	/*override*/ bool SupportsParameters() const;
+	/*override*/ bool SupportsParametersPerAxis() const;
 protected:
 	odeRevoluteLinkFeedback* m_feedback;
 	FACTORY_CLASS(palODERevoluteLink,palRevoluteLink,ODE,1)
@@ -499,15 +450,25 @@ protected:
 class palODEPrismaticLink: public palPrismaticLink, public palODELinkData {
 public:
 	palODEPrismaticLink();
-	virtual void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies);
+
+	virtual void Init(palBodyBase *parent, palBodyBase *child,
+			const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame, bool disableCollisionsBetweenLinkedBodies);
+	virtual void Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies);
+
+	virtual void ComputeFrameParent(palMatrix4x4& frameOut) const;
+	virtual void ComputeFrameChild(palMatrix4x4& frameOut) const;
+
 	//extra methods provided by ODE abilities:
-	void SetAnchorAxis(Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z);
-   /*override*/ bool SetParam(int parameterCode, Float value, int axis = -1);
-   /*override*/ Float GetParam(int parameterCode, int axis = -1);
-   /*override*/ bool SupportsParameters() const;
-   /*override*/ bool SupportsParametersPerAxis() const;
+	void SetAxis(const palVector3& axis);
+	/*override*/ bool SetParam(int parameterCode, Float value, int axis = -1);
+	/*override*/ Float GetParam(int parameterCode, int axis = -1);
+	/*override*/ bool SupportsParameters() const;
+	/*override*/ bool SupportsParametersPerAxis() const;
 protected:
 	FACTORY_CLASS(palODEPrismaticLink,palPrismaticLink,ODE,1)
+private:
+	// Have to store these because it's a big mess to compute them.
+	palMatrix4x4 m_FrameA, m_FrameB;
 };
 
 class palODETerrain : virtual public palTerrain {
@@ -515,7 +476,7 @@ public:
 	palODETerrain();
 	virtual ~palODETerrain();
 	virtual const palMatrix4x4& GetLocationMatrix() const;
-//protected:
+	//protected:
 	dGeomID odeGeom; // the ODE geometries representing this body
 };
 
@@ -541,7 +502,7 @@ class palODETerrainMesh : virtual public palTerrainMesh, virtual public palODETe
 public:
 	palODETerrainMesh();
 	virtual void Init(Float x, Float y, Float z, const Float *pVertices, int nVertices, const int *pIndices, int nIndices);
-//	palMatrix4x4& GetLocationMatrix() const;
+	//	palMatrix4x4& GetLocationMatrix() const;
 protected:
 	FACTORY_CLASS(palODETerrainMesh,palTerrainMesh,ODE,1)
 };
@@ -550,40 +511,9 @@ class palODETerrainHeightmap : virtual public palTerrainHeightmap, virtual priva
 public:
 	palODETerrainHeightmap();
 	virtual void Init(Float x, Float y, Float z, Float width, Float depth, int terrain_data_width, int terrain_data_depth, const Float *pHeightmap);
-//	palMatrix4x4& GetLocationMatrix() const;
+	//	palMatrix4x4& GetLocationMatrix() const;
 protected:
 	FACTORY_CLASS(palODETerrainHeightmap,palTerrainHeightmap,ODE,1)
-};
-
-class palODEConvex : virtual public palODEBody, virtual public palConvex {
-public:
-	palODEConvex();
-	virtual void Init(Float x, Float y, Float z, const Float *pVertices, int nVertices, Float mass);
-	virtual void Init(Float x, Float y, Float z, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass);
-protected:
-	FACTORY_CLASS(palODEConvex,palConvex,ODE,1)
-};
-
-class palODECompoundBody : virtual public palCompoundBody, virtual public palODEBody {
-public:
-	palODECompoundBody();
-	virtual void Init(Float x, Float y, Float z);
-//	virtual void SetPosition(palMatrix4x4& location);
-//	virtual palMatrix4x4& GetLocationMatrix() const;
-	virtual void Finalize(Float finalMass, Float iXX, Float iYY, Float iZZ);
-protected:
-	FACTORY_CLASS(palODECompoundBody,palCompoundBody,ODE,1)
-};
-
-class palODEStaticCompoundBody:public palStaticCompoundBody {
-public:
-	palODEStaticCompoundBody();
-	virtual const palMatrix4x4& GetLocationMatrix() const {
-		return m_mLoc;
-	}
-	virtual void Finalize();
-protected:
-	FACTORY_CLASS(palODEStaticCompoundBody,palStaticCompoundBody,ODE,1)
 };
 
 class palODEPSDSensor : public palPSDSensor {
@@ -603,10 +533,13 @@ class palODEAngularMotor : public palAngularMotor {
 public:
 	palODEAngularMotor();
 	virtual ~palODEAngularMotor();
-	virtual void Init(palRevoluteLink *pLink, Float Max);
+	virtual void Init(palLink *pLink, int axis = -1);
 	virtual void Update(Float targetVelocity, Float Max);
+	virtual void DisableMotor();
+	virtual palLink *GetLink() const;
 	virtual void Apply(float dt);
 protected:
+	palLink* m_Link;
 	dJointID odeJoint; //the ODE joint
 	FACTORY_CLASS(palODEAngularMotor,palAngularMotor,ODE,1)
 };

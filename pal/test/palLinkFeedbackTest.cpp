@@ -26,8 +26,9 @@ TEST_F(palLinkFeedbackTest, prismaticTest) {
 	float mass = 1.0f;
 	floater->Init(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, mass);
 
-	palRevoluteLink* revoluteLink = PF->CreateRevoluteLink(anchor, floater, 0.0f, 10.0f, 0.0f, 0.0f, 0.0f, -1.0f);
-	revoluteLink->SetLimits(-M_PI/2.0, M_PI/2.0);
+	palRevoluteLink* revoluteLink = dynamic_cast<palRevoluteLink*>(PF->CreateLink(PAL_LINK_REVOLUTE, anchor, floater, palVector3(0.0f, 10.0f, 0.0f), palVector3(0.0f, 0.0f, -1.0f)));
+	revoluteLink->SetParam(PAL_LINK_PARAM_DOF_MIN, -M_PI/2.0);
+	revoluteLink->SetParam(PAL_LINK_PARAM_DOF_MAX, M_PI/2.0);
 
 	palLinkFeedback* feedback = revoluteLink->GetFeedback();
 	ASSERT_NE((void*) 0, feedback);

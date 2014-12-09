@@ -165,6 +165,8 @@ public:
 	 */
 	const PAL_STRING& GetInitProperty(const PAL_STRING& name, const PAL_STRING& defaultVal = PAL_STRING()) const;
 
+	// The materials object has to call this to avoid a crash if one calls factory->CleanUp();
+	void SetMaterialsNull() { m_pMaterials = 0; }
 protected:
 	bool m_bListen; //!< If set to true, notify functions are called.
 	virtual void Iterate(Float timestep) = 0;

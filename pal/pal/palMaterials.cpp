@@ -85,6 +85,12 @@ void palMaterialInteraction::Init(palMaterial* pM1, palMaterial* pM2, const palM
 palMaterials::palMaterials() {
 };
 
+palMaterials::~palMaterials() {
+	// Ugly memory cleanup workaround.
+	palPhysics* physics = dynamic_cast<palPhysics*>(GetParent());
+	if (physics != 0) physics->SetMaterialsNull();
+}
+
 unsigned palMaterials::GetIndex(const PAL_STRING& name) const {
 //	PAL_VECTOR<PAL_STRING>::iterator obj;
 //	obj = std::find(m_MaterialNames.begin(), m_MaterialNames.end(), name);

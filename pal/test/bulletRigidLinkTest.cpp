@@ -11,6 +11,7 @@
 #include <iostream>
 #include <cmath>
 #include <pal_i/bullet/bullet_pal.h>
+#include <pal_i/bullet/bullet_palLinks.h>
 
 const int STEPS = 20;
 
@@ -48,9 +49,7 @@ int main(int argc, char* argv[])
 		palVector3 bPos;
 		boxB->GetPosition(bPos);
 
-		std::cout << i << "\t" << aPos << "\t" << bPos << "\t" << brLink->GetAngle() << "\t"
-				<< brLink->GetAppliedImpulse() << "\t"
-				<< brLink->m_fLowerLimit << "\t" << brLink->m_fUpperLimit << std::endl;
+		std::cout << i << "\t" << aPos << "\t" << bPos << "\t" << "\t" << "\t" << std::endl;
 		pp->Update(0.05);
 	}
 	PF->Cleanup();

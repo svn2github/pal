@@ -5,6 +5,7 @@
 #include "bullet_pal.h"
 #include "bullet_palVehicle.h"
 #include "bullet_palCharacter.h"
+#include "bullet_palLinks.h"
 #include "LinearMath/btScalar.h"
 #include "LinearMath/btIDebugDraw.h"
 //#include <iostream>
@@ -45,7 +46,7 @@
 #endif //USE_LIBSPE2
 
 #include "BulletMultiThreaded/btParallelConstraintSolver.h"
-*/
+ */
 FACTORY_CLASS_IMPLEMENTATION_BEGIN_GROUP;
 FACTORY_CLASS_IMPLEMENTATION(palBulletPhysics);
 
@@ -56,19 +57,7 @@ FACTORY_CLASS_IMPLEMENTATION(palBulletCylinderGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palBulletConvexGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palBulletConcaveGeometry);
 
-FACTORY_CLASS_IMPLEMENTATION(palBulletBox);
-FACTORY_CLASS_IMPLEMENTATION(palBulletSphere);
-FACTORY_CLASS_IMPLEMENTATION(palBulletCapsule);
-FACTORY_CLASS_IMPLEMENTATION(palBulletConvex);
-FACTORY_CLASS_IMPLEMENTATION(palBulletCompoundBody);
-
 FACTORY_CLASS_IMPLEMENTATION(palBulletGenericBody);
-
-FACTORY_CLASS_IMPLEMENTATION(palBulletStaticBox);
-FACTORY_CLASS_IMPLEMENTATION(palBulletStaticSphere);
-FACTORY_CLASS_IMPLEMENTATION(palBulletStaticCapsule);
-FACTORY_CLASS_IMPLEMENTATION(palBulletStaticConvex);
-FACTORY_CLASS_IMPLEMENTATION(palBulletStaticCompoundBody);
 
 FACTORY_CLASS_IMPLEMENTATION(palBulletOrientatedTerrainPlane);
 FACTORY_CLASS_IMPLEMENTATION(palBulletTerrainPlane);
@@ -108,7 +97,7 @@ public:
 		if (m_pPalDebugDraw->GetRange() > 0.0f) {
 			palVector3 difference(m_pPalDebugDraw->m_vRefPoint.x - point.x(), m_pPalDebugDraw->m_vRefPoint.y - point.y(),m_pPalDebugDraw-> m_vRefPoint.z - point.z());
 			return m_pPalDebugDraw->GetRange2() >
-				vec_mag2(&difference);
+			vec_mag2(&difference);
 		}
 		return true;
 	}
@@ -184,17 +173,17 @@ public:
 	virtual void setDebugMode(int debugMode) {}
 
 	virtual int getDebugMode() const { return DBG_DrawFeaturesText |
-		DBG_DrawContactPoints |
-		DBG_DrawText |
-		DBG_DrawWireframe |
-		//DBG_ProfileTimings |
-		//DBG_EnableSatComparison |
-		//DBG_DisableBulletLCP |
-		//DBG_EnableCCD |
-		DBG_DrawConstraints |
-		DBG_FastWireframe |
-		DBG_DrawConstraintLimits
-; }
+			DBG_DrawContactPoints |
+			DBG_DrawText |
+			DBG_DrawWireframe |
+			//DBG_ProfileTimings |
+			//DBG_EnableSatComparison |
+			//DBG_DisableBulletLCP |
+			//DBG_EnableCCD |
+			DBG_DrawConstraints |
+			DBG_FastWireframe |
+			DBG_DrawConstraintLimits
+			; }
 
 	void SetPalDebugDraw(palDebugDraw *newDebugDraw) { m_pPalDebugDraw = newDebugDraw; }
 	palDebugDraw *GetPalDebugDraw() { return m_pPalDebugDraw; }
@@ -273,7 +262,7 @@ struct CustomOverlapFilterCallback: public btOverlapFilterCallback
 		// if it hasn't been set, then default to colliding.
 		size_t maskVectorSize = m_pPhysics->m_CollisionMasks.size();
 		if (maskVectorSize <= size_t(p0Group)
-					|| maskVectorSize <= size_t(p1Group)) {
+				|| maskVectorSize <= size_t(p1Group)) {
 			return true;
 		}
 
@@ -302,92 +291,25 @@ static void AddMeshToTrimesh(btTriangleIndexVertexArray *trimesh, const Float *p
 	meshIndex.m_triangleIndexBase = reinterpret_cast<const unsigned char*>(pIndices);
 	meshIndex.m_vertexBase = reinterpret_cast<const unsigned char*>(pVertices);
 #ifdef DOUBLE_PRECISION
-    meshIndex.m_vertexType = PHY_DOUBLE;
+	meshIndex.m_vertexType = PHY_DOUBLE;
 #else
-    meshIndex.m_vertexType = PHY_FLOAT;
+	meshIndex.m_vertexType = PHY_FLOAT;
 #endif
 
 	trimesh->addIndexedMesh(meshIndex);
 }
 
 ////////////////////////////////////////////////////
-static bool SetAnyBulletParam(btTypedConstraint* constraint, int parameter, btScalar value, int axis)
-{
-	bool result = constraint != NULL;
-	if (result)
-	{
-		btConstraintParams param = btConstraintParams(parameter);
-		switch (parameter)
-		{
-		case PAL_LINK_PARAM_STOP_ERP:
-			param = BT_CONSTRAINT_STOP_ERP;
-			constraint->setParam(param, value, axis);
-			break;
-		case PAL_LINK_PARAM_CFM:
-			param = BT_CONSTRAINT_CFM;
-			constraint->setParam(param, value, axis);
-			break;
-		case PAL_LINK_PARAM_STOP_CFM:
-			param = BT_CONSTRAINT_STOP_CFM;
-			constraint->setParam(param, value, axis);
-			break;
-		case PAL_LINK_PARAM_BREAK_IMPULSE:
-			constraint->setBreakingImpulseThreshold(value);
-			break;
-			// nothing in bullet currently supports this, and it asserts out if you pass it.
-		case PAL_LINK_PARAM_ERP:
-		default:
-			result = false;
-		}
-	}
-	return result;
-}
-
-////////////////////////////////////////////////////
-static btScalar GetAnyBulletParam(btTypedConstraint* constraint, int parameter, int axis)
-{
-	btScalar result = -1.0f;
-	if (constraint != NULL)
-	{
-		btConstraintParams param = btConstraintParams(parameter);
-		switch (parameter)
-		{
-		case PAL_LINK_PARAM_STOP_ERP:
-			param = BT_CONSTRAINT_STOP_ERP;
-			result = constraint->getParam(param, axis);
-			break;
-		case PAL_LINK_PARAM_CFM:
-			param = BT_CONSTRAINT_CFM;
-			result = constraint->getParam(param, axis);
-			break;
-		case PAL_LINK_PARAM_STOP_CFM:
-			param = BT_CONSTRAINT_STOP_CFM;
-			result = constraint->getParam(param, axis);
-			break;
-		case PAL_LINK_PARAM_BREAK_IMPULSE:
-			result = constraint->getBreakingImpulseThreshold();
-			break;
-			// nothing in bullet currently supports this, and it asserts out if you pass it.
-		case PAL_LINK_PARAM_ERP:
-		default:
-			result = false;
-		}
-	}
-	return result;
-}
-
-
-////////////////////////////////////////////////////
 class palBulletAction : public btActionInterface {
 public:
 	palBulletAction(palAction& action)
-	: mAction(action)
-	{
-	}
+: mAction(action)
+{
+}
 
 	virtual ~palBulletAction() {}
 
-		// Need to call and pass the pal debug drawer to the action.
+	// Need to call and pass the pal debug drawer to the action.
 	virtual void debugDraw(btIDebugDraw *debugDrawer) {}
 private:
 	virtual void updateAction(btCollisionWorld *collisionWorld, btScalar deltaTimeStep)
@@ -395,7 +317,7 @@ private:
 		mAction(deltaTimeStep);
 	}
 
-palAction& mAction;
+	palAction& mAction;
 };
 
 ////////////////////////////////////////////////////
@@ -421,19 +343,19 @@ void palBulletPhysics::SetGroupCollision(palGroup a, palGroup b, bool enabled) {
 		short m_groupBitsA, m_groupBitsB;
 	public:
 		CleanPairForGroupCallback(short groupBitsA, short groupBitsB)
-		: m_groupBitsA(groupBitsA)
-		, m_groupBitsB(groupBitsB)
-		{
-		}
+	: m_groupBitsA(groupBitsA)
+	, m_groupBitsB(groupBitsB)
+	{
+	}
 
 		virtual	bool	processOverlap(btBroadphasePair& pair)
 		{
 			return (
-				(pair.m_pProxy0->m_collisionFilterGroup == m_groupBitsA) ||
-				(pair.m_pProxy1->m_collisionFilterGroup == m_groupBitsA) ||
-				(pair.m_pProxy0->m_collisionFilterGroup == m_groupBitsB) ||
-				(pair.m_pProxy1->m_collisionFilterGroup == m_groupBitsB)
-				);
+					(pair.m_pProxy0->m_collisionFilterGroup == m_groupBitsA) ||
+					(pair.m_pProxy1->m_collisionFilterGroup == m_groupBitsA) ||
+					(pair.m_pProxy0->m_collisionFilterGroup == m_groupBitsB) ||
+					(pair.m_pProxy1->m_collisionFilterGroup == m_groupBitsB)
+			);
 		}
 
 	};
@@ -441,7 +363,7 @@ void palBulletPhysics::SetGroupCollision(palGroup a, palGroup b, bool enabled) {
 	CleanPairForGroupCallback callback(a, b);
 
 	m_dynamicsWorld->getBroadphase()->getOverlappingPairCache()->processAllOverlappingPairs(&callback,
-				m_dynamicsWorld->getDispatcher());
+			m_dynamicsWorld->getDispatcher());
 
 }
 
@@ -479,17 +401,17 @@ void palBulletPhysics::RayCast(Float x, Float y, Float z, Float dx, Float dy, Fl
 struct palBulletCustomResultCallback : public btCollisionWorld::RayResultCallback
 {
 	palBulletCustomResultCallback(const btVector3& rayFromWorld,const btVector3& rayToWorld, btScalar range,
-				palRayHitCallback& callback, palGroupFlags groupFilter)
-	: m_rayFromWorld(rayFromWorld)
-	, m_rayToWorld(rayToWorld)
-	, m_range(range)
-	, m_callback(callback)
-	, m_groupFilter(groupFilter)
-	, m_lastFraction(1.0)
-	{
+			palRayHitCallback& callback, palGroupFlags groupFilter)
+			: m_rayFromWorld(rayFromWorld)
+			  , m_rayToWorld(rayToWorld)
+			  , m_range(range)
+			  , m_callback(callback)
+			  , m_groupFilter(groupFilter)
+			  , m_lastFraction(1.0)
+			  {
 		m_collisionFilterGroup = ~0;
 		m_collisionFilterMask = (short) groupFilter;
-	}
+			  }
 
 	btVector3       m_rayFromWorld;//used to calculate hitPointWorld from hitFraction
 	btVector3       m_rayToWorld;
@@ -537,15 +459,15 @@ struct palBulletCustomResultCallback : public btCollisionWorld::RayResultCallbac
 };
 
 void palBulletPhysics::RayCast(Float x, Float y, Float z,
-							   Float dx, Float dy, Float dz, Float range,
-							   palRayHitCallback& callback, palGroupFlags groupFilter) const {
-   btVector3 from(x,y,z);
-   btVector3 dir(dx,dy,dz);
-   btVector3 to = from + dir * range;
+		Float dx, Float dy, Float dz, Float range,
+		palRayHitCallback& callback, palGroupFlags groupFilter) const {
+	btVector3 from(x,y,z);
+	btVector3 dir(dx,dy,dz);
+	btVector3 to = from + dir * range;
 
-   palBulletCustomResultCallback rayCallback(from, to, range, callback, groupFilter);
+	palBulletCustomResultCallback rayCallback(from, to, range, callback, groupFilter);
 
-   m_dynamicsWorld->rayTest(from, to, rayCallback);
+	m_dynamicsWorld->rayTest(from, to, rayCallback);
 }
 
 void palBulletPhysics::AddRigidBody(palBulletBodyBase* body) {
@@ -568,7 +490,7 @@ void palBulletPhysics::ClearBroadPhaseCachePairs(palBulletBodyBase *body) {
 	if (proxy != NULL) {
 		proxy->m_collisionFilterMask = m_CollisionMasks[body->GetGroup()];
 		m_dynamicsWorld->getBroadphase()->getOverlappingPairCache()->cleanProxyFromPairs(proxy,
-					m_dynamicsWorld->getDispatcher());
+				m_dynamicsWorld->getDispatcher());
 	}
 }
 
@@ -611,7 +533,7 @@ void palBulletPhysics::RemoveAction(palAction *action) {
 }
 
 void palBulletPhysics::CallActions(Float timestep) {
-// Do nothing here.  The dynamics world does this stuff.
+	// Do nothing here.  The dynamics world does this stuff.
 }
 
 
@@ -825,7 +747,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	btDefaultCollisionConstructionInfo cci;
 	cci.m_defaultMaxPersistentManifoldPoolSize = 32768;
 	m_collisionConfiguration = //new btDefaultCollisionConfiguration(cci);
-		new btSoftBodyRigidBodyCollisionConfiguration(cci);
+			new btSoftBodyRigidBodyCollisionConfiguration(cci);
 
 	if (!parallel_solver)
 	{
@@ -834,7 +756,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	}
 	else
 	{
-/*		int maxNumOutstandingTasks = set_pe;
+		/*		int maxNumOutstandingTasks = set_pe;
 		btThreadSupportInterface*		m_threadSupportCollision = 0;
 #ifdef OS_WINDOWS
 		char* collisionName = "collision";
@@ -876,7 +798,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 		m_solver = new btParallelConstraintSolver(threadSupportSolver);
 		//this solver requires the contacts to be in a contiguous pool, so avoid dynamic allocation
 		m_dispatcher->setDispatcherFlags(btCollisionDispatcher::CD_DISABLE_CONTACTPOOL_DYNAMIC_ALLOCATION);
-		*/
+		 */
 	}
 
 
@@ -912,9 +834,9 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 			SOLVER_USE_FRICTION_WARMSTARTING | SOLVER_USE_2_FRICTION_DIRECTIONS
 			| SOLVER_RANDMIZE_ORDER | SOLVER_USE_WARMSTARTING | SOLVER_SIMD;
 #else
-			SOLVER_USE_WARMSTARTING | SOLVER_USE_2_FRICTION_DIRECTIONS | SOLVER_FRICTION_SEPARATE
-			| SOLVER_RANDMIZE_ORDER | SOLVER_ENABLE_FRICTION_DIRECTION_CACHING | SOLVER_SIMD
-			| SOLVER_INTERLEAVE_CONTACT_AND_FRICTION_CONSTRAINTS | SOLVER_ALLOW_ZERO_LENGTH_FRICTION_DIRECTIONS;
+	SOLVER_USE_WARMSTARTING | SOLVER_USE_2_FRICTION_DIRECTIONS | SOLVER_FRICTION_SEPARATE
+	| SOLVER_RANDMIZE_ORDER | SOLVER_ENABLE_FRICTION_DIRECTION_CACHING | SOLVER_SIMD
+	| SOLVER_INTERLEAVE_CONTACT_AND_FRICTION_CONSTRAINTS | SOLVER_ALLOW_ZERO_LENGTH_FRICTION_DIRECTIONS;
 #endif
 
 	m_dynamicsWorld->getSolverInfo().m_erp = GetInitProperty("WorldERP", m_dynamicsWorld->getSolverInfo().m_erp, btScalar(PAL_FLOAT_EPSILON), btScalar(1.0));
@@ -929,7 +851,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_dynamicsWorld->getSimulationIslandManager()->setSplitIslands(!parallel_solver);
 	m_dynamicsWorld->getDispatchInfo().m_enableSPU = parallel_solver;
 
-				// Reset so it assigns it to the world properly
+	// Reset so it assigns it to the world properly
 	SetSolverAccuracy(palSolver::GetSolverAccuracy());
 }
 
@@ -970,7 +892,7 @@ void palBulletPhysics::StartIterate(Float timestep) {
 
 		palDebugDraw* debugDraw = GetDebugDraw();
 		if (debugDraw != NULL) {
-	      m_pbtDebugDraw->SetPalDebugDraw(debugDraw);
+			m_pbtDebugDraw->SetPalDebugDraw(debugDraw);
 			m_dynamicsWorld->setDebugDrawer(m_pbtDebugDraw);
 		} else {
 			m_dynamicsWorld->setDebugDrawer(NULL);
@@ -1056,8 +978,8 @@ void palBulletPhysics::Iterate(Float timestep) {
 
 ///////////////
 palBulletBodyBase::palBulletBodyBase()
-  : m_pbtBody(0)
-  , m_fSkinWidth() {}
+: m_pbtBody(0)
+, m_fSkinWidth() {}
 
 palBulletBodyBase::~palBulletBodyBase() {
 	palBulletPhysics* bulletPhysics = static_cast<palBulletPhysics*>(GetParent());
@@ -1081,7 +1003,7 @@ palBulletBodyBase::~palBulletBodyBase() {
 }
 
 void palBulletBodyBase::SetMaterial(palMaterial *material) {
-/*	for (unsigned int i=0;i<m_Geometries.size();i++) {
+	/*	for (unsigned int i=0;i<m_Geometries.size();i++) {
 		palBulletGeometry *pbg = m_Geometries[i];
 		pbg->m_pbtShape->s
 	}*/
@@ -1104,9 +1026,9 @@ void palBulletBodyBase::SetMaterial(palMaterial *material) {
 }
 
 void palBulletBodyBase::BuildBody(const palMatrix4x4& pos, Float mass,
-			palDynamicsType dynType,
-			btCollisionShape *btShape,
-			const palVector3& palInertia) {
+		palDynamicsType dynType,
+		btCollisionShape *btShape,
+		const palVector3& palInertia) {
 
 	btTransform trans;
 
@@ -1148,27 +1070,27 @@ void palBulletBodyBase::AssignDynamicsType(palDynamicsType dynType, Float mass, 
 	int currFlags = m_pbtBody->getCollisionFlags();
 
 	switch (dynType) {
-		case PALBODY_DYNAMIC:
-		{
-			currFlags &= (~btCollisionObject::CF_STATIC_OBJECT);
-			currFlags &= (~btCollisionObject::CF_KINEMATIC_OBJECT);
-			m_pbtBody->setMassProps(mass, inertia);
-			break;
-		}
-		case PALBODY_STATIC:
-		{
-			currFlags |= btCollisionObject::CF_STATIC_OBJECT;
-			currFlags &= (~btCollisionObject::CF_KINEMATIC_OBJECT);
-			m_pbtBody->setMassProps(btScalar(0.0), btVector3(0.0f, 0.0f, 0.0f));
-			break;
-		}
-		case PALBODY_KINEMATIC:
-		{
-			currFlags &= (~btCollisionObject::CF_STATIC_OBJECT);
-			currFlags |= btCollisionObject::CF_KINEMATIC_OBJECT;
-			m_pbtBody->setMassProps(btScalar(0.0), btVector3(0.0f, 0.0f, 0.0f));
-			break;
-		}
+	case PALBODY_DYNAMIC:
+	{
+		currFlags &= (~btCollisionObject::CF_STATIC_OBJECT);
+		currFlags &= (~btCollisionObject::CF_KINEMATIC_OBJECT);
+		m_pbtBody->setMassProps(mass, inertia);
+		break;
+	}
+	case PALBODY_STATIC:
+	{
+		currFlags |= btCollisionObject::CF_STATIC_OBJECT;
+		currFlags &= (~btCollisionObject::CF_KINEMATIC_OBJECT);
+		m_pbtBody->setMassProps(btScalar(0.0), btVector3(0.0f, 0.0f, 0.0f));
+		break;
+	}
+	case PALBODY_KINEMATIC:
+	{
+		currFlags &= (~btCollisionObject::CF_STATIC_OBJECT);
+		currFlags |= btCollisionObject::CF_KINEMATIC_OBJECT;
+		m_pbtBody->setMassProps(btScalar(0.0), btVector3(0.0f, 0.0f, 0.0f));
+		break;
+	}
 	}
 
 	m_pbtBody->setCollisionFlags(currFlags);
@@ -1273,11 +1195,11 @@ palBulletBody::~palBulletBody() {
 }
 
 /*
-* palActivation implementation
-*/
+ * palActivation implementation
+ */
 // Bullet supports them all
 const std::bitset<palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE>
-	palBulletBody::SUPPORTED_SETTINGS = std::bitset<palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE>(int(~(0xFFFFFFFF << palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE)));
+palBulletBody::SUPPORTED_SETTINGS = std::bitset<palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE>(int(~(0xFFFFFFFF << palBulletBody::DUMMY_ACTIVATION_SETTING_TYPE)));
 
 Float palBulletBody::GetActivationLinearVelocityThreshold() const {
 	Float velocity;
@@ -1316,7 +1238,7 @@ void palBulletBody::SetActivationAngularVelocityThreshold(Float omega) {
 Float palBulletBody::GetActivationTimeThreshold() const {
 	Float timeThreshold;
 	//if (m_pbtBody) {
-		timeThreshold = gDeactivationTime;
+	timeThreshold = gDeactivationTime;
 	//}
 	//else {
 	//	timeThreshold = Float(-1.0);
@@ -1326,8 +1248,8 @@ Float palBulletBody::GetActivationTimeThreshold() const {
 
 void palBulletBody::SetActivationTimeThreshold(Float timeThreshold) {
 	//if (m_pbtBody) {
-		// Yes, it's global, and yes if you set it, it sets the global one.
-		gDeactivationTime = timeThreshold;
+	// Yes, it's global, and yes if you set it, it sets the global one.
+	gDeactivationTime = timeThreshold;
 	//}
 }
 
@@ -1598,22 +1520,22 @@ void palBulletGenericBody::RebuildConcaveShapeFromGeometry() {
 
 		AddMeshToTrimesh(trimesh, pVertices, pGeom->GetNumberOfVertices(), pIndices, nIndices);
 
-//		int pi = 0;
-//		for (int j = 0;j < nIndices/3; ++j) {
-//			pi = pIndices[j*3+0];
-//			btVector3 v0(  pVertices[pi*3+0],
-//						pVertices[pi*3+1],
-//						pVertices[pi*3+2]);
-//			pi = pIndices[j*3+1];
-//			btVector3 v1(  pVertices[pi*3+0],
-//						pVertices[pi*3+1],
-//						pVertices[pi*3+2]);
-//			pi = pIndices[j*3+2];
-//			btVector3 v2(  pVertices[pi*3+0],
-//						pVertices[pi*3+1],
-//						pVertices[pi*3+2]);
-//			tmesh->addTriangle(v0,v1,v2);
-//		}
+		//		int pi = 0;
+		//		for (int j = 0;j < nIndices/3; ++j) {
+		//			pi = pIndices[j*3+0];
+		//			btVector3 v0(  pVertices[pi*3+0],
+		//						pVertices[pi*3+1],
+		//						pVertices[pi*3+2]);
+		//			pi = pIndices[j*3+1];
+		//			btVector3 v1(  pVertices[pi*3+0],
+		//						pVertices[pi*3+1],
+		//						pVertices[pi*3+2]);
+		//			pi = pIndices[j*3+2];
+		//			btVector3 v2(  pVertices[pi*3+0],
+		//						pVertices[pi*3+1],
+		//						pVertices[pi*3+2]);
+		//			tmesh->addTriangle(v0,v1,v2);
+		//		}
 	}
 	m_pConcave = new btBvhTriangleMeshShape(trimesh, true, true);
 	//m_pConcave = new btBvhTriangleMeshShape(tmesh, true, true);
@@ -1622,7 +1544,7 @@ void palBulletGenericBody::RebuildConcaveShapeFromGeometry() {
 void palBulletGenericBody::ConnectGeometry(palGeometry* pGeom) {
 	palGenericBody::ConnectGeometry(pGeom);
 
- 	if (m_pbtBody != NULL)
+	if (m_pbtBody != NULL)
 	{
 		if (IsUsingOneCenteredGeometry()) {
 			palBulletGeometry *pbtg=dynamic_cast<palBulletGeometry *> (pGeom);
@@ -1675,26 +1597,8 @@ void palBulletGenericBody::RemoveGeometry(palGeometry* pGeom)
 }
 
 
-void palBulletCompoundBody::SetPosition(const palMatrix4x4& location) {
-	palBulletBodyBase::SetPosition(location);
-}
-
-const palMatrix4x4& palBulletStaticCompoundBody::GetLocationMatrix() const {
-	return palBulletCompoundBody::GetLocationMatrix();
-}
-
-const palMatrix4x4& palBulletCompoundBody::GetLocationMatrix() const {
-	if (m_pbtBody) {
-		btTransform t;
-		m_pbtBody->getMotionState()->getWorldTransform(t);
-		convertBtTransformToPalMat(m_mLoc, t);
-	}
-	return m_mLoc;
-}
-
-
 bool palBulletBody::IsActive() const {
-   return m_pbtBody->isActive();
+	return m_pbtBody->isActive();
 }
 /*
 #define ACTIVE_TAG 1
@@ -1702,7 +1606,7 @@ bool palBulletBody::IsActive() const {
 #define WANTS_DEACTIVATION 3
 #define DISABLE_DEACTIVATION 4
 #define DISABLE_SIMULATION 5
-*/
+ */
 void palBulletBody::SetActive(bool active) {
 	if (active) {
 		m_pbtBody->activate();
@@ -1756,58 +1660,8 @@ void palBulletBody::SetAngularVelocity(const palVector3& velocity) {
 }
 
 
-palBulletStaticCompoundBody::palBulletStaticCompoundBody() {
-}
-
-void palBulletStaticCompoundBody::Finalize() {
-	SumInertia();
-	btCompoundShape* compound = new btCompoundShape();
-	for (PAL_VECTOR<palGeometry *>::size_type i=0;i<m_Geometries.size();i++) {
-		palBulletGeometry *pbtg=dynamic_cast<palBulletGeometry *> (m_Geometries[i]);
-
-		palMatrix4x4 m = pbtg->GetOffsetMatrix();//GetLocationMatrix();
-
-		btTransform localTrans;
-		convertPalMatToBtTransform(localTrans, m);
-
-		compound->addChildShape(localTrans,pbtg->m_pbtShape);
-	}
-
-   palVector3 pvInertia(m_fInertiaXX, m_fInertiaYY, m_fInertiaZZ);
-   //Set the position to 0 since it will be moved in a sec.
-   BuildBody(m_mLoc, m_fMass, PALBODY_STATIC, compound, pvInertia);
-}
-
-
-palBulletCompoundBody::palBulletCompoundBody() {
-}
-
-void palBulletCompoundBody::Finalize(Float finalMass, Float iXX, Float iYY, Float iZZ) {
-	btCompoundShape* compound = new btCompoundShape();
-	for (PAL_VECTOR<palGeometry *>::size_type i=0;i<m_Geometries.size();i++) {
-		palBulletGeometry *pbtg=dynamic_cast<palBulletGeometry *> (m_Geometries[i]);
-
-		palMatrix4x4 m = pbtg->GetOffsetMatrix();//GetLocationMatrix();
-
-		btTransform localTrans;
-		convertPalMatToBtTransform(localTrans, m);
-
-		compound->addChildShape(localTrans,pbtg->m_pbtShape);
-	}
-
-	btTransform trans;
-	trans.setIdentity();
-	trans.setOrigin(btVector3(m_mLoc._41, m_mLoc._42, m_mLoc._43));
-
-	palVector3 pvInertia(iXX, iYY, iZZ);
-
-	//Set the position to 0 since it will be moved in a sec.
-   BuildBody(m_mLoc, finalMass, PALBODY_DYNAMIC, compound, pvInertia);
-   m_fMass = finalMass;
-}
-
 palBulletGeometry::palBulletGeometry()
-  : m_pbtShape(NULL) {}
+: m_pbtShape(NULL) {}
 
 palBulletGeometry::~palBulletGeometry() {
 	delete m_pbtShape;
@@ -1842,46 +1696,9 @@ void palBulletBoxGeometry::Init(const palMatrix4x4 &pos, Float width, Float heig
 	//m_pbtShape->setMargin(0.0f);
 }
 
-palBulletBox::palBulletBox() {
-}
-
-void palBulletBox::Init(Float x, Float y, Float z, Float width, Float height, Float depth, Float mass) {
-	palBox::Init(x,y,z,width,height,depth,mass);
-	palMatrix4x4 mat;
-	mat_identity(&mat);
-	mat_set_translation(&mat, x, y, z);
-	BuildBody(mat, mass);
-}
-
-palBulletStaticBox::palBulletStaticBox() {
-}
-
-void palBulletStaticBox::Init(const palMatrix4x4 &pos, Float width, Float height, Float depth) {
-	palStaticBox::Init(pos,width,height,depth);
-	BuildBody(m_mLoc, 0, PALBODY_STATIC);
-	palBulletBodyBase::SetPosition(pos);
-}
-
-palBulletStaticSphere::palBulletStaticSphere() {
-}
-
-void palBulletStaticSphere::Init(const palMatrix4x4 &pos, Float radius) {
-	palStaticSphere::Init(pos,radius);
-	BuildBody(m_mLoc, 0, PALBODY_STATIC);
-	palBulletBodyBase::SetPosition(pos);
-}
-
-palBulletStaticCapsule::palBulletStaticCapsule() {
-}
-
-void palBulletStaticCapsule::Init(Float x, Float y, Float z, Float radius, Float length) {
-	palStaticCapsule::Init(x,y,z,radius,length);
-	BuildBody(m_mLoc, 0, PALBODY_STATIC);
-}
-
 
 palBulletSphereGeometry::palBulletSphereGeometry()
-  : m_btSphereShape(0) {}
+: m_btSphereShape(0) {}
 
 void palBulletSphereGeometry::Init(const palMatrix4x4 &pos, Float radius, Float mass) {
 	palSphereGeometry::Init(pos,radius,mass);
@@ -1891,13 +1708,13 @@ void palBulletSphereGeometry::Init(const palMatrix4x4 &pos, Float radius, Float 
 }
 
 palBulletCapsuleGeometry::palBulletCapsuleGeometry()
-  : m_btCapsuleShape(0) {}
+: m_btCapsuleShape(0) {}
 
 void palBulletCapsuleGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
 	palCapsuleGeometry::Init(pos,radius,length,mass);
 	palAxis upAxis = static_cast<palPhysics*>(GetParent())->GetUpAxis();
 
-        
+
 	switch (upAxis) {
 	case PAL_Z_AXIS:
 		m_btCapsuleShape = new btCapsuleShapeZ(radius, length);
@@ -1916,57 +1733,35 @@ void palBulletCapsuleGeometry::Init(const palMatrix4x4 &pos, Float radius, Float
 }
 
 palBulletCylinderGeometry::palBulletCylinderGeometry()
-  : m_btCylinderShape(0) {}
+: m_btCylinderShape(0) {}
 
 void palBulletCylinderGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
-   palCylinderGeometry::Init(pos,radius,length,mass);
-   palAxis upAxis = static_cast<palPhysics*>(GetParent())->GetUpAxis();
+	palCylinderGeometry::Init(pos,radius,length,mass);
+	palAxis upAxis = static_cast<palPhysics*>(GetParent())->GetUpAxis();
 
-   switch (upAxis) {
-   case PAL_Z_AXIS:
-      m_btCylinderShape = new btCylinderShapeZ(btVector3(radius, radius, length/2.0f)); //Half lengths
-      break;
-   case PAL_X_AXIS:
-      m_btCylinderShape = new btCylinderShapeX(btVector3(length/2.0f, radius, radius)); //Half lengths
-      break;
-   case PAL_Y_AXIS:
-      m_btCylinderShape = new btCylinderShape(btVector3(radius,length/2.0f,radius)); //Half lengths
-      break;
-   default:
-      throw new palException("Invalid axis is 'up'. This should never happen.");
-   }
-   m_pbtShape = m_btCylinderShape;
-   //m_pbtShape->setMargin(0.0f);
+	switch (upAxis) {
+	case PAL_Z_AXIS:
+		m_btCylinderShape = new btCylinderShapeZ(btVector3(radius, radius, length/2.0f)); //Half lengths
+		break;
+	case PAL_X_AXIS:
+		m_btCylinderShape = new btCylinderShapeX(btVector3(length/2.0f, radius, radius)); //Half lengths
+		break;
+	case PAL_Y_AXIS:
+		m_btCylinderShape = new btCylinderShape(btVector3(radius,length/2.0f,radius)); //Half lengths
+		break;
+	default:
+		throw new palException("Invalid axis is 'up'. This should never happen.");
+	}
+	m_pbtShape = m_btCylinderShape;
+	//m_pbtShape->setMargin(0.0f);
 }
 
-
-palBulletSphere::palBulletSphere() {
-}
-
-void palBulletSphere::Init(Float x, Float y, Float z, Float radius, Float mass) {
-	palSphere::Init(x,y,z,radius,mass);
-	palMatrix4x4 mat;
-	mat_identity(&mat);
-	mat_set_translation(&mat,x,y,z);
-	BuildBody(mat, mass);
-}
-
-palBulletCapsule::palBulletCapsule() {
-}
-
-void palBulletCapsule::Init(Float x, Float y, Float z, Float radius, Float length, Float mass) {
-	palCapsule::Init(x,y,z,radius,length,mass);
-	palMatrix4x4 mat;
-	mat_identity(&mat);
-	mat_set_translation(&mat,x,y,z);
-	BuildBody(mat, mass);
-}
 
 palBulletOrientatedTerrainPlane::palBulletOrientatedTerrainPlane()
-  : m_pbtPlaneShape(0) {}
+: m_pbtPlaneShape(0) {}
 
 palBulletOrientatedTerrainPlane::~palBulletOrientatedTerrainPlane() {
-		delete m_pbtPlaneShape;
+	delete m_pbtPlaneShape;
 }
 
 void palBulletOrientatedTerrainPlane::Init(Float x, Float y, Float z, Float nx, Float ny, Float nz, Float min_size) {
@@ -1987,7 +1782,7 @@ void palBulletOrientatedTerrainPlane::Init(Float x, Float y, Float z, Float nx, 
 	btTransform final_groundTransform;
 	final_groundTransform.setIdentity();
 	final_groundTransform.setOrigin(btVector3(0,0,0));
-//	final_groundTransform.setFromOpenGLMatrix(m_mLoc._mat);
+	//	final_groundTransform.setFromOpenGLMatrix(m_mLoc._mat);
 
 	btVector3 localInertia(0,0,0);
 	m_pbtMotionState = new btDefaultMotionState(final_groundTransform);
@@ -2000,7 +1795,7 @@ void palBulletOrientatedTerrainPlane::Init(Float x, Float y, Float z, Float nx, 
 
 
 palBulletTerrainPlane::palBulletTerrainPlane()
-  : m_pbtBoxShape(0) {}
+: m_pbtBoxShape(0) {}
 
 void palBulletTerrainPlane::Init(Float x, Float y, Float z, Float min_size) {
 	palTerrainPlane::Init(x,y,z,min_size);
@@ -2012,7 +1807,7 @@ void palBulletTerrainPlane::Init(Float x, Float y, Float z, Float min_size) {
 	if (upAxis == 2)
 	{
 		m_pbtBoxShape = new btBoxShape(btVector3(min_size*(Float)0.5, min_size*(Float)0.5, (Float)1.0));
-	   mat_set_translation(&mat,x,y,z-1.0f);
+		mat_set_translation(&mat,x,y,z-1.0f);
 	}
 	else if (upAxis == 0)
 	{
@@ -2090,7 +1885,7 @@ void palBulletTerrainMesh::SetMaterial(palMaterial *material) {
 	m_pbtBody->setFriction(material->m_fStatic);
 	m_pbtBody->setRestitution(material->m_fRestitution);
 }
-*/
+ */
 palBulletTerrainHeightmap::palBulletTerrainHeightmap() {
 }
 
@@ -2117,7 +1912,7 @@ void palBulletTerrainHeightmap::Init(Float px, Float py, Float pz, Float width, 
 			v[(x + z*m_iDataWidth)*3+1]=pHeightmap[x+z*m_iDataWidth];
 			v[(x + z*m_iDataWidth)*3+2]=fTerrainZ;
 
-		fTerrainX += (m_fWidth / (m_iDataWidth-1));
+			fTerrainX += (m_fWidth / (m_iDataWidth-1));
 		}
 		fTerrainZ += (m_fDepth / (m_iDataDepth-1));
 	}
@@ -2127,400 +1922,27 @@ void palBulletTerrainHeightmap::Init(Float px, Float py, Float pz, Float width, 
 	int yDim=m_iDataDepth;
 	int y;
 	for (y=0;y < yDim-1;y++)
-	for (x=0;x < xDim-1;x++) {
-		ind[iTriIndex*3+0]=(y*xDim)+x;
-		ind[iTriIndex*3+1]=(y*xDim)+xDim+x;
-		ind[iTriIndex*3+2]=(y*xDim)+x+1;
-		// Move to the next triangle in the array
-		iTriIndex += 1;
+		for (x=0;x < xDim-1;x++) {
+			ind[iTriIndex*3+0]=(y*xDim)+x;
+			ind[iTriIndex*3+1]=(y*xDim)+xDim+x;
+			ind[iTriIndex*3+2]=(y*xDim)+x+1;
+			// Move to the next triangle in the array
+			iTriIndex += 1;
 
-		ind[iTriIndex*3+0]=(y*xDim)+x+1;
-		ind[iTriIndex*3+1]=(y*xDim)+xDim+x;
-		ind[iTriIndex*3+2]=(y*xDim)+x+xDim+1;
-		// Move to the next triangle in the array
-		iTriIndex += 1;
-	}
+			ind[iTriIndex*3+0]=(y*xDim)+x+1;
+			ind[iTriIndex*3+1]=(y*xDim)+xDim+x;
+			ind[iTriIndex*3+2]=(y*xDim)+x+xDim+1;
+			// Move to the next triangle in the array
+			iTriIndex += 1;
+		}
 	palBulletTerrainMesh::Init(px,py,pz,v,nv,ind,ni);
 
 	delete [] v;
 	delete [] ind;
 }
 
-
-palBulletSphericalLink::palBulletSphericalLink()
-  : m_btp2p(0) {}
-
-palBulletSphericalLink::~palBulletSphericalLink() {
-	if (m_btp2p) {
-		static_cast<palBulletPhysics*>(GetParent())->RemoveBulletConstraint(m_btp2p);
-		delete m_btp2p;
-		m_btp2p = NULL;
-	}
-}
-
-
-void palBulletSphericalLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
-                                  bool disableCollisionsBetweenLinkedBodies) {
-    palSphericalLink::Init(parent,child,x,y,z, disableCollisionsBetweenLinkedBodies);
-	const palBulletBodyBase *parentBodyBase = dynamic_cast<palBulletBodyBase *> (parent);
-	const palBulletBodyBase *childBodyBase = dynamic_cast<palBulletBodyBase *> (child);
-	btRigidBody* parentBulletBody = parentBodyBase->m_pbtBody;
-	btRigidBody* childBulletBody = childBodyBase->m_pbtBody;
-
-	const btVector3 pivotLocation(x, y, z);
-
-	/* Even though we'll only use the location of the pivot and not
-	 * its orientation, we need to account for rotation of the parent
-	 * and child bodies because we need the location of the pivot in
-	 * their frames of reference, which might be rotated. (For
-	 * example, if the parent is translated by (-5,0,0) and rotated 90
-	 * degrees clockwise about z, the global origin isn't just
-	 * translated for the parent to (5,0,0), it's rotated to be at
-	 * (0,5,0) in the parent's coordinate system.) */
-	const btTransform worldToParent(parentBodyBase->GetWorldTransform().inverse());
-	const btVector3 pivotInParent(worldToParent * pivotLocation);
-
-	const btTransform worldToChild(childBodyBase->GetWorldTransform().inverse());
-	const btVector3 pivotInChild(worldToChild * pivotLocation);
-
-	btTransform frameInParent(btTransform::getIdentity());
-	frameInParent.setOrigin(pivotInParent);
-	btTransform frameInChild(btTransform::getIdentity());
-	frameInChild.setOrigin(pivotInChild);
-
-	btGeneric6DofConstraint* p2p = new btGeneric6DofConstraint(*parentBulletBody, *childBulletBody,
-			frameInParent, frameInChild, true);
-
-	const float epsilon = FLT_EPSILON;
-	// making upper less that lower disables the motion in that direction.  The joint parameters should
-	// handle error in the joint.
-	p2p->setLinearLowerLimit(btVector3(-epsilon, -epsilon, -epsilon));
-	p2p->setLinearUpperLimit(btVector3(epsilon, epsilon, epsilon));
-
-	m_btp2p = p2p;
-	static_cast<palBulletPhysics*>(GetParent())->AddBulletConstraint(m_btp2p, disableCollisionsBetweenLinkedBodies);
-}
-
-void palBulletSphericalLink::SetLimits(Float cone_limit_rad, Float twist_limit_rad) {
-	btGeneric6DofConstraint* g = m_btp2p;//dynamic_cast<btGeneric6DofConstraint *>(m_btp2p);
-	btVector3 limit(cone_limit_rad,cone_limit_rad,twist_limit_rad);
-	g->setAngularLowerLimit(-limit);
-	g->setAngularUpperLimit(limit);
-	palSphericalLink::SetLimits(cone_limit_rad, twist_limit_rad);
-}
-
-
-/**
- * The Bullet class btHingeConstraint uses the btAdjustAngleToLimits function
- * (from btTypedConstraint.h), which has a bug
- * (http://code.google.com/p/bullet/issues/detail?id=377). We can't
- * replace btAdjustAngleToLimits, so we'll subclass btHingeConstraint,
- * instead.
- *
- * The following method and the palHingeConstraint class are based on
- * code from Bullet. These may be removed an btHingeConstraint used
- * again if/when this bug is fixed.  See the end of this file for the
- * Bullet license.
- *
- */
-
-btScalar adjustAngleToLimits(btScalar angleInRadians, btScalar angleLowerLimitInRadians, btScalar angleUpperLimitInRadians) {
-	if(angleLowerLimitInRadians >= angleUpperLimitInRadians) {
-		return angleInRadians;
-	}
-	else if(angleInRadians < angleLowerLimitInRadians) {
-		btScalar diffLo = btFabs(btNormalizeAngle(angleLowerLimitInRadians - angleInRadians));
-		btScalar diffHi = btFabs(btNormalizeAngle(angleUpperLimitInRadians - angleInRadians));
-		return (diffLo < diffHi) ? angleInRadians : (angleInRadians + SIMD_2_PI);
-	}
-	else if (angleInRadians > angleUpperLimitInRadians) {
-		btScalar diffHi = btFabs(btNormalizeAngle(angleInRadians - angleUpperLimitInRadians));
-		btScalar diffLo = btFabs(btNormalizeAngle(angleInRadians - angleLowerLimitInRadians));
-		return (diffLo < diffHi) ? (angleInRadians - SIMD_2_PI) : angleInRadians;
-	}
-	else {
-		return angleInRadians;
-	}
-}
-
-
-palBulletRevoluteLink::palBulletRevoluteLink()
-	: palLink(PAL_LINK_REVOLUTE), m_btHinge(0), m_feedback(0) {}
-
-palBulletRevoluteLink::~palBulletRevoluteLink() {
-	if (m_btHinge) {
-		static_cast<palBulletPhysics*>(GetParent())->RemoveBulletConstraint(m_btHinge);
-		delete m_btHinge;
-		m_btHinge = NULL;
-	}
-}
-
-void palBulletRevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies) {
-    palRevoluteLink::Init(parent,child,x,y,z,axis_x,axis_y,axis_z, disableCollisionsBetweenLinkedBodies);
-	palBulletBodyBase *body0 = dynamic_cast<palBulletBodyBase *> (parent);
-	palBulletBodyBase *body1 = dynamic_cast<palBulletBodyBase *> (child);
-
-	btTransform frameA, frameB;
-
-	convertPalMatToBtTransform(frameA, m_frameA);
-	convertPalMatToBtTransform(frameB, m_frameB);
-	// DEBUG
-	//std::cout << "pal frame A: " << m_frameA << "\tpal frame B: " << m_frameB << std::endl;
-	//std::cout << "bullet frame A: " << frameA << "\tbullet frame B: " << frameB << std::endl;
-	m_btHinge = new btHingeConstraint(*(body0->BulletGetRigidBody()),*(body1->BulletGetRigidBody()), frameA, frameB, false);
-	static_cast<palBulletPhysics*>(GetParent())->AddBulletConstraint(m_btHinge, disableCollisionsBetweenLinkedBodies);
-}
-
-void palBulletRevoluteLink::SetLimits(Float lower_limit_rad, Float upper_limit_rad) {
-	palRevoluteLink::SetLimits(lower_limit_rad, upper_limit_rad);
-	m_btHinge->setLimit(lower_limit_rad,upper_limit_rad);
-}
-
-void palBulletRevoluteLink::GetPosition(palVector3& pos) const {
-	//Get the pivot in the frame A and transform it to global coordinates
-	palBulletBodyBase *body0 = dynamic_cast<palBulletBodyBase *> (m_pParent);
-	btTransform pivotInGlobal = (body0->BulletGetRigidBody())->getCenterOfMassTransform() * m_btHinge->getAFrame();
-
-	pos.x = pivotInGlobal.getOrigin().x();
-	pos.y = pivotInGlobal.getOrigin().y();
-	pos.z = pivotInGlobal.getOrigin().z();
-}
-
-Float palBulletRevoluteLink::GetAngle() const {
-	return m_btHinge->getHingeAngle();
-}
-
-palLinkFeedback* palBulletRevoluteLink::GetFeedback() const
-	throw(palIllegalStateException) {
-	if (!m_btHinge) {
-		throw palIllegalStateException("Init must be called first");
-	}
-	if (!m_feedback) {
-		const_cast<palBulletRevoluteLink*>(this)->m_feedback = new bulletRevoluteLinkFeedback(m_btHinge);
-	}
-	return m_feedback;
-}
-
-bool palBulletRevoluteLink::SetParam(int parameterCode, Float value, int axis) {
-   if ((axis == 5 || axis == -1))
-   {
-      return SetAnyBulletParam(m_btHinge, parameterCode, btScalar(value), axis);
-   }
-   return false;
-}
-
-Float palBulletRevoluteLink::GetParam(int parameterCode, int axis) {
-   if ((axis == 5 || axis == -1))
-   {
-      return GetAnyBulletParam(m_btHinge, parameterCode, axis);
-   }
-   return -1.0f;
-}
-
-bool palBulletRevoluteLink::SupportsParameters() const {
-   return true;
-}
-
-bool palBulletRevoluteLink::SupportsParametersPerAxis() const {
-   // This joint only supports the z axis only, so it's best to return false.
-   return false;
-}
-
-
-bulletRevoluteLinkFeedback::bulletRevoluteLinkFeedback(btHingeConstraint *hinge)
-	: m_btHinge(hinge)
-{
-}
-
-bool bulletRevoluteLinkFeedback::IsEnabled() const {
-	return m_btHinge->needsFeedback();
-}
-
-Float bulletRevoluteLinkFeedback::GetValue() const {
-	return m_btHinge->getAppliedImpulse();
-}
-
-bool bulletRevoluteLinkFeedback::SetEnabled(bool enable) {
-	m_btHinge->enableFeedback(enable);
-	return IsEnabled();
-}
-
-
-#ifdef TODO
-virtual std::string palBulletRevoluteLink::toString() const {
-	std::string result("palAngularMotor[link=");
-	result.append(m_link->toString());
-	result.append("]");
-	return result;
-}
-#endif
-
-////////////////////////////////////////////////////////
-
-
-palBulletRevoluteSpringLink::palBulletRevoluteSpringLink()
-  : m_bt6Dof(0)
-{
-}
-
-palBulletRevoluteSpringLink::~palBulletRevoluteSpringLink() {
-	if (m_bt6Dof) {
-		static_cast<palBulletPhysics*>(GetParent())->RemoveBulletConstraint(m_bt6Dof);
-		delete m_bt6Dof;
-		m_bt6Dof = NULL;
-	}
-}
-
-void palBulletRevoluteSpringLink::Init(palBodyBase *parent, palBodyBase *child,
-									   Float x, Float y, Float z,
-									   Float axis_x, Float axis_y, Float axis_z,
-                                       bool disableCollisionsBetweenLinkedBodies) {
-	palRevoluteSpringLink::Init(parent,child,x,y,z,axis_x,axis_y,axis_z, disableCollisionsBetweenLinkedBodies);
-	palBulletBodyBase *body0 = dynamic_cast<palBulletBodyBase *> (parent);
-	palBulletBodyBase *body1 = dynamic_cast<palBulletBodyBase *> (child);
-
-	btTransform frameA, frameB;
-
-	convertPalMatToBtTransform(frameA, m_frameA);
-	convertPalMatToBtTransform(frameB, m_frameB);
-
-	m_bt6Dof = new SubbtGeneric6DofSpringConstraint(*(body0->BulletGetRigidBody()),
-													*(body1->BulletGetRigidBody()),
-													frameA,
-													frameB,
-													false);
-
-	// Set the lower limit higher that the upper limit by default.  This means free movement.
-	m_bt6Dof->setAngularLowerLimit(btVector3(0.0f, 0.0f, SIMD_PI + 0.1f));
-	m_bt6Dof->setAngularUpperLimit(btVector3(0.0f, 0.0f, SIMD_PI));
-
-	static_cast<palBulletPhysics*>(GetParent())->AddBulletConstraint(m_bt6Dof, disableCollisionsBetweenLinkedBodies);
-}
-
-void palBulletRevoluteSpringLink::SetLimits(Float lower_limit_rad, Float upper_limit_rad) {
-	palRevoluteSpringLink::SetLimits(lower_limit_rad, upper_limit_rad);
-	m_bt6Dof->setLimit(5, lower_limit_rad, upper_limit_rad);
-}
-
-void palBulletRevoluteSpringLink::SetSpring(const palSpringDesc& springDesc) {
-	bool enable = springDesc.m_fSpringCoef > SIMD_EPSILON || springDesc.m_fDamper > SIMD_EPSILON;
-	m_bt6Dof->enableSpring(5, enable);
-	m_bt6Dof->setStiffness(5, springDesc.m_fSpringCoef);
-	m_bt6Dof->setDamping(5, springDesc.m_fDamper);
-	m_bt6Dof->setEquilibriumPoint(5, springDesc.m_fTarget);
-	//m_bt6Dof->getRotationalLimitMotor(2)->m_bounce = btScalar(0.3);
-}
-
-void palBulletRevoluteSpringLink::GetSpring(palSpringDesc& springDescOut) const {
-	m_bt6Dof->getSpringDesc(5, springDescOut);
-}
-
-bool palBulletRevoluteSpringLink::SetParam(int parameterCode, Float value, int axis) {
-   // Check to prevent an assertion crash failure.
-   if (axis != -1)
-      return false;
-   bool result = true;
-
-   for (unsigned axisI = 0; result && axisI < 5; ++axisI)
-   {
-      result = result && SetAnyBulletParam(m_bt6Dof, parameterCode, btScalar(value), axisI);
-   }
-   return result;
-}
-
-Float palBulletRevoluteSpringLink::GetParam(int parameterCode, int axis) {
-   if (axis != -1)
-      return -1.0f;
-   return GetAnyBulletParam(m_bt6Dof, parameterCode, 5);
-}
-
-bool palBulletRevoluteSpringLink::SupportsParameters() const {
-   return true;
-}
-
-bool palBulletRevoluteSpringLink::SupportsParametersPerAxis() const {
-   // This joint only supports the z axis only, so it's best to return false.
-   return false;
-}
-
-
-////////////////////////////////////////////////////////
-
-palBulletPrismaticLink::palBulletPrismaticLink()
-	: palLink(PAL_LINK_PRISMATIC), m_btSlider(0) {}
-
-palBulletPrismaticLink::~palBulletPrismaticLink()
-{
-	delete m_btSlider;
-}
-
-void palBulletPrismaticLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies) {
-	palPrismaticLink::Init(parent,child,x,y,z,axis_x,axis_y,axis_z, disableCollisionsBetweenLinkedBodies);
-	palBulletBodyBase *body0 = dynamic_cast<palBulletBodyBase *> (parent);
-	palBulletBodyBase *body1 = dynamic_cast<palBulletBodyBase *> (child);
-
-	//New method calculating the frames
-	btVector3 constraintDefaultAxis(1, 0, 0); //X is the Slider default axis
-	btVector3 constraintSpecifiedAxis(axis_x,axis_y,axis_z);  //Direction of axis of rotation
-
-	//Rotation to align x with axis
-	btScalar angle = acos(constraintDefaultAxis.dot(constraintSpecifiedAxis));
-	btVector3 direction = constraintDefaultAxis.cross(constraintSpecifiedAxis);
-
-	btVector3 pivot(x,y,z); // constraint position in world space
-	btQuaternion rot(direction, angle); // constraint rotation in world space
-
-	//printf("constrainDefaultAxis: %f %f %f \n",constraintDefaultAxis.x(),constraintDefaultAxis.y(),constraintDefaultAxis.z() );
-	//printf("constrainSpecifiedAxis: %f %f %f \n",constraintSpecifiedAxis.x(),constraintSpecifiedAxis.y(),constraintSpecifiedAxis.z() );
-	//printf("angle: %f \n",angle);
-	//printf("direction: %f %f %f \n",direction.x(),direction.y(),direction.z() );
-
-	btTransform ctWorldTransform;
-	ctWorldTransform.setIdentity();
-	ctWorldTransform.setOrigin(pivot);
-	if (direction.length()>0.0)
-		ctWorldTransform.setRotation(rot);
-
-	btTransform t_A = (body0->m_pbtBody)->getCenterOfMassTransform().inverse() * ctWorldTransform;
-	btTransform t_B = (body1->m_pbtBody)->getCenterOfMassTransform().inverse() * ctWorldTransform;
-
-	m_btSlider = new btSliderConstraint(*(body0->m_pbtBody),*(body1->m_pbtBody), t_A, t_B, true);
-
-	//Constraint the angular movement
-	m_btSlider->setLowerAngLimit(0.0f);
-	m_btSlider->setUpperAngLimit(0.0f);
-
-	static_cast<palBulletPhysics*>(GetParent())->AddBulletConstraint(m_btSlider, disableCollisionsBetweenLinkedBodies);
-}
-
-void palBulletPrismaticLink::SetLimits(Float lower_limit, Float upper_limit) {
-	m_btSlider->setLowerLinLimit(lower_limit);
-	m_btSlider->setUpperLinLimit(upper_limit);
-}
-
-bool palBulletPrismaticLink::SetParam(int parameterCode, Float value, int axis) {
-   // Check to prevent an assertion crash failure.
-   return SetAnyBulletParam(m_btSlider, parameterCode, btScalar(value), axis);
-}
-
-Float palBulletPrismaticLink::GetParam(int parameterCode, int axis) {
-   return GetAnyBulletParam(m_btSlider, parameterCode, axis);
-}
-
-bool palBulletPrismaticLink::SupportsParameters() const {
-   return true;
-}
-
-bool palBulletPrismaticLink::SupportsParametersPerAxis() const {
-   return true;
-}
-
-
-//////////////////////////////
-
-
 palBulletConvexGeometry::palBulletConvexGeometry()
-	: m_pbtConvexShape(0) {}
+: m_pbtConvexShape(0) {}
 
 void palBulletConvexGeometry::Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, Float mass) {
 	palConvexGeometry::Init(pos,pVertices,nVertices,mass);
@@ -2534,60 +1956,60 @@ void palBulletConvexGeometry::Init(const palMatrix4x4 &pos, const Float *pVertic
 
 void palBulletConvexGeometry::InternalInit(const Float *pVertices, unsigned int nVertices)
 {
-//	btTriangleMesh* trimesh = new btTriangleMesh();
-//
-//	for (int i = 0; i < nVertices; i++)
-//	{
-//		btVector3 vertex0(pVertices[i * 3], pVertices[i*3+1], pVertices[i*3+2]);
-//		btVector3 vertex1(pVertices[(i + 1) * 3], pVertices[(i + 1) * 3 + 1], pVertices[(i + 1) * 3 + 2]);
-//		btVector3 vertex2(pVertices[(i + 2) * 3], pVertices[(i + 2) * 3 + 1], pVertices[(i + 2) * 3 + 2]);
-//
-//		trimesh->addTriangle(vertex0,vertex1,vertex2);
-//	}
-//
-//
-//	btConvexShape* tmpConvexShape = new btConvexTriangleMeshShape(trimesh);
-//
-//	//create a hull approximation
-//	btShapeHull* hull = new btShapeHull(tmpConvexShape);
-//	btScalar margin = tmpConvexShape->getMargin();
-//	hull->buildHull(margin);
-//	tmpConvexShape->setUserPointer(hull);
-//
-//	btConvexHullShape* convexShape = new btConvexHullShape();
-//	for (int i=0;i<hull->numVertices();i++)
-//	{
-//		convexShape->addPoint(hull->getVertexPointer()[i]);
-//	}
-//
-//	delete tmpConvexShape;
-//	delete hull;
+	//	btTriangleMesh* trimesh = new btTriangleMesh();
+	//
+	//	for (int i = 0; i < nVertices; i++)
+	//	{
+	//		btVector3 vertex0(pVertices[i * 3], pVertices[i*3+1], pVertices[i*3+2]);
+	//		btVector3 vertex1(pVertices[(i + 1) * 3], pVertices[(i + 1) * 3 + 1], pVertices[(i + 1) * 3 + 2]);
+	//		btVector3 vertex2(pVertices[(i + 2) * 3], pVertices[(i + 2) * 3 + 1], pVertices[(i + 2) * 3 + 2]);
+	//
+	//		trimesh->addTriangle(vertex0,vertex1,vertex2);
+	//	}
+	//
+	//
+	//	btConvexShape* tmpConvexShape = new btConvexTriangleMeshShape(trimesh);
+	//
+	//	//create a hull approximation
+	//	btShapeHull* hull = new btShapeHull(tmpConvexShape);
+	//	btScalar margin = tmpConvexShape->getMargin();
+	//	hull->buildHull(margin);
+	//	tmpConvexShape->setUserPointer(hull);
+	//
+	//	btConvexHullShape* convexShape = new btConvexHullShape();
+	//	for (int i=0;i<hull->numVertices();i++)
+	//	{
+	//		convexShape->addPoint(hull->getVertexPointer()[i]);
+	//	}
+	//
+	//	delete tmpConvexShape;
+	//	delete hull;
 #if BT_FLOAT_IS_PAL_FLOAT
 	m_pbtConvexShape = new btConvexHullShape(pVertices,nVertices,sizeof(btScalar)*3);
 #else
 	m_pbtConvexShape = new btConvexHullShape();
 	for (unsigned i = 0; i < nVertices; ++i)
-		{
+	{
 #if BT_BULLET_VERSION < 282
-			m_pbtConvexShape->addPoint(btVector3(pVertices[3*i + 0], pVertices[3*i + 1], pVertices[3*i + 2]));
+		m_pbtConvexShape->addPoint(btVector3(pVertices[3*i + 0], pVertices[3*i + 1], pVertices[3*i + 2]));
 #else
-			m_pbtConvexShape->addPoint(btVector3(pVertices[3*i + 0], pVertices[3*i + 1], pVertices[3*i + 2]), false);
+		m_pbtConvexShape->addPoint(btVector3(pVertices[3*i + 0], pVertices[3*i + 1], pVertices[3*i + 2]), false);
 #endif
-		}
+	}
 #if BT_BULLET_VERSION > 281
 	m_pbtConvexShape->recalcLocalAabb();
 #endif
 #endif
-//	}
+	//	}
 	// default margin is 0.04
-//	m_pbtConvexShape = convexShape;
+	//	m_pbtConvexShape = convexShape;
 	m_pbtShape = m_pbtConvexShape;
 	//m_pbtShape->setMargin(0.0f);
 }
 
 palBulletConcaveGeometry::palBulletConcaveGeometry()
-	: m_pbtTriMeshShape(0)
-	, m_pInternalEdgeInfo(0)
+: m_pbtTriMeshShape(0)
+, m_pInternalEdgeInfo(0)
 {
 }
 
@@ -2618,41 +2040,6 @@ void palBulletConcaveGeometry::Init(const palMatrix4x4 &pos, const Float *pVerti
 	//m_pbtShape->setMargin(0.0f);
 }
 
-palBulletConvex::palBulletConvex() {
-}
-
-void palBulletConvex::Init(Float x, Float y, Float z, const Float *pVertices, int nVertices, Float mass) {
-	palConvex::Init(x,y,z,pVertices,nVertices,mass);
-	palMatrix4x4 mat;
-	mat_identity(&mat);
-	mat_set_translation(&mat,x,y,z);
-	BuildBody(mat, mass);
-}
-
-void palBulletConvex::Init(Float x, Float y, Float z, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass) {
-	palConvex::Init(x,y,z,pVertices,nVertices,pIndices,nIndices,mass);
-	palMatrix4x4 mat;
-	mat_identity(&mat);
-	mat_set_translation(&mat,x,y,z);
-	BuildBody(mat, mass);
-}
-
-palBulletStaticConvex::palBulletStaticConvex() {
-}
-
-void palBulletStaticConvex::Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices) {
-	palStaticConvex::Init(pos,pVertices,nVertices);
-	BuildBody(m_mLoc, 0, PALBODY_STATIC);
-	palBulletBodyBase::SetPosition(pos);
-}
-
-void palBulletStaticConvex::Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices){
-	palStaticConvex::Init(pos,pVertices,nVertices, pIndices, nIndices);
-	BuildBody(m_mLoc, 0, PALBODY_STATIC);
-	palBulletBodyBase::SetPosition(pos);
-}
-
-//////////////////////////////
 
 palBulletPSDSensor::palBulletPSDSensor() {
 	;
@@ -2671,7 +2058,7 @@ void palBulletPSDSensor::Init(palBody *body, Float x, Float y, Float z, Float dx
 #pragma comment (lib, "opengl32.lib")
 #endif
 Float palBulletPSDSensor::GetDistance() const {
-// TODO simplify this by using vec_mat_mul instead of mat_multiply
+	// TODO simplify this by using vec_mat_mul instead of mat_multiply
 	btVector3 from;
 	palMatrix4x4 m;
 	palMatrix4x4 bodypos = m_pBody->GetLocationMatrix();
@@ -2697,8 +2084,8 @@ Float palBulletPSDSensor::GetDistance() const {
 
 	palRayHit hit;
 	static_cast<const palBulletPhysics*>(GetParent())->RayCast(from.x(), from.y(), from.z(),
-											 newaxis.x, newaxis.y, newaxis.z,
-											 m_fRange, hit);
+			newaxis.x, newaxis.y, newaxis.z,
+			m_fRange, hit);
 	/*
 	 * Checking hit position and not just hit since if the hit
 	 * position isn't available, it's hard to see how the distance
@@ -2717,197 +2104,83 @@ Float palBulletPSDSensor::GetDistance() const {
 
 	static_cast<palBulletPhysics*>(GetParent())->m_dynamicsWorld->rayTest(from, to, rayCallback);
 	if (rayCallback.hasHit())
+	{
+		btRigidBody* body = btRigidBody::upcast(rayCallback.m_collisionObject);
+		if (body)
 		{
-			btRigidBody* body = btRigidBody::upcast(rayCallback.m_collisionObject);
-			if (body)
-				{
-					return m_fRange*rayCallback.m_closestHitFraction;
-				}
+			return m_fRange*rayCallback.m_closestHitFraction;
 		}
+	}
 #endif
 	return m_fRange;
 }
 
 
-palBulletGenericLink::palBulletGenericLink()
-	: genericConstraint(0) {}
-
-palBulletGenericLink::~palBulletGenericLink() {
-	if (genericConstraint) {
-		static_cast<palBulletPhysics*>(GetParent())->RemoveBulletConstraint(genericConstraint);
-		delete genericConstraint;
-		genericConstraint = NULL;
-	}
-}
-
-void palBulletGenericLink::Init(palBodyBase *parent, palBodyBase *child,
-								const palMatrix4x4& parentFrame,
-								const palMatrix4x4& childFrame,
-								const palVector3& linearLowerLimits,
-								const palVector3& linearUpperLimits,
-								const palVector3& angularLowerLimits,
-								const palVector3& angularUpperLimits,
-                                bool disableCollisionsBetweenLinkedBodies)
-{
-	palGenericLink::Init(parent,child,parentFrame,childFrame,linearLowerLimits,linearUpperLimits,angularLowerLimits,angularUpperLimits, disableCollisionsBetweenLinkedBodies);
-
-	palBulletBodyBase *body0 = dynamic_cast<palBulletBodyBase *> (parent);
-	palBulletBodyBase *body1 = dynamic_cast<palBulletBodyBase *> (child);
-
-	btTransform frameInA, frameInB;
-
-	convertPalMatToBtTransform(frameInA, parentFrame);
-	convertPalMatToBtTransform(frameInB, childFrame);
-
-	genericConstraint = new SubbtGeneric6DofSpringConstraint(
-		*(body0->m_pbtBody),*(body1->m_pbtBody),
-		frameInA,frameInB,true);
-
-	genericConstraint->setLinearLowerLimit(btVector3(linearLowerLimits.x,linearLowerLimits.y,linearLowerLimits.z));
-	genericConstraint->setLinearUpperLimit(btVector3(linearUpperLimits.x,linearUpperLimits.y,linearUpperLimits.z));
-	genericConstraint->setAngularLowerLimit(btVector3(angularLowerLimits.x,angularLowerLimits.y,angularLowerLimits.z));
-	genericConstraint->setAngularUpperLimit(btVector3(angularUpperLimits.x,angularUpperLimits.y,angularUpperLimits.z));
-
-	static_cast<palBulletPhysics*>(GetParent())->AddBulletConstraint(genericConstraint, disableCollisionsBetweenLinkedBodies);
-}
-
-bool palBulletGenericLink::SetParam(int parameterCode, Float value, int axis) {
-
-   if (axis < 0)
-   {
-      for (unsigned axisI = 0; axisI < 6; ++axisI)
-      {
-         return SetAnyBulletParam(genericConstraint, parameterCode, btScalar(value), axisI);
-      }
-   }
-   return SetAnyBulletParam(genericConstraint, parameterCode, btScalar(value), axis);
-}
-
-Float palBulletGenericLink::GetParam(int parameterCode, int axis) {
-   if (axis < 0)
-      axis = 0;
-   return GetAnyBulletParam(genericConstraint, parameterCode, axis);
-}
-
-bool palBulletGenericLink::SupportsParameters() const {
-   return true;
-}
-
-bool palBulletGenericLink::SupportsParametersPerAxis() const {
-   return true;
-}
-
-
-palBulletRigidLink::palBulletRigidLink()
-	:  palLink(PAL_LINK_RIGID), palBulletRevoluteLink(), palRigidLink()
-{
-}
-
-palBulletRigidLink::~palBulletRigidLink()
-{
-}
-
-void palBulletRigidLink::Init(palBodyBase *parent, palBodyBase *child, bool disableCollisionsBetweenLinkedBodies)
-{
-	palRigidLink::Init(parent, child, disableCollisionsBetweenLinkedBodies);
-	const float TOLERANCE = 0.01f;
-
-	palBulletRevoluteLink::Init(parent, child, m_fPosX, m_fPosY, m_fPosZ, 1, 0, 0, disableCollisionsBetweenLinkedBodies);
-	/* Bullet can get into weird states with angles exactly at its boundaries (PI and -PI)
-	 * if the limits are exactly equal, so perturb them slightly. */
-	btScalar angle = m_btHinge->getHingeAngle();
-	// tried SIMD_EPSILON, but that's too small
-	btScalar lowerLimit = angle - TOLERANCE;
-	// clamp it to make sure it's in the valid range for Bullet
-	if (lowerLimit < -SIMD_PI) {
-		lowerLimit = -SIMD_PI;
-	}
-	btScalar upperLimit = angle + TOLERANCE;
-	// clamp it to make sure it's in the valid range for Bullet
-	if (upperLimit > SIMD_PI) {
-		upperLimit = SIMD_PI;
-	}
-	SetLimits(lowerLimit, upperLimit);
-}
-
-std::ostream& operator<<(std::ostream &os, const palBulletRigidLink& link)
-{
-	const palLink& superLink = *(static_cast<const palLink*>(&link));
-	os << superLink;
-	const palBulletRevoluteLink* revoluteLink = dynamic_cast<const palBulletRevoluteLink*>(&superLink);
-	if (revoluteLink) {
-		os << "[angle=" << revoluteLink->m_btHinge->getHingeAngle() << "]";
-	}
-	return os;
-}
 
 palBulletAngularMotor::palBulletAngularMotor()
-	: m_bhc(0) {}
+: m_updateFunc(0), m_revolute(0), m_6dof(0) {}
 
-void palBulletAngularMotor::Init(palRevoluteLink *pLink, Float Max) {
-	palAngularMotor::Init(pLink,Max);
-	palBulletRevoluteLink *pbrl = dynamic_cast<palBulletRevoluteLink *> (m_link);
-	if (pbrl)
-		m_bhc = pbrl->m_btHinge;
+void palBulletAngularMotor::Init(palLink *pLink, int axis) {
+	m_axis = axis;
+	m_revolute = dynamic_cast<palBulletRevoluteLink *> (pLink);
+	if (m_revolute == 0)
+	{
+		m_6dof = dynamic_cast<palBulletGenericLink *> (pLink);
+		if (m_6dof != 0)
+		{
+			axis = std::max(0, axis);
+			axis = std::min(2, axis);
+			m_updateFunc = &palBulletAngularMotor::Update6DOF;
+		}
+	}
+	else
+	{
+		m_axis = -1;
+		m_updateFunc = &palBulletAngularMotor::UpdateRevolute;
+	}
 }
 
 void palBulletAngularMotor::Update(Float targetVelocity, Float Max) {
-	if (!m_bhc)
-		return;
-	if (Max <= 0.0)
-	{
-		Max = m_fMax;
+	if (m_updateFunc != 0)
+		(this->*m_updateFunc)(targetVelocity, Max);
+}
+
+void palBulletAngularMotor::Update6DOF(Float targetVelocity, Float Max) {
+	btRotationalLimitMotor* motor = m_6dof->BulletGetGenericConstraint()->getRotationalLimitMotor(m_axis);
+	motor->m_enableMotor = true;
+	motor->m_targetVelocity = targetVelocity;
+	motor->m_maxMotorForce = Max;
+	m_6dof->BulletGetGenericConstraint()->getRigidBodyA().activate();
+	m_6dof->BulletGetGenericConstraint()->getRigidBodyB().activate();
+}
+
+void palBulletAngularMotor::UpdateRevolute(Float targetVelocity, Float Max) {
+	m_revolute->m_btHinge->enableAngularMotor(true,targetVelocity,Max);
+	m_revolute->m_btHinge->getRigidBodyA().activate();
+	m_revolute->m_btHinge->getRigidBodyB().activate();
+}
+
+void palBulletAngularMotor::DisableMotor() {
+	if (m_revolute != 0) {
+		m_revolute->m_btHinge->enableAngularMotor(false, 0.0, 0.0);
 	}
-	m_bhc->enableAngularMotor(true,targetVelocity,Max);
-	m_bhc->getRigidBodyA().activate();
-	m_bhc->getRigidBodyB().activate();
+	else if (m_6dof != 0) {
+		btRotationalLimitMotor* motor = m_6dof->BulletGetGenericConstraint()->getRotationalLimitMotor(m_axis);
+		if (!motor->isLimited()) {
+			motor->m_enableMotor = false;
+		}
+		motor->m_maxMotorForce = 0.0f;
+		motor->m_targetVelocity = 0.0f;
+	}
+}
+
+palLink *palBulletAngularMotor::GetLink() const {
+	if (m_revolute != 0) return m_revolute;
+	if (m_6dof != 0) return m_6dof;
+	return 0;
 }
 
 void palBulletAngularMotor::Apply(float dt) {
-
-}
-
-//////////////////////////////////////////////////////////
-
-palBulletGenericLinkSpring::palBulletGenericLinkSpring()
-  : m_pBulletLink(NULL)
-{
-
-}
-
-void palBulletGenericLinkSpring::Init(palGenericLink* link) {
-	BaseClass::Init(link);
-	m_pBulletLink = dynamic_cast<palBulletGenericLink*>(link);
-}
-
-void palBulletGenericLinkSpring::SetLinearSpring(palAxis axis, const palSpringDesc& spring) {
-	BaseClass::SetLinearSpring(axis, spring);
-	if (axis >= PAL_AXIS_COUNT) return;
-	m_pBulletLink->BulletGetGenericConstraint()->setStiffness(axis, spring.m_fSpringCoef);
-	m_pBulletLink->BulletGetGenericConstraint()->setDamping(axis, spring.m_fDamper);
-	m_pBulletLink->BulletGetGenericConstraint()->setEquilibriumPoint(axis, spring.m_fTarget);
-	m_pBulletLink->BulletGetGenericConstraint()->enableSpring(axis, spring.m_fSpringCoef > FLT_EPSILON);
-}
-
-void palBulletGenericLinkSpring::GetLinearSpring(palAxis axis, palSpringDesc& out) const {
-	BaseClass::GetLinearSpring(axis, out);
-}
-
-void palBulletGenericLinkSpring::SetAngularSpring(palAxis axis, const palSpringDesc& spring) {
-	BaseClass::SetAngularSpring(axis, spring);
-	if (axis >= PAL_AXIS_COUNT) return;
-	unsigned axisIndex = int(axis) + int(PAL_AXIS_COUNT);
-	m_pBulletLink->BulletGetGenericConstraint()->setStiffness(axisIndex, spring.m_fSpringCoef);
-	m_pBulletLink->BulletGetGenericConstraint()->setDamping(axisIndex, spring.m_fDamper);
-	m_pBulletLink->BulletGetGenericConstraint()->setEquilibriumPoint(axisIndex, spring.m_fTarget);
-	m_pBulletLink->BulletGetGenericConstraint()->enableSpring(axisIndex, spring.m_fSpringCoef > FLT_EPSILON);
-}
-
-void palBulletGenericLinkSpring::GetAngularSpring(palAxis axis, palSpringDesc& out) const {
-	BaseClass::GetAngularSpring(axis, out);
-}
-
-void palBulletGenericLinkSpring::Apply(float dt) {
 
 }
 
@@ -2916,24 +2189,24 @@ void palBulletGenericLinkSpring::Apply(float dt) {
   m_pbtBody->getWorldTransform().getOpenGLMatrix(m_mLoc._mat);
   }
   return m_mLoc;
-*/
+ */
 
 palBulletSoftBody::palBulletSoftBody()
-	: m_pbtSBody(0) {}
+: m_pbtSBody(0) {}
 
 void palBulletSoftBody::BulletInit(const Float *pParticles, const Float *pMass, const int nParticles, const int *pIndices, const int nIndices) {
 
 	palBulletPhysics *pbf=dynamic_cast<palBulletPhysics *>(PF->GetActivePhysics());
 
-    const btScalar* particleArray;
+	const btScalar* particleArray;
 #if (defined(DOUBLE_PRECISION) && defined(BT_USE_DOUBLE_PRECISION) || !defined(DOUBLE_PRECISION) && !defined(BT_USE_DOUBLE_PRECISION))
-    particleArray = pParticles;
+	particleArray = pParticles;
 #else
-    btScalar* tempArray = new btScalar[nParticles];
-    for (int i = 0; i < nParticles; i++) {
-        tempArray[i] = pParticles[i];
-    }
-    particleArray = tempArray;
+	btScalar* tempArray = new btScalar[nParticles];
+	for (int i = 0; i < nParticles; i++) {
+		tempArray[i] = pParticles[i];
+	}
+	particleArray = tempArray;
 #endif
 	m_pbtSBody = btSoftBodyHelpers::CreateFromTriMesh(pbf->m_softBodyWorldInfo, particleArray, pIndices, nIndices/3);
 	m_pbtSBody->generateBendingConstraints(2);
@@ -2986,9 +2259,9 @@ std::ostream& operator<<(std::ostream& out, const btMatrix3x3& matrix) {
 }
 
 std::ostream& operator<<(std::ostream& out, const btTransform& xform) {
-    // btTransform returns references, so copy it
-    btVector3 origin = xform.getOrigin();
-    btQuaternion rot = xform.getRotation();
+	// btTransform returns references, so copy it
+	btVector3 origin = xform.getOrigin();
+	btQuaternion rot = xform.getRotation();
 	out << "[basis=" << xform.getBasis() << ", orig=" << origin << ", rot=" << rot << "]";
 	return out;
 }
@@ -3019,4 +2292,4 @@ subject to the following restrictions:
 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
-*/
+ */

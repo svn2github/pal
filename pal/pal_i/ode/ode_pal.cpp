@@ -31,41 +31,30 @@
 
 FACTORY_CLASS_IMPLEMENTATION_BEGIN_GROUP
 ;	//FACTORY_CLASS_IMPLEMENTATION(palODEMaterial);
-	FACTORY_CLASS_IMPLEMENTATION(palODEPhysics);
+FACTORY_CLASS_IMPLEMENTATION(palODEPhysics);
 
-	FACTORY_CLASS_IMPLEMENTATION(palODEBoxGeometry);
-	FACTORY_CLASS_IMPLEMENTATION(palODESphereGeometry);
-	FACTORY_CLASS_IMPLEMENTATION(palODECapsuleGeometry);
-   FACTORY_CLASS_IMPLEMENTATION(palODECylinderGeometry);
-	FACTORY_CLASS_IMPLEMENTATION(palODEConvexGeometry);
-   FACTORY_CLASS_IMPLEMENTATION(palODEConcaveGeometry);
+FACTORY_CLASS_IMPLEMENTATION(palODEBoxGeometry);
+FACTORY_CLASS_IMPLEMENTATION(palODESphereGeometry);
+FACTORY_CLASS_IMPLEMENTATION(palODECapsuleGeometry);
+FACTORY_CLASS_IMPLEMENTATION(palODECylinderGeometry);
+FACTORY_CLASS_IMPLEMENTATION(palODEConvexGeometry);
+FACTORY_CLASS_IMPLEMENTATION(palODEConcaveGeometry);
 
-	FACTORY_CLASS_IMPLEMENTATION(palODECompoundBody);
-	FACTORY_CLASS_IMPLEMENTATION(palODEConvex);
-	FACTORY_CLASS_IMPLEMENTATION(palODEBox);
-	FACTORY_CLASS_IMPLEMENTATION(palODESphere);
-	FACTORY_CLASS_IMPLEMENTATION(palODECylinder);
-   FACTORY_CLASS_IMPLEMENTATION(palODEGenericBody);
+FACTORY_CLASS_IMPLEMENTATION(palODEGenericBody);
 
-	FACTORY_CLASS_IMPLEMENTATION(palODEStaticBox);
-	FACTORY_CLASS_IMPLEMENTATION(palODEStaticCompoundBody);
-	FACTORY_CLASS_IMPLEMENTATION(palODEStaticConvex);
-	FACTORY_CLASS_IMPLEMENTATION(palODEStaticSphere);
-	FACTORY_CLASS_IMPLEMENTATION(palODEStaticCylinder);
+FACTORY_CLASS_IMPLEMENTATION(palODERigidLink);
+FACTORY_CLASS_IMPLEMENTATION(palODESphericalLink);
+FACTORY_CLASS_IMPLEMENTATION(palODERevoluteLink);
+FACTORY_CLASS_IMPLEMENTATION(palODEPrismaticLink);
 
-	FACTORY_CLASS_IMPLEMENTATION(palODERigidLink);
-	FACTORY_CLASS_IMPLEMENTATION(palODESphericalLink);
-	FACTORY_CLASS_IMPLEMENTATION(palODERevoluteLink);
-	FACTORY_CLASS_IMPLEMENTATION(palODEPrismaticLink);
+FACTORY_CLASS_IMPLEMENTATION(palODEOrientatedTerrainPlane);
+FACTORY_CLASS_IMPLEMENTATION(palODETerrainPlane);
+FACTORY_CLASS_IMPLEMENTATION(palODETerrainMesh);
+FACTORY_CLASS_IMPLEMENTATION(palODETerrainHeightmap);
 
-	FACTORY_CLASS_IMPLEMENTATION(palODEOrientatedTerrainPlane);
-	FACTORY_CLASS_IMPLEMENTATION(palODETerrainPlane);
-	FACTORY_CLASS_IMPLEMENTATION(palODETerrainMesh);
-	FACTORY_CLASS_IMPLEMENTATION(palODETerrainHeightmap);
+FACTORY_CLASS_IMPLEMENTATION(palODEAngularMotor);
 
-	FACTORY_CLASS_IMPLEMENTATION(palODEAngularMotor);
-
-	FACTORY_CLASS_IMPLEMENTATION_END_GROUP;
+FACTORY_CLASS_IMPLEMENTATION_END_GROUP;
 //PAL_MAP<dGeomID, ODE_MATINDEXLOOKUP> palODEMaterials::g_IndexMap;
 //std_matrix<palMaterial *> palODEMaterials::g_Materials;
 //PAL_VECTOR<PAL_STRING> palODEMaterials::g_MaterialNames;
@@ -106,7 +95,7 @@ static dGeomID CreateTriMesh(const Float *pVertices, int nVertices, const int *p
 	// build the trimesh data
 	dTriMeshDataID data = dGeomTriMeshDataCreate();
 	dGeomTriMeshDataBuildSimple(data, (dReal*)spacedvert, nVertices, (const dTriIndex*)dIndices,
-				nIndices);
+			nIndices);
 	// build the trimesh geom
 	odeGeom = dCreateTriMesh(g_space, data, 0, 0, 0);
 	return odeGeom;
@@ -124,9 +113,9 @@ const char* palODEPhysics::GetVersion() const {
 const char* palODEPhysics::GetPALVersion() const {
 	static char verbuf[512];
 	sprintf(verbuf, "PAL SDK V%d.%d.%d\nPAL ODE V:%d.%d.%d\nFile: %s\nCompiled: %s %s\nModified:%s",
-				PAL_SDK_VERSION_MAJOR, PAL_SDK_VERSION_MINOR, PAL_SDK_VERSION_BUGFIX,
-				ODE_PAL_SDK_VERSION_MAJOR, ODE_PAL_SDK_VERSION_MINOR, ODE_PAL_SDK_VERSION_BUGFIX,
-				__FILE__, __TIME__, __DATE__, __TIMESTAMP__);
+			PAL_SDK_VERSION_MAJOR, PAL_SDK_VERSION_MINOR, PAL_SDK_VERSION_BUGFIX,
+			ODE_PAL_SDK_VERSION_MAJOR, ODE_PAL_SDK_VERSION_MINOR, ODE_PAL_SDK_VERSION_BUGFIX,
+			__FILE__, __TIME__, __DATE__, __TIMESTAMP__);
 	return verbuf;
 }
 
@@ -287,7 +276,7 @@ static void nearCallback(void *data, dGeomID o1, dGeomID o2) {
 			}
 
 			g_contactArray[i].surface.mode = dContactBounce //| dContactSoftERP | dContactSoftCFM
-						| dContactApprox1;
+					| dContactApprox1;
 			//remove dContactSoftCFM | dContactApprox1 for bounce..
 			g_contactArray[i].surface.mu = finalMaterial.m_fStatic;
 			g_contactArray[i].surface.bounce = finalMaterial.m_fRestitution;
@@ -297,11 +286,11 @@ static void nearCallback(void *data, dGeomID o1, dGeomID o2) {
 				g_contactArray[i].surface.mode |= dContactMu2;
 				g_contactArray[i].surface.mu2 = finalMaterial.m_fStatic * finalMaterial.m_vStaticAnisotropic[1];
 			}
-//			g_contactArray[i].surface.slip1 = 0.1; // friction
-//			g_contactArray[i].surface.slip2 = 0.1;
-//			g_contactArray[i].surface.bounce_vel = 1;
-//			g_contactArray[i].surface.soft_erp = 0.5f;
-//			g_contactArray[i].surface.soft_cfm = 0.01f;
+			//			g_contactArray[i].surface.slip1 = 0.1; // friction
+			//			g_contactArray[i].surface.slip2 = 0.1;
+			//			g_contactArray[i].surface.bounce_vel = 1;
+			//			g_contactArray[i].surface.soft_erp = 0.5f;
+			//			g_contactArray[i].surface.soft_cfm = 0.01f;
 			if (response)
 			{
 				dJointID c = dJointCreateContact(g_world, g_contactgroup, &g_contactArray[i]);
@@ -420,7 +409,7 @@ static void OdeRayCallbackCallback(void* data, dGeomID o1, dGeomID o2) {
 }
 
 void palODEPhysics::RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range,
-			palRayHit& hit) const {
+		palRayHit& hit) const {
 	dGeomID odeRayId = dCreateRay(0, range);
 	dGeomRaySet(odeRayId, x, y, z, dx, dy, dz);
 	dSpaceCollide2((dGeomID)ODEGetSpace(), odeRayId, &hit, &OdeRayCallback);
@@ -428,7 +417,7 @@ void palODEPhysics::RayCast(Float x, Float y, Float z, Float dx, Float dy, Float
 }
 
 void palODEPhysics::RayCast(Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range,
-			palRayHitCallback& callback, palGroupFlags groupFilter) const {
+		palRayHitCallback& callback, palGroupFlags groupFilter) const {
 	dGeomID odeRayId = dCreateRay(0, range);
 	dGeomRaySet(odeRayId, x, y, z, dx, dy, dz);
 	OdeCallbackData data;
@@ -569,7 +558,7 @@ void palODEPhysics::Cleanup() {
 }
 
 void palODEPhysics::SetGroupCollisionOnGeom(unsigned long bits, unsigned long otherBits,
-			dGeomID geom, bool collide) {
+		dGeomID geom, bool collide) {
 	unsigned long coll = dGeomGetCollideBits(geom);
 
 	if (dGeomGetCategoryBits(geom) & bits) {
@@ -749,7 +738,7 @@ void palODEBody::RecalcMassAndInertia() {
 	m.c[0] = 0.0;
 	m.c[1] = 0.0;
 	m.c[2] = 0.0;
-	
+
 	if (dMassCheck(&m)) {
 		dBodySetMass(odeBody, &m);
 	}
@@ -797,7 +786,7 @@ void palODEBody::SetGroup(palGroup group) {
 	palBodyBase::SetGroup(group);
 
 	palODEPhysics* physics =
-				dynamic_cast<palODEPhysics*> (palFactory::GetInstance()->GetActivePhysics());
+			dynamic_cast<palODEPhysics*> (palFactory::GetInstance()->GetActivePhysics());
 
 	unsigned long bits = 1L << (unsigned long)(group);
 	for (unsigned int i = 0; i < m_Geometries.size(); i++) {
@@ -876,7 +865,7 @@ void palODEBody::SetAngularVelocity(const palVector3& vel) {
 }
 
 const std::bitset<palODEBody::DUMMY_ACTIVATION_SETTING_TYPE>
-	palODEBody::SUPPORTED_SETTINGS = std::bitset<palODEBody::DUMMY_ACTIVATION_SETTING_TYPE>(int(~(0xFFFFFFFF << palODEBody::DUMMY_ACTIVATION_SETTING_TYPE)));
+palODEBody::SUPPORTED_SETTINGS = std::bitset<palODEBody::DUMMY_ACTIVATION_SETTING_TYPE>(int(~(0xFFFFFFFF << palODEBody::DUMMY_ACTIVATION_SETTING_TYPE)));
 
 
 Float palODEBody::GetActivationLinearVelocityThreshold() const {
@@ -996,7 +985,7 @@ void palODEBoxGeometry::Init(const palMatrix4x4 &pos, Float width, Float height,
 		if (pob) {
 			if (pob->odeBody) {
 				dGeomSetBody(odeGeom,pob->odeBody);
-//				printf("made geom with b:%d\n",pob->odeBody);
+				//				printf("made geom with b:%d\n",pob->odeBody);
 			}
 		}
 	}
@@ -1099,70 +1088,70 @@ void palODECapsuleGeometry::CalculateMassParams(dMass& odeMass, Float massScalar
 }
 
 palODECylinderGeometry::palODECylinderGeometry() {
-   m_upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
+	m_upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
 }
 
 void palODECylinderGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
-   m_upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
-   palCylinderGeometry::Init(pos,radius,length,mass);
-   memset(&odeGeom ,0,sizeof(odeGeom));
-   odeGeom = dCreateCylinder(g_space, m_fRadius, m_fLength);
+	m_upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
+	palCylinderGeometry::Init(pos,radius,length,mass);
+	memset(&odeGeom ,0,sizeof(odeGeom));
+	odeGeom = dCreateCylinder(g_space, m_fRadius, m_fLength);
 
-   if (m_pBody) {
-      palODEBody *pob = dynamic_cast<palODEBody *> (m_pBody);
-      if (pob) {
-         if (pob->odeBody) {
-            dGeomSetBody(odeGeom, pob->odeBody);
-         }
-      }
-   }
-   SetPosition(pos);
+	if (m_pBody) {
+		palODEBody *pob = dynamic_cast<palODEBody *> (m_pBody);
+		if (pob) {
+			if (pob->odeBody) {
+				dGeomSetBody(odeGeom, pob->odeBody);
+			}
+		}
+	}
+	SetPosition(pos);
 }
 
 void palODECylinderGeometry::ReCalculateOffset() {
-   palODEGeometry::ReCalculateOffset();
-   if (m_pBody) {
-      palODEBody *pob = dynamic_cast<palODEBody *> (m_pBody);
-      if (pob) {
-         if (pob->odeBody) {
-            dMatrix3 R;
-            if (m_upAxis == 1) {
-               dRFromAxisAndAngle(R,1,0,0,M_PI/2);
-            }
-            else if (m_upAxis == 0) {
-               dRFromAxisAndAngle(R,0,1,0,M_PI/2);
-            }
-            else {
-               dRSetIdentity(R);
-            }
-            dReal pos[3];
-            dReal offsetR[12];
+	palODEGeometry::ReCalculateOffset();
+	if (m_pBody) {
+		palODEBody *pob = dynamic_cast<palODEBody *> (m_pBody);
+		if (pob) {
+			if (pob->odeBody) {
+				dMatrix3 R;
+				if (m_upAxis == 1) {
+					dRFromAxisAndAngle(R,1,0,0,M_PI/2);
+				}
+				else if (m_upAxis == 0) {
+					dRFromAxisAndAngle(R,0,1,0,M_PI/2);
+				}
+				else {
+					dRSetIdentity(R);
+				}
+				dReal pos[3];
+				dReal offsetR[12];
 
-            convODEFromPAL(pos, offsetR, m_mOffset);
+				convODEFromPAL(pos, offsetR, m_mOffset);
 
-            dMultiply0(R, offsetR, R, 3, 3, 3);
-            dGeomSetOffsetRotation(odeGeom,R);
-         }
-      }
-   }
+				dMultiply0(R, offsetR, R, 3, 3, 3);
+				dGeomSetOffsetRotation(odeGeom,R);
+			}
+		}
+	}
 }
 
 const palMatrix4x4& palODECylinderGeometry::GetLocationMatrix() const {
-   if (odeGeom) {
-      const dReal *pos = dGeomGetPosition(odeGeom);
-      const dReal *R = dGeomGetRotation(odeGeom);
-      convODEToPAL(pos, R, m_mLoc);
-      if (m_upAxis == 1) {
-         mat_rotate(&m_mLoc, -90, 1, 0, 0);
-      } else if (m_upAxis == 0) {
-         mat_rotate(&m_mLoc, -90, 0, 1, 0);
-      }
-   }
-   return m_mLoc;
+	if (odeGeom) {
+		const dReal *pos = dGeomGetPosition(odeGeom);
+		const dReal *R = dGeomGetRotation(odeGeom);
+		convODEToPAL(pos, R, m_mLoc);
+		if (m_upAxis == 1) {
+			mat_rotate(&m_mLoc, -90, 1, 0, 0);
+		} else if (m_upAxis == 0) {
+			mat_rotate(&m_mLoc, -90, 0, 1, 0);
+		}
+	}
+	return m_mLoc;
 }
 
 void palODECylinderGeometry::CalculateMassParams(dMass& odeMass, Float massScalar) const {
-   dMassSetCylinderTotal(&odeMass, massScalar, m_upAxis, m_fRadius, m_fLength);
+	dMassSetCylinderTotal(&odeMass, massScalar, m_upAxis, m_fRadius, m_fLength);
 }
 
 palODEConvexGeometry::palODEConvexGeometry() {
@@ -1171,7 +1160,7 @@ palODEConvexGeometry::palODEConvexGeometry() {
 #include <pal_i/hull.h>
 
 void palODEConvexGeometry::Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices,
-			Float mass) {
+		Float mass) {
 
 	palConvexGeometry::Init(pos, pVertices, nVertices, mass);
 	unsigned int i;
@@ -1231,210 +1220,26 @@ palODEConcaveGeometry::palODEConcaveGeometry() {
 }
 
 void palODEConcaveGeometry::Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass){
-   palConcaveGeometry::Init(pos,pVertices,nVertices,pIndices,nIndices,mass);
+	palConcaveGeometry::Init(pos,pVertices,nVertices,pIndices,nIndices,mass);
 
-   odeGeom = CreateTriMesh(pVertices,nVertices,pIndices,nIndices);
+	odeGeom = CreateTriMesh(pVertices,nVertices,pIndices,nIndices);
 
 
-   if (m_pBody) {
-      palODEBody *pob=dynamic_cast<palODEBody *>(m_pBody);
-      if (pob) {
-         if (pob->odeBody) {
-            dGeomSetBody(odeGeom,pob->odeBody);
-         }
-      }
-   }
+	if (m_pBody) {
+		palODEBody *pob=dynamic_cast<palODEBody *>(m_pBody);
+		if (pob) {
+			if (pob->odeBody) {
+				dGeomSetBody(odeGeom,pob->odeBody);
+			}
+		}
+	}
 }
 
 void palODEConcaveGeometry::CalculateMassParams(dMass& odeMass, Float massScalar) const {
 	dMassSetTrimeshTotal(&odeMass, massScalar, odeGeom);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-palODEStaticConvex::palODEStaticConvex() {
-}
-void palODEStaticConvex::Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices) {
-	palStaticConvex::Init(pos,pVertices,nVertices);
-}
 
-void palODEStaticConvex::Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices){
-	palStaticConvex::Init(pos,pVertices,nVertices, pIndices, nIndices);
-}
-
-palODEConvex::palODEConvex() {
-}
-
-void palODEConvex::Init(Float x, Float y, Float z, const Float *pVertices, int nVertices,
-			Float mass) {
-	CreateODEBody();
-	palConvex::Init(x, y, z, pVertices, nVertices, mass);
-
-	palODEConvexGeometry *png = dynamic_cast<palODEConvexGeometry *> (m_Geometries[0]);
-	png->SetMass(mass);
-
-	dMass m;
-	m_fMass = mass;
-	png->CalculateMassParams(m, m_fMass);
-	dBodySetMass(odeBody, &m);
-}
-
-void palODEConvex::Init(Float x, Float y, Float z, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass) {
-	CreateODEBody();
-	palConvex::Init(x,y,z,pVertices,nVertices,pIndices, nIndices, mass);
-
-	palODEConvexGeometry *png=dynamic_cast<palODEConvexGeometry *> (m_Geometries[0]);
-	png->SetMass(mass);
-
-	dMass m;
-	m_fMass=mass;
-	dMassSetSphereTotal(&m,1,1);
-	dBodySetMass(odeBody,&m);
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-palODEStaticCompoundBody::palODEStaticCompoundBody() {
-}
-
-void palODEStaticCompoundBody::Finalize() {
-}
-
-palODECompoundBody::palODECompoundBody() {
-	//AB: Remember: The factory creates an initial object for cloneing, so code in constructors can't do anything with the physics engine
-}
-
-void palODECompoundBody::Init(Float x, Float y, Float z) {
-	//AB: this is where you want some initial code?
-	palCompoundBody::Init(x,y,z);
-}
-
-
-void palODECompoundBody::Finalize(Float finalMass, Float iXX, Float iYY, Float iZZ) {
-	CreateODEBody();
-
-	for (unsigned int i = 0; i < m_Geometries.size(); i++) {
-		palODEGeometry *pog = dynamic_cast<palODEGeometry *> (m_Geometries[i]);
-
-		dReal pos[3];
-		dReal R[12]; //this is 4x3
-/*		AB: TODO: use 4x4?
-		dReal finalR[12]; //this is also 4x3
-		dReal R44[4*4];
-		dReal prevR44[4*4];
-		dReal finalR44[4*4];
-*/
-		convODEFromPAL(pos,R,pog->GetOffsetMatrix());
-		if (pog->odeGeom) {
-            //const dReal * previousR; //this is 4x3
-			dGeomSetBody(pog->odeGeom,odeBody);
-			dGeomSetOffsetPosition(pog->odeGeom,pos[0],pos[1],pos[2]);
-
-			//previousR = dGeomGetOffsetRotation(pog->odeGeom);
-			//AB: Need to convert 4x3 to 4x4, do the multiply, and then back to 4x3!
-			//dMultiply0(finalR,previousR,R,4,4,4);
-			//dGeomSetOffsetRotation(pog->odeGeom,finalR);
-
-			//AB: Meanwhile...
-			dGeomSetOffsetRotation(pog->odeGeom,R);
-		}
-	}
-
-	RecalcMassAndInertia();
-
-	SetPosition(m_mLoc);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-palODEStaticBox::palODEStaticBox() {
-}
-
-palODEStaticBox::~palODEStaticBox() {
-	Cleanup();
-}
-
-void palODEStaticBox::Init(const palMatrix4x4 &pos, Float width, Float height, Float depth) {
-	palStaticBox::Init(pos, width, height, depth); //create geom
-}
-
-palODEBox::palODEBox() {
-}
-
-void palODEBox::Init(Float x, Float y, Float z, Float width, Float height, Float depth, Float mass) {
-	CreateODEBody();
-	palBox::Init(x, y, z, width, height, depth, mass); //create geom
-
-	SetMass(mass);
-	BodyInit(x, y, z);
-	//	printf("made box %d, b:%d",this,odeBody);
-}
-;
-
-void palODEBox::SetMass(Float mass) {
-	m_fMass = mass;
-	//denisty == 5.0f //how this relates to mass i dont know. =( desnity = mass/volume ?
-	dMass m;
-	//	dMassSetBox (&m,5.0f,m_fWidth,m_fHeight,m_fDepth);
-	palODEBoxGeometry *m_pBoxGeom = dynamic_cast<palODEBoxGeometry *> (m_Geometries[0]);
-	m_pBoxGeom->CalculateMassParams(m, mass);
-	dBodySetMass(odeBody, &m);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-palODEStaticSphere::palODEStaticSphere() {
-}
-
-void palODEStaticSphere::Init(const palMatrix4x4 &pos, Float radius) {
-	palStaticSphere::Init(pos,radius); //create geom
-}
-
-palODESphere::palODESphere() {
-}
-
-void palODESphere::Init(Float x, Float y, Float z, Float radius, Float mass) {
-	CreateODEBody();
-	palSphere::Init(x, y, z, radius, mass);
-
-	SetMass(mass);
-	BodyInit(x, y, z);
-}
-
-void palODESphere::SetMass(Float mass) {
-	m_fMass = mass;
-	dMass m;
-	palODESphereGeometry *m_pSphereGeom = dynamic_cast<palODESphereGeometry *> (m_Geometries[0]);
-	m_pSphereGeom->CalculateMassParams(m, m_fMass);
-	dBodySetMass(odeBody, &m);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-palODEStaticCylinder::palODEStaticCylinder() {
-}
-
-void palODEStaticCylinder::Init(const palMatrix4x4 &pos, Float radius, Float length) {
-	palStaticCapsule::Init(pos,radius,length);
-}
-
-palODECylinder::palODECylinder() {
-}
-
-void palODECylinder::Init(Float x, Float y, Float z, Float radius, Float length, Float mass) {
-	CreateODEBody();
-	palCapsule::Init(x, y, z, radius, length, mass);
-
-	SetMass(mass);
-	BodyInit(x, y, z);
-}
-
-void palODECylinder::SetMass(Float mass) {
-	m_fMass = mass;
-	dMass m;
-	palODECapsuleGeometry *m_pCylinderGeom = dynamic_cast<palODECapsuleGeometry *> (m_Geometries[0]);
-	m_pCylinderGeom->CalculateMassParams(m, m_fMass);
-	//dMassSetParameters
-	dBodySetMass(odeBody, &m);
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 palODEGenericBody::palODEGenericBody()
@@ -1458,23 +1263,23 @@ void palODEGenericBody::SetDynamicsType(palDynamicsType dynType) {
 	if (odeBody != 0) {
 
 		switch (dynType) {
-			case PALBODY_DYNAMIC: {
-				dBodySetDynamic(odeBody);
-				//Reset the mass now that it's dynamic.
-				RecalcMassAndInertia();
-				break;
-			}
-			case PALBODY_STATIC: {
-				// I know this is technically wrong, but ode bodies can't be static.  Geometry
-				// with no body can be static, but that would be kind of a mess to have a state where the body has been
-				// deleted and the geometry is all separate.  It could be done, but we'll wait on that.
-				dBodySetKinematic(odeBody);
-				break;
-			}
-			case PALBODY_KINEMATIC: {
-				dBodySetKinematic(odeBody);
-				break;
-			}
+		case PALBODY_DYNAMIC: {
+			dBodySetDynamic(odeBody);
+			//Reset the mass now that it's dynamic.
+			RecalcMassAndInertia();
+			break;
+		}
+		case PALBODY_STATIC: {
+			// I know this is technically wrong, but ode bodies can't be static.  Geometry
+			// with no body can be static, but that would be kind of a mess to have a state where the body has been
+			// deleted and the geometry is all separate.  It could be done, but we'll wait on that.
+			dBodySetKinematic(odeBody);
+			break;
+		}
+		case PALBODY_KINEMATIC: {
+			dBodySetKinematic(odeBody);
+			break;
+		}
 
 		}
 	}
@@ -1495,11 +1300,11 @@ bool palODEGenericBody::IsGravityEnabled() const {
 }
 
 void palODEGenericBody::SetCollisionResponseEnabled(bool enabled) {
-   m_bCollisionResponseEnabled = enabled;
+	m_bCollisionResponseEnabled = enabled;
 }
 
 bool palODEGenericBody::IsCollisionResponseEnabled() const {
-   return ODEGetCollisionResponseEnabled();
+	return ODEGetCollisionResponseEnabled();
 }
 
 void palODEGenericBody::SetMass(Float mass) {
@@ -1517,43 +1322,43 @@ void palODEGenericBody::SetInertia(Float Ixx, Float Iyy, Float Izz) {
 }
 
 void palODEGenericBody::SetLinearDamping(Float damping) {
-   palGenericBody::SetLinearDamping(damping);
-   if (odeBody != 0) {
-      dBodySetLinearDamping(odeBody, dReal(damping));
-   }
+	palGenericBody::SetLinearDamping(damping);
+	if (odeBody != 0) {
+		dBodySetLinearDamping(odeBody, dReal(damping));
+	}
 }
 
 Float palODEGenericBody::GetLinearDamping() const {
-   if (odeBody != 0) {
-      return Float(dBodyGetLinearDamping(odeBody));
-   }
-   return palGenericBody::GetLinearDamping();
+	if (odeBody != 0) {
+		return Float(dBodyGetLinearDamping(odeBody));
+	}
+	return palGenericBody::GetLinearDamping();
 }
 
 void palODEGenericBody::SetAngularDamping(Float damping) {
-   palGenericBody::SetAngularDamping(damping);
-   if (odeBody != 0) {
-      dBodySetAngularDamping(odeBody, dReal(damping));
-   }
+	palGenericBody::SetAngularDamping(damping);
+	if (odeBody != 0) {
+		dBodySetAngularDamping(odeBody, dReal(damping));
+	}
 }
 
 Float palODEGenericBody::GetAngularDamping() const
 {
-   if (odeBody != 0) {
-      return Float(dBodyGetAngularDamping(odeBody));
-   }
-   return palGenericBody::GetAngularDamping();
+	if (odeBody != 0) {
+		return Float(dBodyGetAngularDamping(odeBody));
+	}
+	return palGenericBody::GetAngularDamping();
 }
 
 void palODEGenericBody::SetMaxAngularVelocity(Float maxAngVel)
 {
-   palGenericBody::SetMaxAngularVelocity(maxAngVel);
-   // TODO this will have to be done at tick time.
+	palGenericBody::SetMaxAngularVelocity(maxAngVel);
+	// TODO this will have to be done at tick time.
 }
 
 Float palODEGenericBody::GetMaxAngularVelocity() const
 {
-   return palGenericBody::GetMaxAngularVelocity();
+	return palGenericBody::GetMaxAngularVelocity();
 }
 
 void palODEGenericBody::ConnectGeometry(palGeometry* pGeom) {
@@ -1608,6 +1413,46 @@ palODELinkData::~palODELinkData() {
 	}
 }
 
+static void MapLinkParameterToODEParam(int& parameterCode, int axis)
+{
+	if (axis < 0)
+		axis = 0;
+	else
+		// Need to add one to the axis because ODE use 1 based, but we use 0 based.
+		axis += 1;
+
+	// IF the value is less than the link base, then accept the code as an ode specific parameter and just pass it.
+	if (parameterCode > PAL_LINK_PARAM_BASE)
+	{
+		switch (parameterCode)
+		{
+		case PAL_LINK_PARAM_ERP:
+			parameterCode = dParamERP + dParamGroup * axis;
+			break;
+		case PAL_LINK_PARAM_STOP_ERP:
+			parameterCode = dParamStopERP + dParamGroup * axis;
+			break;
+		case PAL_LINK_PARAM_CFM:
+			parameterCode = dParamCFM + dParamGroup * axis;
+			break;
+		case PAL_LINK_PARAM_STOP_CFM:
+			parameterCode = dParamStopCFM + dParamGroup * axis;
+			break;
+		case PAL_LINK_PARAM_DOF_MIN:
+			parameterCode = dParamLoStop + dParamGroup * axis;
+			break;
+		case PAL_LINK_PARAM_DOF_MAX:
+			parameterCode = dParamHiStop + dParamGroup * axis;
+			break;
+		default:
+			// leave it alone.
+			break;
+		}
+	}
+
+
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 palODESphericalLink::palODESphericalLink() {
@@ -1616,8 +1461,8 @@ palODESphericalLink::palODESphericalLink() {
 void palODESphericalLink::InitMotor() {
 	if (odeMotorJoint == 0) {
 		odeMotorJoint = dJointCreateAMotor(g_world, 0);
-		palODEBody *body0 = dynamic_cast<palODEBody *> (m_pParent);
-		palODEBody *body1 = dynamic_cast<palODEBody *> (m_pChild);
+		palODEBody *body0 = dynamic_cast<palODEBody *> (GetParentBody());
+		palODEBody *body1 = dynamic_cast<palODEBody *> (GetChildBody());
 		dJointAttach(odeMotorJoint, body0->odeBody, body1->odeBody);
 		dJointSetAMotorNumAxes(odeMotorJoint, 3);
 		dJointSetAMotorAxis(odeMotorJoint, 0, 1, 0, 0, 1);
@@ -1628,33 +1473,22 @@ void palODESphericalLink::InitMotor() {
 		printf("Motor Failed! on line %d\n", __LINE__);
 	}
 }
-/*
- void palODESphericalLink::SetLimits(Float lower_limit_rad, Float upper_limit_rad) {
- palSphericalLink::SetLimits(lower_limit_rad,upper_limit_rad);
- InitMotor();
 
- dJointSetAMotorParam(odeMotorJoint,dParamLoStop,m_fLowerLimit);
- dJointSetAMotorParam(odeMotorJoint,dParamHiStop,m_fUpperLimit);
+void palODESphericalLink::Init(palBodyBase *parent, palBodyBase *child,
+		const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame, bool disableCollisionsBetweenLinkedBodies) {
+	SetBodies(parent, child);
+	m_FrameA = parentFrame;
+	m_FrameB = childFrame;
+	// Ode defaults to using the x axis, but the pal definitions says Z, so this takes the Z from the frame.
+	CallAnchorAxisInitWithFrames(parentFrame, childFrame, 2, disableCollisionsBetweenLinkedBodies);
+}
 
- dJointSetAMotorParam(odeMotorJoint,dParamLoStop2,m_fLowerLimit);
- dJointSetAMotorParam(odeMotorJoint,dParamHiStop2,m_fUpperLimit);
-
- //twist:
- //dJointSetAMotorParam(odeMotorJoint,dParamLoStop3,m_fLowerLimit);
- //dJointSetAMotorParam(odeMotorJoint,dParamHiStop3,m_fUpperLimit);
- }
-
- void palODESphericalLink::SetTwistLimits(Float lower_limit_rad, Float upper_limit_rad) {
- palSphericalLink::SetTwistLimits(lower_limit_rad,upper_limit_rad);
- InitMotor();
-
- dJointSetAMotorParam(odeMotorJoint,dParamLoStop3,m_fLowerTwistLimit);
- dJointSetAMotorParam(odeMotorJoint,dParamHiStop3,m_fUpperTwistLimit);
- }
- */
-void palODESphericalLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
-                               bool disableCollisionsBetweenLinkedBodies) {
-	palSphericalLink::Init(parent, child, x, y, z, disableCollisionsBetweenLinkedBodies);
+void palODESphericalLink::Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies) {
+	if (GetParent() != parent)
+	{
+		SetBodies(parent, child);
+		ComputeFramesFromPivot(m_FrameA, m_FrameB, pos, axis, palVector3(1.0, 0.0, 0.0));
+	}
 	palODEBody *body0 = dynamic_cast<palODEBody *> (parent);
 	palODEBody *body1 = dynamic_cast<palODEBody *> (child);
 	//	printf("%d and %d\n",body0,body1);
@@ -1662,74 +1496,74 @@ void palODESphericalLink::Init(palBodyBase *parent, palBodyBase *child, Float x,
 	odeJoint = dJointCreateBall(g_world, 0);
 	dJointAttach(odeJoint, body0->odeBody, body1->odeBody);
 
-	SetAnchor(x, y, z);
+	SetAnchor(pos);
 }
 
-static void MapLinkParameterToODEParam(int& parameterCode, int axis)
+
+void palODESphericalLink::ComputeFrameParent(palMatrix4x4& frameOut) const
 {
-   if (axis < 0)
-      axis = 0;
-   else
-      // Need to add one to the axis because ODE use 1 based, but we use 0 based.
-      axis += 1;
-
-   // IF the value is less than the link base, then accept the code as an ode specific parameter and just pass it.
-   if (parameterCode > PAL_LINK_PARAM_BASE)
-   {
-      switch (parameterCode)
-      {
-      case PAL_LINK_PARAM_ERP:
-         parameterCode = dParamERP + dParamGroup * axis;
-         break;
-      case PAL_LINK_PARAM_STOP_ERP:
-         parameterCode = dParamStopERP + dParamGroup * axis;
-         break;
-      case PAL_LINK_PARAM_CFM:
-         parameterCode = dParamCFM + dParamGroup * axis;
-         break;
-      case PAL_LINK_PARAM_STOP_CFM:
-         parameterCode = dParamStopCFM + dParamGroup * axis;
-         break;
-      default:
-         // leave it alone.
-         break;
-      }
-   }
-
-
+	frameOut = m_FrameA;
 }
 
-void palODESphericalLink::SetAnchor(Float x, Float y, Float z) {
-	dJointSetBallAnchor(odeJoint, x, y, z);
+void palODESphericalLink::ComputeFrameChild(palMatrix4x4& frameOut) const
+{
+	frameOut = m_FrameB;
+}
+
+void palODESphericalLink::GetAnchor(palVector3& anchor) const
+{
+	dVector3 anchorOde;
+	dJointGetBallAnchor(odeJoint, anchorOde);
+	anchor.Set(anchorOde[0], anchorOde[1], anchorOde[2]);
+}
+
+void palODESphericalLink::SetAnchor(const palVector3& anchor) {
+	dJointSetBallAnchor(odeJoint, anchor.x, anchor.y, anchor.z);
 }
 
 bool palODESphericalLink::SetParam(int parameterCode, Float value, int axis) {
-   if (axis != -1)
-      return false;
-   dJointSetBallParam(ODEGetJointID(), parameterCode, dReal(value));
-   return true;
+	if (axis != -1)
+		return false;
+	// TODO, convert the limit values based on the rotation of frame.
+	MapLinkParameterToODEParam(parameterCode, axis);
+	dJointSetBallParam(ODEGetJointID(), parameterCode, dReal(value));
+	return true;
 }
 
 Float palODESphericalLink::GetParam(int parameterCode, int axis) {
-
-   return Float(dJointGetBallParam(ODEGetJointID(), parameterCode));
+	// TODO, convert the limit values based on the rotation of frame.
+	MapLinkParameterToODEParam(parameterCode, axis);
+	return Float(dJointGetBallParam(ODEGetJointID(), parameterCode));
 }
 
 bool palODESphericalLink::SupportsParameters() const {
-   return true;
+	return true;
 }
 
 bool palODESphericalLink::SupportsParametersPerAxis() const {
-   return true;
+	return true;
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 palODERigidLink::palODERigidLink() {}
 
-void palODERigidLink::Init(palBodyBase *parent, palBodyBase *child, bool disableCollisionsBetweenLinkedBodies)
+void palODERigidLink::Init(palBodyBase *parent, palBodyBase *child,
+		const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame, bool disableCollisionsBetweenLinkedBodies)
 {
-	palRigidLink::Init(parent, child, disableCollisionsBetweenLinkedBodies);
+	m_FrameA = parentFrame;
+	m_FrameB = childFrame;
+	SetBodies(parent, child);
+	// Ode defaults to using the x axis, but the pal definitions says Z, so this takes the Z from the frame.
+	CallAnchorAxisInitWithFrames(parentFrame, childFrame, 2, disableCollisionsBetweenLinkedBodies);
+}
+
+void palODERigidLink::Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies) {
+	if (GetParent() != parent)
+	{
+		SetBodies(parent, child);
+		ComputeFramesFromPivot(m_FrameA, m_FrameB, pos, axis, palVector3(0.0, 0.0, 1.0));
+	}
 	palODEBody *body0 = dynamic_cast<palODEBody *> (parent);
 	palODEBody *body1 = dynamic_cast<palODEBody *> (child);
 	//	printf("%d and %d\n",body0,body1);
@@ -1752,25 +1586,37 @@ void palODERigidLink::Init(palBodyBase *parent, palBodyBase *child, bool disable
 	}
 }
 
+void palODERigidLink::ComputeFrameParent(palMatrix4x4& frameOut) const
+{
+	frameOut = m_FrameA;
+}
+
+void palODERigidLink::ComputeFrameChild(palMatrix4x4& frameOut) const
+{
+	frameOut = m_FrameB;
+}
+
 bool palODERigidLink::SetParam(int parameterCode, Float value, int axis) {
-   if (axis != -1)
-      return false;
-   dJointSetFixedParam(ODEGetJointID(), parameterCode, dReal(value));
-   return true;
+	if (axis != -1)
+		return false;
+	MapLinkParameterToODEParam(parameterCode, axis);
+	dJointSetFixedParam(ODEGetJointID(), parameterCode, dReal(value));
+	return true;
 }
 
 Float palODERigidLink::GetParam(int parameterCode, int axis) {
-   if (axis != -1)
-      return -1.0f;
-   return Float(dJointGetFixedParam(ODEGetJointID(), parameterCode));
+	if (axis != -1)
+		return -1.0f;
+	MapLinkParameterToODEParam(parameterCode, axis);
+	return Float(dJointGetFixedParam(ODEGetJointID(), parameterCode));
 }
 
 bool palODERigidLink::SupportsParameters() const {
-   return true;
+	return true;
 }
 
 bool palODERigidLink::SupportsParametersPerAxis() const {
-   return true;
+	return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1787,21 +1633,18 @@ palODERevoluteLink::~palODERevoluteLink() {
 void palODERevoluteLink::AddTorque(Float torque) {
 	dJointAddHingeTorque(odeJoint, torque);
 }
-/*
- Float palODERevoluteLink::GetAngle() {
- return dJointGetHingeAngle(odeJoint);
- }*/
 
-void palODERevoluteLink::SetLimits(Float lower_limit_rad, Float upper_limit_rad) {
-	palRevoluteLink::SetLimits(lower_limit_rad, upper_limit_rad);
-	dJointSetHingeParam(odeJoint, dParamLoStop, m_fLowerLimit);
-	dJointSetHingeParam(odeJoint, dParamHiStop, m_fUpperLimit);
-	dJointSetHingeParam(odeJoint, dParamLoStop, m_fLowerLimit);
+void palODERevoluteLink::Init(palBodyBase *parent, palBodyBase *child,
+		const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame, bool disableCollisionsBetweenLinkedBodies)
+{
+	SetBodies(parent, child);
+	// Ode defaults to using the x axis, but the pal definitions says Z, so this takes the Z from the frame.
+	CallAnchorAxisInitWithFrames(parentFrame, childFrame, 2, disableCollisionsBetweenLinkedBodies);
 }
 
-void palODERevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
-			Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies) {
-	palRevoluteLink::Init(parent, child, x, y, z, axis_x, axis_y, axis_z, disableCollisionsBetweenLinkedBodies);
+void palODERevoluteLink::Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies) {
+	SetBodies(parent, child);
+
 	palODEBody *body0 = dynamic_cast<palODEBody *> (parent);
 	palODEBody *body1 = dynamic_cast<palODEBody *> (child);
 	//	printf("%d and %d\n",body0,body1);
@@ -1823,13 +1666,42 @@ void palODERevoluteLink::Init(palBodyBase *parent, palBodyBase *child, Float x, 
 		}
 	}
 
-	SetAnchorAxis(x, y, z, axis_x, axis_y, axis_z);
+	SetAnchorAxis(pos, axis);
 }
 
-void palODERevoluteLink::SetAnchorAxis(Float x, Float y, Float z, Float axis_x, Float axis_y,
-			Float axis_z) {
-	dJointSetHingeAnchor(odeJoint, x, y, z);
-	dJointSetHingeAxis(odeJoint, axis_x, axis_y, axis_z);
+void palODERevoluteLink::ComputeFrameParent(palMatrix4x4& frameOut) const
+{
+	palMatrix4x4 frameExtra;
+
+	static palVector3 defaultAxis(0.0, 0.0, 1.0);
+	palVector3 pivot, axis;
+	GetAnchorAxis(pivot, axis);
+
+	ComputeFramesFromPivot(frameOut, frameExtra, pivot, axis, defaultAxis);
+}
+
+void palODERevoluteLink::ComputeFrameChild(palMatrix4x4& frameOut) const
+{
+	palMatrix4x4 frameExtra;
+
+	static palVector3 defaultAxis(0.0, 0.0, 1.0);
+	palVector3 pivot, axis;
+	GetAnchorAxis(pivot, axis);
+
+	ComputeFramesFromPivot(frameExtra, frameOut, pivot, axis, defaultAxis);
+}
+
+void palODERevoluteLink::GetAnchorAxis(palVector3& anchor, palVector3& axis) const {
+	dVector3 anchorOde, axisOde;
+	dJointGetHingeAnchor(odeJoint, anchorOde);
+	dJointGetHingeAxis(odeJoint, axisOde);
+	anchor.Set(anchorOde[0], anchorOde[1], anchorOde[2]);
+	axis.Set(axisOde[0], axisOde[1], axisOde[2]);
+}
+
+void palODERevoluteLink::SetAnchorAxis(const palVector3& anchor, const palVector3& axis) {
+	dJointSetHingeAnchor(odeJoint, anchor.x, anchor.y, anchor.z);
+	dJointSetHingeAxis(odeJoint, axis.x, axis.y, axis.z);
 }
 
 palLinkFeedback* palODERevoluteLink::GetFeedback() const throw(palIllegalStateException) {
@@ -1843,24 +1715,26 @@ palLinkFeedback* palODERevoluteLink::GetFeedback() const throw(palIllegalStateEx
 }
 
 bool palODERevoluteLink::SetParam(int parameterCode, Float value, int axis) {
-   if (axis != -1)
-      return false;
-   dJointSetHingeParam(ODEGetJointID(), parameterCode, dReal(value));
-   return true;
+	if (axis != -1)
+		return false;
+	MapLinkParameterToODEParam(parameterCode, axis);
+	dJointSetHingeParam(ODEGetJointID(), parameterCode, dReal(value));
+	return true;
 }
 
 Float palODERevoluteLink::GetParam(int parameterCode, int axis) {
-   if (axis != -1)
-      return -1.0f;
-   return Float(dJointGetHingeParam(ODEGetJointID(), parameterCode));
+	if (axis != -1)
+		return -1.0f;
+	MapLinkParameterToODEParam(parameterCode, axis);
+	return Float(dJointGetHingeParam(ODEGetJointID(), parameterCode));
 }
 
 bool palODERevoluteLink::SupportsParameters() const {
-   return true;
+	return true;
 }
 
 bool palODERevoluteLink::SupportsParametersPerAxis() const {
-   return true;
+	return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1918,9 +1792,22 @@ Float odeRevoluteLinkFeedback::GetValue() const {
 palODEPrismaticLink::palODEPrismaticLink() {
 }
 
-void palODEPrismaticLink::Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z,
-			Float axis_x, Float axis_y, Float axis_z, bool disableCollisionsBetweenLinkedBodies) {
-	palPrismaticLink::Init(parent, child, x, y, z, axis_x, axis_y, axis_z, disableCollisionsBetweenLinkedBodies);
+void palODEPrismaticLink::Init(palBodyBase *parent, palBodyBase *child,
+		const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame, bool disableCollisionsBetweenLinkedBodies)
+{
+	SetBodies(parent, child);
+	m_FrameA = parentFrame;
+	m_FrameB = childFrame;
+	CallAnchorAxisInitWithFrames(parentFrame, childFrame, 0, disableCollisionsBetweenLinkedBodies);
+}
+
+void palODEPrismaticLink::Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies)
+{
+	if (GetParentBody() != parent)
+	{
+		SetBodies(parent, child);
+		ComputeFramesFromPivot(m_FrameA, m_FrameB, pos, axis, palVector3(1.0, 0.0, 0.0));
+	}
 	palODEBody *body0 = dynamic_cast<palODEBody *> (parent);
 	palODEBody *body1 = dynamic_cast<palODEBody *> (child);
 	//	printf("%d and %d\n",body0,body1);
@@ -1928,35 +1815,45 @@ void palODEPrismaticLink::Init(palBodyBase *parent, palBodyBase *child, Float x,
 	odeJoint = dJointCreateSlider(g_world, 0);
 	dJointAttach(odeJoint, body0->odeBody, body1->odeBody);
 
-	SetAnchorAxis(x, y, z, axis_x, axis_y, axis_z);
+	SetAxis(axis);
 }
 
-void palODEPrismaticLink::SetAnchorAxis(Float x, Float y, Float z, Float axis_x, Float axis_y,
-			Float axis_z) {
-	dJointSetSliderAxis(odeJoint, axis_x, axis_y, axis_z);
-	//	dJointSetHingeAnchor(odeJoint,x,y,z);
-	//	dJointSetHingeAxis(odeJoint,axis_x,axis_y,axis_z);
+void palODEPrismaticLink::ComputeFrameParent(palMatrix4x4& frameOut) const
+{
+	frameOut = m_FrameA;
 }
+
+void palODEPrismaticLink::ComputeFrameChild(palMatrix4x4& frameOut) const
+{
+	frameOut = m_FrameB;
+}
+
+void palODEPrismaticLink::SetAxis(const palVector3& axis) {
+	dJointSetSliderAxis(odeJoint, axis.x, axis.y, axis.z);
+}
+
 
 bool palODEPrismaticLink::SetParam(int parameterCode, Float value, int axis) {
-   if (axis != -1)
-      return false;
-   dJointSetSliderParam(ODEGetJointID(), parameterCode, dReal(value));
-   return true;
+	if (axis != -1)
+		return false;
+	MapLinkParameterToODEParam(parameterCode, axis);
+	dJointSetSliderParam(ODEGetJointID(), parameterCode, dReal(value));
+	return true;
 }
 
 Float palODEPrismaticLink::GetParam(int parameterCode, int axis) {
-   if (axis != -1)
-      return -1.0f;
-   return Float(dJointGetSliderParam(ODEGetJointID(), parameterCode));
+	if (axis != -1)
+		return -1.0f;
+	MapLinkParameterToODEParam(parameterCode, axis);
+	return Float(dJointGetSliderParam(ODEGetJointID(), parameterCode));
 }
 
 bool palODEPrismaticLink::SupportsParameters() const {
-   return true;
+	return true;
 }
 
 bool palODEPrismaticLink::SupportsParametersPerAxis() const {
-   return true;
+	return true;
 }
 
 
@@ -2003,7 +1900,7 @@ palODEOrientatedTerrainPlane::palODEOrientatedTerrainPlane() {
 }
 
 void palODEOrientatedTerrainPlane::Init(Float x, Float y, Float z, Float nx, Float ny, Float nz,
-			Float min_size) {
+		Float min_size) {
 	palOrientatedTerrainPlane::Init(x, y, z, nx, ny, nz, min_size);
 	odeGeom = dCreatePlane(g_space, nx, ny, nz, CalculateD());
 	dGeomSetData(odeGeom, static_cast<palBodyBase *> (this));
@@ -2015,7 +1912,7 @@ palODETerrainHeightmap::palODETerrainHeightmap() {
 }
 
 void palODETerrainHeightmap::Init(Float px, Float py, Float pz, Float width, Float depth,
-			int terrain_data_width, int terrain_data_depth, const Float *pHeightmap) {
+		int terrain_data_width, int terrain_data_depth, const Float *pHeightmap) {
 #if 0
 	palTerrainHeightmap::Init(px,py,pz,width,depth,terrain_data_width,terrain_data_depth,pHeightmap);
 	int iTriIndex;
@@ -2057,8 +1954,8 @@ void palODETerrainHeightmap::Init(Float px, Float py, Float pz, Float width, Flo
 	int yDim=m_iDataDepth;
 	int y;
 	for (y=0;y < yDim-1;y++)
-	for (x=0;x < xDim-1;x++) {
-		/*
+		for (x=0;x < xDim-1;x++) {
+			/*
 		 //		SetIndex(((x+y*(xDim-1))*2)+0,(y*xDim)+x,(y*xDim)+xDim+x,(y*xDim)+x+1);
 		 indices[(((x+y*(xDim-1))*2)+0)*3+0]=(y*xDim)+x;
 		 indices[(((x+y*(xDim-1))*2)+0)*3+1]=(y*xDim)+xDim+x;
@@ -2069,19 +1966,19 @@ void palODETerrainHeightmap::Init(Float px, Float py, Float pz, Float width, Flo
 		 indices[(((x+y*(xDim-1))*2)+1)*3+0]=(y*xDim)+x+1;
 		 indices[(((x+y*(xDim-1))*2)+1)*3+1]=(y*xDim)+xDim+x;
 		 indices[(((x+y*(xDim-1))*2)+1)*3+2]=(y*xDim)+x+xDim+1;
-		 */
-		indices[iTriIndex*3+0]=(y*xDim)+x;
-		indices[iTriIndex*3+1]=(y*xDim)+xDim+x;
-		indices[iTriIndex*3+2]=(y*xDim)+x+1;
-		// Move to the next triangle in the array
-		iTriIndex += 1;
+			 */
+			indices[iTriIndex*3+0]=(y*xDim)+x;
+			indices[iTriIndex*3+1]=(y*xDim)+xDim+x;
+			indices[iTriIndex*3+2]=(y*xDim)+x+1;
+			// Move to the next triangle in the array
+			iTriIndex += 1;
 
-		indices[iTriIndex*3+0]=(y*xDim)+x+1;
-		indices[iTriIndex*3+1]=(y*xDim)+xDim+x;
-		indices[iTriIndex*3+2]=(y*xDim)+x+xDim+1;
-		// Move to the next triangle in the array
-		iTriIndex += 1;
-	}
+			indices[iTriIndex*3+0]=(y*xDim)+x+1;
+			indices[iTriIndex*3+1]=(y*xDim)+xDim+x;
+			indices[iTriIndex*3+2]=(y*xDim)+x+xDim+1;
+			// Move to the next triangle in the array
+			iTriIndex += 1;
+		}
 
 	// build the trimesh data
 	dTriMeshDataID data=dGeomTriMeshDataCreate();
@@ -2094,7 +1991,7 @@ void palODETerrainHeightmap::Init(Float px, Float py, Float pz, Float width, Flo
 	dGeomSetBody(odeGeom,0);
 #else
 	palTerrainHeightmap::Init(px, py, pz, width, depth, terrain_data_width, terrain_data_depth,
-				pHeightmap);
+			pHeightmap);
 	int iTriIndex;
 	float fTerrainX, fTerrainZ;
 	int x, z;
@@ -2159,7 +2056,7 @@ palODETerrainMesh::palODETerrainMesh() {
  */
 
 void palODETerrainMesh::Init(Float px, Float py, Float pz, const Float *pVertices, int nVertices,
-			const int *pIndices, int nIndices) {
+		const int *pIndices, int nIndices) {
 	palTerrainMesh::Init(px, py, pz, pVertices, nVertices, pIndices, nIndices);
 
 	odeGeom = CreateTriMesh(pVertices, nVertices, pIndices, nIndices);
@@ -2173,34 +2070,38 @@ void palODETerrainMesh::Init(Float px, Float py, Float pz, const Float *pVertice
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-palODEAngularMotor::palODEAngularMotor() {
-	odeJoint = 0;
+palODEAngularMotor::palODEAngularMotor(): m_Link(0), odeJoint(0) {
 }
 
 palODEAngularMotor::~palODEAngularMotor() {
-	if (odeJoint) {
-		dJointSetHingeParam(odeJoint, dParamFMax, 0);
-		dJointSetHingeParam(odeJoint, dParamVel, 0);
-		odeJoint = 0;
-	}
+	DisableMotor();
 }
 
-void palODEAngularMotor::Init(palRevoluteLink *pLink, Float Max) {
-	palAngularMotor::Init(pLink, Max);
-	palODERevoluteLink *porl = dynamic_cast<palODERevoluteLink *> (m_link);
+void palODEAngularMotor::Init(palLink *pLink, int axis) {
+	palODERevoluteLink *porl = dynamic_cast<palODERevoluteLink *> (m_Link);
 	if (porl) {
+		m_Link = porl;
 		odeJoint = porl->ODEGetJointID();
-		dJointSetHingeParam(odeJoint, dParamFMax, m_fMax);
+		dJointSetHingeParam(odeJoint, dParamFMax, 0.0f);
+		dJointSetHingeParam(odeJoint, dParamVel, 0.0f);
 	}
 }
 
 void palODEAngularMotor::Update(Float targetVelocity, Float Max) {
-	if (odeJoint)
+	if (odeJoint != 0)
 	{
-		if (Max <= 0.0)
-			Max = m_fMax;
 		dJointSetHingeParam(odeJoint, dParamFMax, Max);
 		dJointSetHingeParam(odeJoint, dParamVel, targetVelocity);
+	}
+}
+
+palLink *palODEAngularMotor::GetLink() const { return m_Link; }
+
+void palODEAngularMotor::DisableMotor() {
+	if (odeJoint != 0) {
+		dJointSetHingeParam(odeJoint, dParamFMax, 0.0f);
+		dJointSetHingeParam(odeJoint, dParamVel, 0.0f);
+		odeJoint = 0;
 	}
 }
 

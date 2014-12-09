@@ -73,6 +73,15 @@ public:
 	virtual ~palBodyBase();
 
 	/**
+	Sets the position and orientation of the body via a 4x4 transformation matrix.
+	If an engine doesn't support this on some static bodies, the only thing to do is simple ignore the call.
+	But it too important of a call to simply leave out of the interface.
+	\param location The transformation matrix
+	*/
+	virtual void SetPosition(const palMatrix4x4& location);
+	virtual void SetPosition(Float x, Float y, Float z);
+
+	/**
 	 * Retrieves the position and orientation of the body as a 4x4 transformation matrix.
 	 */
 	virtual const palMatrix4x4& GetLocationMatrix() const = 0;
@@ -137,13 +146,6 @@ public:
 
 	palBaseBodyType m_Type; //!< The type of body
 protected:
-	virtual void SetPosition(Float x, Float y, Float z);
-	/**
-	Sets the position and orientation of the body via a 4x4 transformation matrix.
-	Optional override implementation for engines that support setting the location matrix for static bodies
-	\param location The transformation matrix
-	*/
-	virtual void SetPosition(const palMatrix4x4& location);
 	palMaterial *m_pMaterial;
 	// mutable because it's a cache
 	mutable palMatrix4x4 m_mLoc;

@@ -284,9 +284,9 @@ ENDIF()
 
 OPTION(PAL_INTERNAL_DEBUG "Set to ON to enable internal PAL debug (disabled in release configurations)." OFF)
 MARK_AS_ADVANCED(PAL_INTERNAL_DEBUG)
-# IF(PAL_INTERNAL_DEBUG)
-	# ADD_DEFINITIONS("-DINTERNAL_DEBUG")	# Not called since it would be for release configurations too
-# ENDIF()
+IF(PAL_INTERNAL_DEBUG)
+	ADD_DEFINITIONS("-DINTERNAL_DEBUG")	# Not called since it would be for release configurations too
+ENDIF()
 
 FUNCTION(ADD_TARGET_PROPERTIES TARGET_NAME PROPERTY_NAME)
 	GET_TARGET_PROPERTY(CURRENT_PROPERTY ${TARGET_NAME} ${PROPERTY_NAME})

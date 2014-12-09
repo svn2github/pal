@@ -76,7 +76,6 @@ static std::vector<Float> createMesh(float x, float y, float z, float radius, fl
 
 		}
 
-
 		fSineAngle += fSineAdd;
 	}
 	return verts;
@@ -92,6 +91,7 @@ TEST_F(palGenericBodyTest, testConvexGeometry) {
 	palConvexGeometry* geometry = PF->CreateConvexGeometry(position, verts.data(), verts.size(), mass);
 
 	palGenericBody* body = PF->CreateGenericBody(position);
+	body->SetMass(mass);
 	body->ConnectGeometry(geometry);
 
 }

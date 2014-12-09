@@ -11,7 +11,7 @@
 		Version 0.81: 05/07/08 - Notifications
 		Version 0.8 : 06/06/04
 	TODO:
-*/
+ */
 
 #ifdef MEMDEBUG
 #include <crtdbg.h>
@@ -30,14 +30,14 @@
 #endif
 
 palFactory *palFactory::GetInstance() {
-  if (!m_pInstance)
-    SetInstance(new palFactory());
-  palFactory* result = (palFactory *)myFactory::GetInstance();
+	if (!m_pInstance)
+		SetInstance(new palFactory());
+	palFactory* result = (palFactory *)myFactory::GetInstance();
 #ifdef INTERNAL_DEBUG
-  printf("palFactory::GetInstance: instance = %p\n", result);
-  std::cout.precision(20);
+	printf("palFactory::GetInstance: instance = %p\n", result);
+	std::cout.precision(20);
 #endif
-  return result;
+	return result;
 }
 
 void palFactory::SetInstance(palFactory *pf) {
@@ -78,9 +78,9 @@ void palFactory::Cleanup() {
 	//now delete everything the palFactory made except the main physics class
 	while (it != pMMO.end() ) {
 		palPhysics * pPhysics = dynamic_cast<palPhysics *>(*it);
-//		printf("\ntesting:%d\n",*it);
+		//		printf("\ntesting:%d\n",*it);
 		if (pPhysics) {
-//			printf("\n%d is a physics object\n",pPhysics);
+			//			printf("\n%d is a physics object\n",pPhysics);
 			it++;
 		} else {
 			palFactoryObject* factoryObj = dynamic_cast<palFactoryObject*>(*it);
@@ -107,7 +107,7 @@ void palFactory::Cleanup() {
 	// clean up whatever is left (if anything)
 	FreeAll();
 
-//	MessageBox(NULL,"hi","hi",MB_OK);
+	//	MessageBox(NULL,"hi","hi",MB_OK);
 	m_active=NULL;
 }
 
@@ -133,19 +133,19 @@ unsigned int palFactory::GetPALAPIVersion() {
 
 palPhysics *palFactory::CreatePhysics() {
 #ifdef INTERNAL_DEBUG
-  printf("palFactory::CreatePhysics: this = %p\n", this);
+	printf("palFactory::CreatePhysics: this = %p\n", this);
 #endif
 	m_active = 0;
-//	myFactoryObject *pmFO = Construct("palPhysics");
-//	printf("%d\n",pmFO);
+	//	myFactoryObject *pmFO = Construct("palPhysics");
+	//	printf("%d\n",pmFO);
 	palFactoryObject *pmFO = CreateObject("palPhysics");
-	#ifdef INTERNAL_DEBUG
+#ifdef INTERNAL_DEBUG
 	printf("%s:%d:CreateObject:%p\n",__FILE__,__LINE__,pmFO);
-	#endif
+#endif
 	palPhysics *pp=static_cast<palPhysics *> (pmFO);
-	#ifdef INTERNAL_DEBUG
+#ifdef INTERNAL_DEBUG
 	printf("%s:%d:palPhysics:%p\n",__FILE__,__LINE__,pp);
-	#endif
+#endif
 	//for DLL usage
 	if (pp)
 		pp->SetFactoryInstance(this);
@@ -158,11 +158,11 @@ palPhysics *palFactory::CreatePhysics() {
 }
 
 palBox *palFactory::CreateBox() {
-//	myFactoryObject *pmFO = Construct("palBox");
-//	printf("%d\n",pmFO);
+	//	myFactoryObject *pmFO = Construct("palBox");
+	//	printf("%d\n",pmFO);
 	palFactoryObject *pmFO = CreateObject("palBox");
 	return Cast<palBody *,palBox *>(pmFO);
-/*	palBody *pb=dynamic_cast<palBody *> (pmFO);
+	/*	palBody *pb=dynamic_cast<palBody *> (pmFO);
 	printf("%d\n",pb);
 	palBox *p = dynamic_cast<palBox *> (pb);
 	printf("%d\n",p);
@@ -175,7 +175,7 @@ palSphere *palFactory::CreateSphere() {
 	//myFactoryObject *pmFO = Construct("palSphere");
 	palFactoryObject *pmFO = CreateObject("palSphere");
 	return Cast<palBody *,palSphere *>(pmFO);
-/*	palBody *pb=dynamic_cast<palBody *> (pmFO);
+	/*	palBody *pb=dynamic_cast<palBody *> (pmFO);
 	printf("%d\n",pb);
 	palSphere *p = dynamic_cast<palSphere *> (pb);
 	printf("%d\n",p);
@@ -199,85 +199,138 @@ palCompoundBody *palFactory::CreateCompoundBody() {
 }
 
 palGenericBody *palFactory::CreateGenericBody() {
-        palFactoryObject *pmFO = Construct("palGenericBody");
+	palFactoryObject *pmFO = CreateObject("palGenericBody");
 	return Cast<palBody *,palGenericBody *>(pmFO);
 }
 
 palGenericBody *palFactory::CreateGenericBody(palMatrix4x4& pos) {
-  palGenericBody* body = CreateGenericBody();
-  body->Init(pos);
-  return body;
+	palGenericBody* body = CreateGenericBody();
+	body->Init(pos);
+	return body;
 }
 
 palStaticConvex *palFactory::CreateStaticConvex() {
-   palFactoryObject *pmFO = CreateObject("palStaticConvex");
-   return Cast<palBody *,palStaticConvex *>(pmFO);
+	palFactoryObject *pmFO = CreateObject("palStaticConvex");
+	return Cast<palBody *,palStaticConvex *>(pmFO);
 }
 
 palBoxGeometry *palFactory::CreateBoxGeometry() {
-   palFactoryObject *pmFO = CreateObject("palBoxGeometry");
-   return Cast<palGeometry *,palBoxGeometry *>(pmFO);
+	palFactoryObject *pmFO = CreateObject("palBoxGeometry");
+	return Cast<palGeometry *,palBoxGeometry *>(pmFO);
 }
 
 palSphereGeometry *palFactory::CreateSphereGeometry() {
-   palFactoryObject *pmFO = CreateObject("palSphereGeometry");
-   return Cast<palGeometry *,palSphereGeometry *>(pmFO);
+	palFactoryObject *pmFO = CreateObject("palSphereGeometry");
+	return Cast<palGeometry *,palSphereGeometry *>(pmFO);
 }
 
 palCapsuleGeometry *palFactory::CreateCapsuleGeometry() {
-   palFactoryObject *pmFO = CreateObject("palCapsuleGeometry");
-   return Cast<palGeometry *,palCapsuleGeometry *>(pmFO);
+	palFactoryObject *pmFO = CreateObject("palCapsuleGeometry");
+	return Cast<palGeometry *,palCapsuleGeometry *>(pmFO);
 }
 
 palCylinderGeometry *palFactory::CreateCylinderGeometry() {
-   palFactoryObject *pmFO = CreateObject("palCylinderGeometry");
-   return Cast<palGeometry *,palCylinderGeometry *>(pmFO);
+	palFactoryObject *pmFO = CreateObject("palCylinderGeometry");
+	return Cast<palGeometry *,palCylinderGeometry *>(pmFO);
 }
 
 palConvexGeometry *palFactory::CreateConvexGeometry() {
-   palFactoryObject *pmFO = CreateObject("palConvexGeometry");
-   return Cast<palGeometry *,palConvexGeometry *>(pmFO);
+	palFactoryObject *pmFO = CreateObject("palConvexGeometry");
+	return Cast<palGeometry *,palConvexGeometry *>(pmFO);
 }
 
 palConvexGeometry *palFactory::CreateConvexGeometry(palMatrix4x4 &pos,
-                                                    const Float *pVertices,
-                                                    int nVertices, Float mass) {
-  palConvexGeometry* geom = CreateConvexGeometry();
-  geom->Init(pos, pVertices, nVertices, mass);
-  return geom;
+		const Float *pVertices,
+		int nVertices, Float mass) {
+	palConvexGeometry* geom = CreateConvexGeometry();
+	geom->Init(pos, pVertices, nVertices, mass);
+	return geom;
 }
 
 palConvexGeometry *palFactory::CreateConvexGeometry(palMatrix4x4 &pos,
-                                                    const Float *pVertices,
-                                                    int nVertices,
-                                                    const int *pIndices,
-                                                    int nIndices,
-                                                    Float mass) {
-  palConvexGeometry* geom = CreateConvexGeometry();
-  geom->Init(pos, pVertices, nVertices, pIndices, nIndices, mass);
-  return geom;
+		const Float *pVertices,
+		int nVertices,
+		const int *pIndices,
+		int nIndices,
+		Float mass) {
+	palConvexGeometry* geom = CreateConvexGeometry();
+	geom->Init(pos, pVertices, nVertices, pIndices, nIndices, mass);
+	return geom;
 }
-  
+
 palConcaveGeometry *palFactory::CreateConcaveGeometry() {
-   palFactoryObject *pmFO = CreateObject("palConcaveGeometry");
-   return Cast<palGeometry *,palConcaveGeometry *>(pmFO);
+	palFactoryObject *pmFO = CreateObject("palConcaveGeometry");
+	return Cast<palGeometry *,palConcaveGeometry *>(pmFO);
 }
 
 palConcaveGeometry *palFactory::CreateConcaveGeometry(palMatrix4x4 &pos,
-                                                      const Float *pVertices,
-                                                      int nVertices,
-                                                      const int *pIndices,
-                                                      int nIndices, Float mass) {
-  palConcaveGeometry* geom = CreateConcaveGeometry();
-  geom->Init(pos, pVertices, nVertices, pIndices, nIndices, mass);
-  return geom;
+		const Float *pVertices,
+		int nVertices,
+		const int *pIndices,
+		int nIndices, Float mass) {
+	palConcaveGeometry* geom = CreateConcaveGeometry();
+	geom->Init(pos, pVertices, nVertices, pIndices, nIndices, mass);
+	return geom;
 }
+
+palLink *palFactory::CreateLink(palLinkType type)
+{
+	palLink *result = 0;
+	switch (type)
+	{
+	case PAL_LINK_NONE:
+		result = CreateGenericLink();
+		break;
+	case PAL_LINK_SPHERICAL:
+		result = CreateSphericalLink();
+		break;
+	case PAL_LINK_REVOLUTE:
+		result = CreateRevoluteLink();
+		break;
+	case PAL_LINK_PRISMATIC:
+		result = CreatePrismaticLink();
+		break;
+	case PAL_LINK_GENERIC:
+		result = CreateGenericLink();
+		break;
+	case PAL_LINK_RIGID:
+		result = CreateRigidLink();
+		break;
+	}
+	return result;
+}
+
+
+palLink *palFactory::CreateLink(palLinkType type, palBodyBase *parent, palBodyBase *child,
+	const palMatrix4x4& parentFrame,
+	const palMatrix4x4& childFrame,
+	bool disableCollisionsBetweenLinkedBodies)
+{
+	palLink *result = CreateLink(type);
+	if (result != 0)
+	{
+		result->Init(parent, child, parentFrame, childFrame, disableCollisionsBetweenLinkedBodies);
+	}
+	return result;
+}
+
+palLink *palFactory::CreateLink(palLinkType type, palBodyBase *parent, palBodyBase *child,
+		const palVector3& pivot, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies)
+{
+	palLink *result = CreateLink(type);
+	if (result != 0)
+	{
+		result->Init(parent, child, pivot, axis, disableCollisionsBetweenLinkedBodies);
+	}
+	return result;
+}
+
 
 palSphericalLink *palFactory::CreateSphericalLink() {
 	//myFactoryObject *pmFO = Construct("palSphericalLink");
 	//printf("%d\n",pmFO);
 	palFactoryObject *pmFO = CreateObject("palSphericalLink");
-/*	palLink *pl=dynamic_cast<palLink *> (pmFO);
+	/*	palLink *pl=dynamic_cast<palLink *> (pmFO);
 	printf("%d\n",pl);
 	palSphericalLink *p = dynamic_cast<palSphericalLink *> (pl);
 	printf("%d\n",p);
@@ -285,26 +338,11 @@ palSphericalLink *palFactory::CreateSphericalLink() {
 	return Cast<palLink *,palSphericalLink *>(pmFO);
 }
 
-palSphericalLink *palFactory::CreateSphericalLink(palBodyBase *parent, palBodyBase *child,
-												  Float x, Float y, Float z, bool disableCollisionsBetweenLinkedBodies) {
-	palSphericalLink* sphericalLink = CreateSphericalLink();
-	sphericalLink->Init(parent, child, x, y, z, disableCollisionsBetweenLinkedBodies);
-	return sphericalLink;
-}
-
 palRevoluteLink *palFactory::CreateRevoluteLink() {
 	//myFactoryObject *pmFO = Construct("palRevoluteLink");
 	//printf("%d\n",pmFO);
 	palFactoryObject *pmFO = CreateObject("palRevoluteLink");
 	return Cast<palLink *,palRevoluteLink *>(pmFO);
-}
-palRevoluteLink *palFactory::CreateRevoluteLink(palBodyBase *parent, palBodyBase *child,
-												Float x, Float y, Float z,
-												Float axis_x, Float axis_y, Float axis_z,
-                                                bool disableCollisionsBetweenLinkedBodies) {
-	palRevoluteLink* link = CreateRevoluteLink();
-	link->Init(parent, child, x, y, z, axis_x, axis_y, axis_z, disableCollisionsBetweenLinkedBodies);
-	return link;
 }
 
 palRevoluteSpringLink *palFactory::CreateRevoluteSpringLink() {
@@ -315,11 +353,9 @@ palRevoluteSpringLink *palFactory::CreateRevoluteSpringLink() {
 }
 
 palRevoluteSpringLink *palFactory::CreateRevoluteSpringLink(palBodyBase *parent, palBodyBase *child,
-                                                            Float x, Float y, Float z,
-                                                            Float axis_x, Float axis_y, Float axis_z,
-                                                            bool disableCollisionsBetweenLinkedBodies) {
+		const palVector3& pivot, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies) {
 	palRevoluteSpringLink* link = CreateRevoluteSpringLink();
-	link->Init(parent, child, x, y, z, axis_x, axis_y, axis_z, disableCollisionsBetweenLinkedBodies);
+	link->Init(parent, child, pivot, axis, disableCollisionsBetweenLinkedBodies);
 	return link;
 }
 
@@ -335,52 +371,11 @@ palPrismaticLink *palFactory::CreatePrismaticLink() {
 	return Cast<palLink *,palPrismaticLink *>(pmFO);
 }
 
-palPrismaticLink *palFactory::CreatePrismaticLink(palBodyBase *parent, palBodyBase *child,
-												  Float x, Float y, Float z,
-												  Float axis_x, Float axis_y, Float axis_z,
-                                                  bool disableCollisionsBetweenLinkedBodies) {
-	palPrismaticLink* prismaticLink = CreatePrismaticLink();
-	prismaticLink->Init(parent, child, x, y, z, axis_x, axis_y, axis_z, disableCollisionsBetweenLinkedBodies);
-	return prismaticLink;
-}
-
 palGenericLink *palFactory::CreateGenericLink() {
 	palFactoryObject *pmFO = CreateObject("palGenericLink");
 	return Cast<palLink *,palGenericLink *>(pmFO);
 }
 
-palGenericLink* palFactory::CreateGenericLink(palBodyBase *parent,
-												palBodyBase *child,
-												const palMatrix4x4& parentFrame,
-												const palMatrix4x4& childFrame,
-												const palVector3& linearLowerLimits,
-												const palVector3& linearUpperLimits,
-												const palVector3& angularLowerLimits,
-												const palVector3& angularUpperLimits,
-                                              bool disableCollisionsBetweenLinkedBodies) {
-	palGenericLink* link = CreateGenericLink();
-	if (link) {
-		link->Init(parent, child, parentFrame, childFrame, linearLowerLimits,
-                   linearUpperLimits, angularLowerLimits, angularUpperLimits, disableCollisionsBetweenLinkedBodies);
-	}
-	return link;
-}
-
-palGenericLink * palFactory::CreateGenericLink(palBodyBase *parent, palBodyBase *child,
-	const palVector3& pivotLocation,
-	const palVector3& linearLowerLimits,
-	const palVector3& linearUpperLimits,
-	const palVector3& angularLowerLimits,
-	const palVector3& angularUpperLimits,
-    bool disableCollisionsBetweenLinkedBodies) {
-	palGenericLink* link = CreateGenericLink();
-	if (link) {
-		link->Init(parent, child, pivotLocation, linearLowerLimits,
-                   linearUpperLimits, angularLowerLimits, angularUpperLimits, disableCollisionsBetweenLinkedBodies);
-	}
-	return link;
-
-}
 
 palRigidLink *palFactory::CreateRigidLink() {
 	palFactoryObject *pmFO = CreateObject("palRigidLink");
@@ -388,10 +383,10 @@ palRigidLink *palFactory::CreateRigidLink() {
 }
 
 palRigidLink* palFactory::CreateRigidLink(palBodyBase *parent, palBodyBase *child,
-                                          bool disableCollisionsBetweenLinkedBodies) {
+		bool disableCollisionsBetweenLinkedBodies) {
 	palRigidLink* link = CreateRigidLink();
 	if (link) {
-      link->Init(parent, child, disableCollisionsBetweenLinkedBodies);
+		link->Init(parent, child, disableCollisionsBetweenLinkedBodies);
 	}
 	return link;
 }
@@ -459,7 +454,7 @@ palContactSensor *palFactory::CreateContactSensor() {
 palGyroscopeSensor *palFactory::CreateGyroscopeSensor() {
 	palFactoryObject *pmFO = CreateObject("palGyroscopeSensor");
 	return Cast<palSensor *,palGyroscopeSensor *>(pmFO);
-/*	myFactoryObject *pmFO = Construct("palGyroscopeSensor");
+	/*	myFactoryObject *pmFO = Construct("palGyroscopeSensor");
 	printf("%d\n",pmFO);
 	palSensor *ps = dynamic_cast<palSensor *>(pmFO);
 	printf("%d\n",ps);
@@ -471,7 +466,7 @@ palGyroscopeSensor *palFactory::CreateGyroscopeSensor() {
 palVelocimeterSensor *palFactory::CreateVelocimeterSensor() {
 	palFactoryObject *pmFO = CreateObject("palVelocimeterSensor");
 	return Cast<palSensor *,palVelocimeterSensor *>(pmFO);
-/*	myFactoryObject *pmFO = Construct("palVelocimeterSensor");
+	/*	myFactoryObject *pmFO = Construct("palVelocimeterSensor");
 	printf("%d\n",pmFO);
 	palSensor *ps = dynamic_cast<palSensor *>(pmFO);
 	printf("%d\n",ps);
@@ -491,24 +486,24 @@ palCompassSensor* palFactory::CreateCompassSensor() {
 	return Cast<palSensor *,palCompassSensor *>(pmFO);
 }
 
-palAngularMotor *palFactory::CreateAngularMotor(palRevoluteLink *pLink, Float Max)
+palAngularMotor *palFactory::CreateAngularMotor(palLink *pLink, int axis)
 {
 	palFactoryObject *pmFO = CreateObject("palAngularMotor");
-    palAngularMotor* angularMotor = Cast<palActuator*,palAngularMotor*>(pmFO);
-    angularMotor->Init(pLink, Max);
-    return angularMotor;
+	palAngularMotor* angularMotor = Cast<palActuator*,palAngularMotor*>(pmFO);
+	angularMotor->Init(pLink, axis);
+	return angularMotor;
 }
 
 palFactoryObject *palFactory::CreateObject(const PAL_STRING& name) {
 	myFactoryObject *pmFO = Construct(name);
-	#ifdef INTERNAL_DEBUG
+#ifdef INTERNAL_DEBUG
 	printf("%s:%d:Construct:%p\n",__FILE__,__LINE__,pmFO);
-	#endif
+#endif
 	//printf("co:%d [%s]\n",pmFO,name.c_str());
 	palFactoryObject *p = dynamic_cast<palFactoryObject *> (pmFO);
-	#ifdef INTERNAL_DEBUG
+#ifdef INTERNAL_DEBUG
 	printf("%s:%d:palFactoryObject:%p\n",__FILE__,__LINE__,p);
-	#endif
+#endif
 	//printf("m_active is: %d\n",m_active);
 	if (p) {
 		if (m_active) {
@@ -534,7 +529,7 @@ palFactoryObject *palFactory::CreateObject(const PAL_STRING& name) {
 
 palPhysics * palFactory::GetActivePhysics() {
 #ifdef INTERNAL_DEBUG
-  printf("palFactory::GetActivePhysics: this = %p\n", this);
+	printf("palFactory::GetActivePhysics: this = %p\n", this);
 #endif
 	return m_active;
 }
@@ -559,8 +554,8 @@ void palFactory::LoadPhysicsEngines(const char* dirName) {
 				const char separator[] = { PATH_SEPARATOR_CHAR, '\0' };
 				char* lasts = 0; // for strtok_r
 				for (char* dir = strtok_r(path, separator, &lasts);
-							dir;
-							dir = strtok_r(NULL, separator, &lasts)) {
+						dir;
+						dir = strtok_r(NULL, separator, &lasts)) {
 					LoadPALfromDLL(dir);
 				}
 				free(path);
@@ -593,8 +588,8 @@ void palFactory::LoadPhysicsEngines(const char* dirName) {
 	catch (const palException& ex)
 	{
 		fprintf(stderr, "%s:%d: Unable to load plugins from dynamic/shared libraries because of \"%s\". "
-					"If the path to plugin libraries is incorrect, try setting or correcting the environment variable PAL_PLUGIN_PATH.\n"
-					,__FILE__,__LINE__, ex.what());
+				"If the path to plugin libraries is incorrect, try setting or correcting the environment variable PAL_PLUGIN_PATH.\n"
+				,__FILE__,__LINE__, ex.what());
 		throw;
 	}
 }
@@ -602,40 +597,40 @@ void palFactory::LoadPhysicsEngines(const char* dirName) {
 void palFactory::LoadPALfromDLL(const char *szPath) throw(palException) {
 #ifdef INTERNAL_DEBUG
 	printf("palFactory::LoadPALfromDLL: path = '%s'. about to get palFactory\n",
-				szPath);
+			szPath);
 #endif
 	palFactory* factory = PF;
 #ifdef INTERNAL_DEBUG
 	printf("palFactory::LoadPALfromDLL: factory = %p. about to get sInfo from method %p\n",
-		factory, factory->sInfo);
+			factory, factory->sInfo);
 #endif
 	void* info = (void*) &(factory->sInfo());
 #ifdef INTERNAL_DEBUG
 	printf("palFactory::LoadPALfromDLL: this = %p, PF = %p, info = %p\n",
-		this, PF, info);
+			this, PF, info);
 	printf("palFactory::LoadPALfromDLL: about to call LoadObjects\n");
 #endif
 	LoadObjects(szPath,PF,info);
 #ifdef INTERNAL_DEBUG
-		printf("palFactory::LoadPALfromDLL: back from LoadObjects\n");
+	printf("palFactory::LoadPALfromDLL: back from LoadObjects\n");
 #endif
 }
 
 void palFactory::DumpObjects(const PAL_STRING& separator) {
-    DumpObjects(std::cout, separator);
+	DumpObjects(std::cout, separator);
 }
 
 void palFactory::DumpObjects(std::ostream& out, const PAL_STRING& separator) {
-    for (std::list<myFactoryBase *>::iterator iter = pMMO.begin();
-         iter != pMMO.end();
-         iter++) {
+	for (std::list<myFactoryBase *>::iterator iter = pMMO.begin();
+			iter != pMMO.end();
+			iter++) {
 		myFactoryBase* objPtr = *iter;
-        out << objPtr->toString() << separator;
-    }
+		out << objPtr->toString() << separator;
+	}
 }
 
 /*
 #ifdef SINGLETON
 palFactory* palFactory::m_pInstance=NULL;
 #endif
-*/
+ */

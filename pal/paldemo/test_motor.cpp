@@ -187,8 +187,10 @@ void Test_Motor::Update()
 		bodies[i]->SetActive(true);
 	}
 	for (unsigned int i=0;i<motors.size();i++) {
-		printf("motor[%d]: desired: [%+6.4f] actual:[%+6.4f] diff:[%+4.2f]\n",i,desired[i],motors[i]->GetLink()->GetAngle(),diff_angle(desired[i],motors[i]->GetLink()->GetAngle()));
-		float pid_out = pids[i]->Update(diff_angle(desired[i],motors[i]->GetLink()->GetAngle()),0.01);
+		palRevoluteLink* rl = dynamic_cast<palRevoluteLink*>(motors[i]->GetLink());
+		Float angle = rl ? rl->GetAngle() : 0.0f;
+		printf("motor[%d]: desired: [%+6.4f] actual:[%+6.4f] diff:[%+4.2f]\n",i,desired[i], angle, diff_angle(desired[i], angle));
+		float pid_out = pids[i]->Update(diff_angle(desired[i],angle),0.01);
 		motors[i]->Update(pid_out);
 		motors[i]->Apply();
 	}

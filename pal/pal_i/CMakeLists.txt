@@ -96,7 +96,9 @@ ENDIF()
 ################################################################################
 # BULLET
 IF(PAL_BUILD_BULLET)
-	PREPARE_PACKAGE(bullet "bullet/bullet_pal.h;bullet/bullet_palVehicle.h;bullet/bullet_palCharacter.h;" "bullet/bullet_pal.cpp;bullet/bullet_palVehicle.cpp;bullet/bullet_palCharacter.cpp" "" "" "" "" ${BULLET_LIBRARIES} )
+	PREPARE_PACKAGE(bullet 
+                        "bullet/bullet_pal.h;bullet/bullet_palLinks.h;bullet/bullet_palVehicle.h;bullet/bullet_palCharacter.h;"
+                        "bullet/bullet_pal.cpp;bullet/bullet_palLinks.cpp;bullet/bullet_palVehicle.cpp;bullet/bullet_palCharacter.cpp" "" "" "" "" ${BULLET_LIBRARIES} )
 ENDIF()
 
 ################################################################################

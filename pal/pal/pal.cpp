@@ -198,8 +198,8 @@ void palPhysics::Init(const palPhysicsDesc& desc) {
 }
 
 palPhysics::palPhysics()
-  : m_bListen(false), m_pMaterials(0), m_fGravityX(0), m_fGravityY(0), m_fGravityZ(0), m_fLastTimestep(0),
-    m_fTime(0), m_nUpAxis(PAL_Y_AXIS), m_pDebugDraw(0) {
+  : m_bListen(false), m_fGravityX(0), m_fGravityY(0), m_fGravityZ(0), m_fLastTimestep(0),
+    m_fTime(0), m_nUpAxis(PAL_Y_AXIS), m_pMaterials(0), m_pDebugDraw(0) {
 }
 
 palPhysics::~palPhysics() {

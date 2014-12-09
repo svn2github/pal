@@ -2280,9 +2280,8 @@ void palNovodexContactSensor::GetContactPosition(palVector3& contact) const {
 palNovodexAngularMotor::palNovodexAngularMotor() {
 	m_j = 0;
 }
-void palNovodexAngularMotor::Init(palRevoluteLink *pLink, Float Max) {
-	palAngularMotor::Init(pLink,Max);
-	palNovodexRevoluteLink *pnrl = dynamic_cast<palNovodexRevoluteLink *> (m_link);
+void palNovodexAngularMotor::Init(palRevoluteLink *pLink, int axis) {
+	palNovodexRevoluteLink *pnrl = dynamic_cast<palNovodexRevoluteLink *> (pLink);
 	if (pnrl)
 		m_j = pnrl->m_RJoint;
 	if (!m_j)
@@ -2294,17 +2293,13 @@ void palNovodexAngularMotor::Init(palRevoluteLink *pLink, Float Max) {
 	//m_j->velTarget = 0;
 
 	m_j->getMotor(motorDesc);
-	motorDesc.velTarget = 0;
-	motorDesc.maxForce = m_fMax;
+	motorDesc.maxForce = 0.0;
+	motorDesc.velTarget = 0.0;
 	m_j->setMotor(motorDesc);
 
 }
 void palNovodexAngularMotor::Update(Float targetVelocity, Float max) {
 	if (!m_j) return;
-	if (max <= 0.0)
-	{
-		max = m_fMax;
-	}
 
 	PxMotorDesc motorDesc;
 	m_j->getMotor(motorDesc);

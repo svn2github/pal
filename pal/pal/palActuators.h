@@ -58,33 +58,38 @@ protected:
 };
 
 /** A generic angular actuator.
-	Uses the engine-specific capabilities to achieve a target velocity.
+	Uses the engine-specific capabilities to achieve a target rotational velocity.
 */
 class palAngularMotor : public palActuator {
 public:
 	virtual ~palAngularMotor() {}
-	//@todo taking a revolute link is silly here.  Lots of other joint types can have motors.
-	virtual void Init(palRevoluteLink *pLink, Float Max = 0.0) {
-		m_link = pLink;
-		m_fMax = Max;
-	};
+	/**
+	 * Initialize with a link that allows for an angular motor in the engine.
+	 * @param pLink The link to which to attach the motor.
+	 * @param axis the axis for the motor.
+	 */
+	virtual void Init(palLink *pLink, int axis = -1) = 0;
+
 	/**
 	 * @param targetVelocity  the target velocity of the motor.
 	 * @param Max  The max force for this motor, or leave it default to make it use the default configured in init.
 	 */
-	virtual void Update(Float targetVelocity, Float Max = -1.0) = 0;
-	palRevoluteLink *GetLink() {
-		return m_link;
-	}
+	virtual void Update(Float targetVelocity, Float Max) = 0;
+
+	/**
+	 * Turns off the motor.
+	 * @note Implementers consider calling this in the destructor.
+	 */
+   virtual void DisableMotor() = 0;
+
+	virtual palLink *GetLink() const = 0;
+
 	virtual std::string toString() const {
 		std::string result("palAngularMotor[link=");
-		result.append(m_link->toString());
+		result.append(GetLink()->toString());
 		result.append("]");
 		return result;
 	}
-protected:
-	Float m_fMax;
-	palRevoluteLink *m_link;
 };
 
 /** A "force" actuator.

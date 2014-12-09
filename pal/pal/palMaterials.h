@@ -177,6 +177,7 @@ private:
 class palMaterials : public palFactoryObject {
 public:
 	palMaterials();
+	~palMaterials();
 	/**
 	Creates a new material.
 	\param name The materials name (eg:"wood")

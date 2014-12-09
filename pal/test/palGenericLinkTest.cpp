@@ -19,11 +19,15 @@ protected:
 	virtual void TearDown();
 
 	palGenericLink* link;
-	palBox* floater;
-	palStaticBox* anchor;
+	palGenericBody* floater;
+	palGenericBody* anchor;
 };
 
-palGenericLinkTest::palGenericLinkTest() {
+palGenericLinkTest::palGenericLinkTest()
+: link(0)
+, floater(0)
+, anchor(0)
+{
 }
 
 palGenericLinkTest::~palGenericLinkTest() {
@@ -34,11 +38,21 @@ static const Float FLOATER_OFFSET = 10.0f;
 void palGenericLinkTest::SetUp() {
 	AbstractPalTest::SetUp();
 
-	anchor = dynamic_cast<palStaticBox*> (PF->CreateObject("palStaticBox"));
-	anchor->Init(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
+	palMatrix4x4 mat;
+	mat_identity(&mat);
+	anchor = PF->CreateGenericBody(mat);
+	palBoxGeometry* box = PF->CreateBoxGeometry();
+	box->Init(mat, 1.0, 1.0, 1.0, 1.0f);
+	anchor->ConnectGeometry(box);
+	anchor->SetDynamicsType(PALBODY_STATIC);
 
-	floater = PF->CreateBox();
-	floater->Init(0.0f, 0.0f, FLOATER_OFFSET, 1.0f, 1.0f, 1.0f, 1.0f);
+	mat_set_translation(&mat, 0.0f, 0.0f, FLOATER_OFFSET);
+	floater = PF->CreateGenericBody(mat);
+	//palBoxGeometry* box2 = PF->CreateBoxGeometry();
+	//box2->Init(mat, 1.0, 1.0, 1.0, 1.0f);
+	floater->SetMass(1.0f);
+	floater->ConnectGeometry(box);
+	floater->SetDynamicsType(PALBODY_DYNAMIC); // the default.
 }
 
 void palGenericLinkTest::TearDown() {
@@ -56,13 +70,9 @@ TEST_F(palGenericLinkTest, testXAxis)
 	mat_identity(&anchorFrame);
 	mat_identity(&floaterFrame);
 	mat_set_translation(&floaterFrame, 0, 0, -FLOATER_OFFSET);
-	palVector3 linearLowerLimits(0.f, 0.f, 0.f);
-	palVector3 linearUpperLimits(-linearLowerLimits);
-	palVector3 angularLowerLimits(-M_PI_2, 0.f, 0.f);
-	palVector3 angularUpperLimits(-angularLowerLimits);
-	palLink* link = PF->CreateGenericLink(anchor, floater,
-						  anchorFrame, floaterFrame, linearLowerLimits,
-						  linearUpperLimits, angularLowerLimits, angularUpperLimits);
+	palLink* link = PF->CreateLink(PAL_LINK_GENERIC, anchor, floater,
+						  anchorFrame, floaterFrame);
+
 	ASSERT_NE((palLink*)(NULL), link);
 	cout << "Supports parameters :" << link->SupportsParameters() << endl;
 	cout << "Supports parameters per axis :" << link->SupportsParametersPerAxis() << endl;
@@ -71,15 +81,27 @@ TEST_F(palGenericLinkTest, testXAxis)
 		if (link->SupportsParametersPerAxis()) {
 			for (unsigned i = 0; i < 6; ++i)
 			{
-				if (link->SetParam(PAL_LINK_PARAM_CFM, 0.0625f, 0))
-					ASSERT_FLOAT_EQ(0.0625f, link->GetParam(PAL_LINK_PARAM_CFM, 0));
-				if (link->SetParam(PAL_LINK_PARAM_ERP, 0.25f, 0))
-					ASSERT_FLOAT_EQ(0.25f, link->GetParam(PAL_LINK_PARAM_ERP, 0));
-				if (link->SetParam(PAL_LINK_PARAM_STOP_CFM, 0.125f, 0))
-					ASSERT_FLOAT_EQ(0.125f, link->GetParam(PAL_LINK_PARAM_STOP_CFM, 0));
-				if (link->SetParam(PAL_LINK_PARAM_STOP_ERP, 0.75f, 0))
-					ASSERT_FLOAT_EQ(0.75f, link->GetParam(PAL_LINK_PARAM_STOP_ERP, 0));
+				if (link->SetParam(PAL_LINK_PARAM_CFM, 0.0625f, i))
+					ASSERT_FLOAT_EQ(0.0625f, link->GetParam(PAL_LINK_PARAM_CFM, i));
+				if (link->SetParam(PAL_LINK_PARAM_ERP, 0.25f, i))
+					ASSERT_FLOAT_EQ(0.25f, link->GetParam(PAL_LINK_PARAM_ERP, i));
+				if (link->SetParam(PAL_LINK_PARAM_STOP_CFM, 0.125f, i))
+					ASSERT_FLOAT_EQ(0.125f, link->GetParam(PAL_LINK_PARAM_STOP_CFM, i));
+				if (link->SetParam(PAL_LINK_PARAM_STOP_ERP, 0.75f, i))
+					ASSERT_FLOAT_EQ(0.75f, link->GetParam(PAL_LINK_PARAM_STOP_ERP, i));
 			}
+			link->SetParam(PAL_LINK_PARAM_DOF_MIN, 0.0f, 0);
+			link->SetParam(PAL_LINK_PARAM_DOF_MIN, 0.0f, 1);
+			link->SetParam(PAL_LINK_PARAM_DOF_MIN, 0.0f, 2);
+			link->SetParam(PAL_LINK_PARAM_DOF_MAX, 0.0f, 0);
+			link->SetParam(PAL_LINK_PARAM_DOF_MAX, 0.0f, 1);
+			link->SetParam(PAL_LINK_PARAM_DOF_MAX, 0.0f, 2);
+			link->SetParam(PAL_LINK_PARAM_DOF_MIN, -M_PI_2, 3);
+			link->SetParam(PAL_LINK_PARAM_DOF_MIN, 0.0f, 4);
+			link->SetParam(PAL_LINK_PARAM_DOF_MIN, 0.0f, 5);
+			link->SetParam(PAL_LINK_PARAM_DOF_MAX, M_PI_2, 3);
+			link->SetParam(PAL_LINK_PARAM_DOF_MAX, 0.0f, 4);
+			link->SetParam(PAL_LINK_PARAM_DOF_MAX, 0.0f, 5);
 		}
 		else {
 			if (link->SetParam(PAL_LINK_PARAM_CFM, 0.0625f))
