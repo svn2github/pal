@@ -312,6 +312,9 @@ Float palBulletRevoluteLink::GetParam(int parameterCode, int axis) {
 		case PAL_LINK_PARAM_DOF_MAX:
 			result = m_btHinge->getUpperLimit();
 			break;
+		case PAL_LINK_RELATIVE_BODY_POS_OR_ANGLE:
+			result = Float(m_btHinge->getHingeAngle());
+			break;
 		default:
 			result = GetAnyBulletParam(m_btHinge, parameterCode, axis);
 		}
@@ -467,6 +470,11 @@ Float palBulletRevoluteSpringLink::GetParam(int parameterCode, int axis) {
 		result = upperLimits.getZ();
 		break;
 	}
+	case PAL_LINK_RELATIVE_BODY_POS_OR_ANGLE:
+	{
+		result = Float(m_bt6Dof->getAngle(2));
+		break;
+	}
 	default:
 		result = GetAnyBulletParam(m_bt6Dof, parameterCode, 5);
 	}
@@ -583,6 +591,16 @@ Float palBulletPrismaticLink::GetParam(int parameterCode, int axis) {
 		else if (axis == 3)
 		{
 			result = Float(m_btSlider->getUpperAngLimit());
+		}
+		break;
+	case PAL_LINK_RELATIVE_BODY_POS_OR_ANGLE:
+		if (axis == 0)
+		{
+			result = Float(m_btSlider->getLinearPos());
+		}
+		else if (axis == 3)
+		{
+			result = Float(m_btSlider->getAngularPos());
 		}
 		break;
 	default:
@@ -729,6 +747,16 @@ Float palBulletGenericLink::GetParam(int parameterCode, int axis) {
 			genericConstraint->getAngularUpperLimit(limits);
 		}
 		result = limits.m_floats[axis];
+		break;
+	case PAL_LINK_RELATIVE_BODY_POS_OR_ANGLE:
+		if (axis < 3)
+		{
+			result = Float(genericConstraint->getRelativePivotPosition(axis));
+		}
+		else if (axis < 6)
+		{
+			result = Float(genericConstraint->getAngle(axis-3));
+		}
 		break;
 	default:
 		result = GetAnyBulletParam(genericConstraint, parameterCode, axis);

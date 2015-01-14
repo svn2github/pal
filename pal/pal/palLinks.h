@@ -51,7 +51,12 @@ typedef enum {
 	 * The Axis is passed into the function separately. Angular values are in radians.
 	 */
 	PAL_LINK_PARAM_DOF_MIN,
-	PAL_LINK_PARAM_DOF_MAX
+	PAL_LINK_PARAM_DOF_MAX,
+
+	/**
+	 * The offset of the bodies relative to the joint origin. As usual, axes 0 - 2 are translation x-z and 3-5 are rotation x-z.
+	 */
+	PAL_LINK_RELATIVE_BODY_POS_OR_ANGLE
 } palLinkParam;
 
 //corkscrew?

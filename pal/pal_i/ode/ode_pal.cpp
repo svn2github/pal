@@ -1413,8 +1413,9 @@ palODELinkData::~palODELinkData() {
 	}
 }
 
-static void MapLinkParameterToODEParam(int& parameterCode, int axis)
+static bool MapLinkParameterToODEParam(int& parameterCode, int axis)
 {
+	bool result = true;
 	if (axis < 0)
 		axis = 0;
 	else
@@ -1445,12 +1446,14 @@ static void MapLinkParameterToODEParam(int& parameterCode, int axis)
 			parameterCode = dParamHiStop + dParamGroup * axis;
 			break;
 		default:
+			// false means it's a pal code, but it wasn't handled here.
+			bool result = false;
 			// leave it alone.
 			break;
 		}
 	}
 
-
+	return result;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1525,15 +1528,21 @@ bool palODESphericalLink::SetParam(int parameterCode, Float value, int axis) {
 	if (axis != -1)
 		return false;
 	// TODO, convert the limit values based on the rotation of frame.
-	MapLinkParameterToODEParam(parameterCode, axis);
-	dJointSetBallParam(ODEGetJointID(), parameterCode, dReal(value));
-	return true;
+	if (MapLinkParameterToODEParam(parameterCode, axis))
+	{
+		dJointSetBallParam(ODEGetJointID(), parameterCode, dReal(value));
+		return dJointGetBallParam(ODEGetJointID(), parameterCode) != 0 || dReal(value) == dReal(0.0);
+	}
+	return false;
 }
 
 Float palODESphericalLink::GetParam(int parameterCode, int axis) {
+	if (axis != -1)
+		return Float(-1.0f);
 	// TODO, convert the limit values based on the rotation of frame.
-	MapLinkParameterToODEParam(parameterCode, axis);
-	return Float(dJointGetBallParam(ODEGetJointID(), parameterCode));
+	if (MapLinkParameterToODEParam(parameterCode, axis))
+		return Float(dJointGetBallParam(ODEGetJointID(), parameterCode));
+	return Float(-1.0);
 }
 
 bool palODESphericalLink::SupportsParameters() const {
@@ -1541,7 +1550,7 @@ bool palODESphericalLink::SupportsParameters() const {
 }
 
 bool palODESphericalLink::SupportsParametersPerAxis() const {
-	return true;
+	return false;
 }
 
 
@@ -1599,16 +1608,22 @@ void palODERigidLink::ComputeFrameChild(palMatrix4x4& frameOut) const
 bool palODERigidLink::SetParam(int parameterCode, Float value, int axis) {
 	if (axis != -1)
 		return false;
-	MapLinkParameterToODEParam(parameterCode, axis);
-	dJointSetFixedParam(ODEGetJointID(), parameterCode, dReal(value));
-	return true;
+	if (MapLinkParameterToODEParam(parameterCode, axis))
+	{
+		dJointSetFixedParam(ODEGetJointID(), parameterCode, dReal(value));
+		return dJointGetFixedParam(ODEGetJointID(), parameterCode) != 0 || dReal(value) == dReal(0.0);
+	}
+	return false;
 }
 
 Float palODERigidLink::GetParam(int parameterCode, int axis) {
 	if (axis != -1)
-		return -1.0f;
-	MapLinkParameterToODEParam(parameterCode, axis);
-	return Float(dJointGetFixedParam(ODEGetJointID(), parameterCode));
+		return Float(-1.0);
+	if (MapLinkParameterToODEParam(parameterCode, axis))
+	{
+		return Float(dJointGetFixedParam(ODEGetJointID(), parameterCode));
+	}
+	return Float(-1.0);
 }
 
 bool palODERigidLink::SupportsParameters() const {
@@ -1717,16 +1732,27 @@ palLinkFeedback* palODERevoluteLink::GetFeedback() const throw(palIllegalStateEx
 bool palODERevoluteLink::SetParam(int parameterCode, Float value, int axis) {
 	if (axis != -1)
 		return false;
-	MapLinkParameterToODEParam(parameterCode, axis);
-	dJointSetHingeParam(ODEGetJointID(), parameterCode, dReal(value));
-	return true;
+	if (MapLinkParameterToODEParam(parameterCode, axis))
+	{
+		dJointSetHingeParam(ODEGetJointID(), parameterCode, dReal(value));
+		return dJointGetHingeParam(ODEGetJointID(), parameterCode) != 0 || dReal(value) == dReal(0.0);
+	}
+	return false;
 }
 
 Float palODERevoluteLink::GetParam(int parameterCode, int axis) {
 	if (axis != -1)
 		return -1.0f;
-	MapLinkParameterToODEParam(parameterCode, axis);
-	return Float(dJointGetHingeParam(ODEGetJointID(), parameterCode));
+
+	if (MapLinkParameterToODEParam(parameterCode, axis))
+	{
+		return Float(dJointGetHingeParam(ODEGetJointID(), parameterCode));
+	}
+	else if (parameterCode == PAL_LINK_RELATIVE_BODY_POS_OR_ANGLE)
+	{
+		return Float(dJointGetHingeAngle(ODEGetJointID()));
+	}
+	return Float(-1.0);
 }
 
 bool palODERevoluteLink::SupportsParameters() const {
@@ -1734,7 +1760,7 @@ bool palODERevoluteLink::SupportsParameters() const {
 }
 
 bool palODERevoluteLink::SupportsParametersPerAxis() const {
-	return true;
+	return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1834,18 +1860,30 @@ void palODEPrismaticLink::SetAxis(const palVector3& axis) {
 
 
 bool palODEPrismaticLink::SetParam(int parameterCode, Float value, int axis) {
-	if (axis != -1)
+	if (axis > -1)
 		return false;
-	MapLinkParameterToODEParam(parameterCode, axis);
-	dJointSetSliderParam(ODEGetJointID(), parameterCode, dReal(value));
-	return true;
+	if (MapLinkParameterToODEParam(parameterCode, axis))
+	{
+		dJointSetSliderParam(ODEGetJointID(), parameterCode, dReal(value));
+		return dJointGetSliderParam(ODEGetJointID(), parameterCode) != 0 || dReal(value) == dReal(0.0);
+	}
+	return false;
 }
 
 Float palODEPrismaticLink::GetParam(int parameterCode, int axis) {
-	if (axis != -1)
+	if (axis > -1)
 		return -1.0f;
-	MapLinkParameterToODEParam(parameterCode, axis);
-	return Float(dJointGetSliderParam(ODEGetJointID(), parameterCode));
+	if (MapLinkParameterToODEParam(parameterCode, axis))
+	{
+		return Float(dJointGetSliderParam(ODEGetJointID(), parameterCode));
+	}
+	else if (parameterCode == PAL_LINK_RELATIVE_BODY_POS_OR_ANGLE)
+	{
+		return dJointGetSliderPosition(ODEGetJointID());
+	}
+	return Float(-1.0f);
+
+
 }
 
 bool palODEPrismaticLink::SupportsParameters() const {
@@ -1853,7 +1891,7 @@ bool palODEPrismaticLink::SupportsParameters() const {
 }
 
 bool palODEPrismaticLink::SupportsParametersPerAxis() const {
-	return true;
+	return false;
 }
 
 
