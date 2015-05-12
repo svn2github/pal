@@ -16,7 +16,7 @@
 
 int main(int argc, char* argv[])
 {
-	//std::cout << "pAMT: type_info for pAM = " << &typeid(palAngularMotor) << std::endl;
+	//std::cout << "pAMT: type_info for pAM = " << &typeid(palMotor) << std::endl;
 	PF->LoadPhysicsEngines();
 	PF->SelectEngine("Bullet");		 // Here is the name of the physics engine you wish to use. You could replace DEFAULT_ENGINE with "Tokamak", "ODE", etc...
 	palPhysics *pp = PF->CreatePhysics(); //create the main physics class
@@ -27,12 +27,12 @@ int main(int argc, char* argv[])
 	palPhysicsDesc desc;
 	pp->Init(desc); //initialize it, set the main gravity vector
 
-	palFactoryObject* obj = PF->CreateObject("palAngularMotor");
-	palAngularMotor* angularMotor = dynamic_cast<palAngularMotor*>(obj);
-	//std::cout << "pAMT: type_info for pAM = " << &typeid(palAngularMotor) << std::endl;
+	palFactoryObject* obj = PF->CreateObject("palMotor");
+	palMotor* Motor = dynamic_cast<palMotor*>(obj);
+	//std::cout << "pAMT: type_info for pAM = " << &typeid(palMotor) << std::endl;
 
-	assert(angularMotor != 0);
-	std::cout << "angularMotor = " << angularMotor << std::endl;
+	assert(Motor != 0);
+	std::cout << "Motor = " << Motor << std::endl;
 	
 	PF->Cleanup();
 	std::cout << "success" << std::endl;

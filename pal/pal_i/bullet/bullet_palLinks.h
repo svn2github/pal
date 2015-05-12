@@ -61,6 +61,7 @@ protected:
 	FACTORY_CLASS(palBulletRevoluteLink,palRevoluteLink,Bullet,1)
 };
 
+#if BT_BULLET_VERSION < 283
 /// Needed to create a subclass because the actual bullet link didn't allow setting the equilibrium point directly
 class SubbtGeneric6DofSpringConstraint : public btGeneric6DofSpringConstraint {
 public:
@@ -85,6 +86,7 @@ public:
 		desc.m_fTarget = m_equilibriumPoint[index];
 	}
 };
+#endif
 
 class palBulletRevoluteSpringLink: public palRevoluteSpringLink {
 public:
@@ -106,7 +108,11 @@ public:
 	/*override*/ bool SupportsParametersPerAxis() const;
 
 protected:
+#if BT_BULLET_VERSION < 283
 	SubbtGeneric6DofSpringConstraint *m_bt6Dof;
+#else
+	btGeneric6DofSpring2Constraint *m_bt6Dof;
+#endif
 	FACTORY_CLASS(palBulletRevoluteSpringLink,palRevoluteSpringLink,Bullet,1)
 };
 
@@ -146,9 +152,15 @@ public:
 	/*override*/ bool SupportsParameters() const;
 	/*override*/ bool SupportsParametersPerAxis() const;
 
+#if BT_BULLET_VERSION < 283
 	SubbtGeneric6DofSpringConstraint* BulletGetGenericConstraint() { return genericConstraint; }
 protected:
 	SubbtGeneric6DofSpringConstraint* genericConstraint;
+#else
+	btGeneric6DofSpring2Constraint* BulletGetGenericConstraint() { return genericConstraint; }
+protected:
+	btGeneric6DofSpring2Constraint* genericConstraint;
+#endif
 	FACTORY_CLASS(palBulletGenericLink,palGenericLink,Bullet,1)
 };
 

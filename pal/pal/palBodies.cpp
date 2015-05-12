@@ -120,9 +120,7 @@ void palBody::ApplyImpulseAtPosition(Float px, Float py, Float pz, Float ix, Flo
 void palBody::ApplyForceAtPosition(Float px, Float py, Float pz, Float fx, Float fy, Float fz) {
 	//based off code from ODE
 	ApplyForce(fx,fy,fz);
-	palVector3 f,q,p,bpos,tadd;
-	f.x=fx; f.y=fy; f.z=fz;
-	p.x=px; p.y=py; p.z=pz;
+	palVector3 f(fx, fy, fz),q,p(px, py, pz),bpos,tadd;
 	GetPosition(bpos);
 	vec_sub(&q,&p,&bpos);
 	vec_cross(&tadd,&q,&f);

@@ -10,8 +10,8 @@ palBox* boxA;
 palBox* boxB;
 palRevoluteLink* linkA;
 palRevoluteLink* linkB;
-palAngularMotor* motorA;
-palAngularMotor* motorB;
+palMotor* motorA;
+palMotor* motorB;
 
 using namespace std;
 
@@ -115,8 +115,8 @@ int main(int argc, char* argv[]) {
 
 	linkA = PF->CreateRevoluteLink(hand, boxA, 0, altitude, 2, 0, 1, 0);
 	linkA->SetLimits(-M_PI, M_PI);
-	motorA = PF->CreateAngularMotor(linkA, 100);
-	motorA->Update(-30);
+	motorA = PF->CreateMotor(linkA);
+	motorA->Update(-30, 100);
 	BuildGraphics(linkA);
 
 	boxB = PF->CreateBox();
@@ -125,8 +125,8 @@ int main(int argc, char* argv[]) {
 
 	linkB = PF->CreateRevoluteLink(hand, boxB, 0, altitude, -2, 0, 1, 0);
 	linkB->SetLimits(-M_PI, M_PI);
-	motorB = PF->CreateAngularMotor(linkB, 100);
-	motorB->Update(30);
+	motorB = PF->CreateMotor(linkB);
+	motorB->Update(30, 100);
 	BuildGraphics(linkB);
 
 	EventLoop(pp);

@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
 	/*GraphicsObject* gObjectLink =*/ BuildGraphics(link);
 
 	link->SetLimits(-M_PI, M_PI);
-	palAngularMotor* motor = PF->CreateAngularMotor(link, 20);
+	palMotor* motor = PF->CreateMotor(link, 20);
 	motor->Update(2);
 
 	palBox* block = PF->CreateBox();

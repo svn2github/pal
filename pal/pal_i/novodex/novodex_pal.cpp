@@ -62,7 +62,7 @@ FACTORY_CLASS_IMPLEMENTATION(palNovodexRevoluteSpringLink);
 FACTORY_CLASS_IMPLEMENTATION(palNovodexPSDSensor);
 FACTORY_CLASS_IMPLEMENTATION(palNovodexContactSensor);
 
-FACTORY_CLASS_IMPLEMENTATION(palNovodexAngularMotor);
+FACTORY_CLASS_IMPLEMENTATION(palNovodexMotor);
 
 #ifdef NOVODEX_ENABLE_FLUID
 FACTORY_CLASS_IMPLEMENTATION(palNovodexFluid);
@@ -2277,10 +2277,10 @@ void palNovodexContactSensor::GetContactPosition(palVector3& contact) const {
 	printf("No contact");
 }
 
-palNovodexAngularMotor::palNovodexAngularMotor() {
+palNovodexMotor::palNovodexMotor() {
 	m_j = 0;
 }
-void palNovodexAngularMotor::Init(palRevoluteLink *pLink, int axis) {
+void palNovodexMotor::Init(palRevoluteLink *pLink, int axis) {
 	palNovodexRevoluteLink *pnrl = dynamic_cast<palNovodexRevoluteLink *> (pLink);
 	if (pnrl)
 		m_j = pnrl->m_RJoint;
@@ -2298,7 +2298,7 @@ void palNovodexAngularMotor::Init(palRevoluteLink *pLink, int axis) {
 	m_j->setMotor(motorDesc);
 
 }
-void palNovodexAngularMotor::Update(Float targetVelocity, Float max) {
+void palNovodexMotor::Update(Float targetVelocity, Float max) {
 	if (!m_j) return;
 
 	PxMotorDesc motorDesc;
@@ -2308,7 +2308,7 @@ void palNovodexAngularMotor::Update(Float targetVelocity, Float max) {
 	motorDesc.maxForce = max;
 	m_j->setMotor(motorDesc);
 }
-void palNovodexAngularMotor::Apply(float dt) {
+void palNovodexMotor::Apply(float dt) {
 }
 
 

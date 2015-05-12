@@ -21,6 +21,14 @@
 #include "BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h"
 #include "BulletSoftBody/btSoftBodyHelpers.h"
 
+#include "BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.h"
+#include "BulletDynamics/MLCPSolvers/btMLCPSolver.h"
+#include "BulletDynamics/MLCPSolvers/btSolveProjectedGaussSeidel.h"
+#include "BulletDynamics/MLCPSolvers/btLemkeSolver.h"
+#include "BulletDynamics/MLCPSolvers/btDantzigSolver.h"
+
+#include "LinearMath/btConvexHull.h"
+#include <set>
 #ifdef INTERNAL_DEBUG
 #include <iostream>
 #endif
@@ -77,7 +85,7 @@ FACTORY_CLASS_IMPLEMENTATION(palBulletCharacterController);
 
 FACTORY_CLASS_IMPLEMENTATION(palBulletPSDSensor);
 
-FACTORY_CLASS_IMPLEMENTATION(palBulletAngularMotor);
+FACTORY_CLASS_IMPLEMENTATION(palBulletMotor);
 FACTORY_CLASS_IMPLEMENTATION(palBulletGenericLinkSpring);
 
 FACTORY_CLASS_IMPLEMENTATION(palBulletPatchSoftBody);
@@ -752,7 +760,11 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	if (!parallel_solver)
 	{
 		m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
-		m_solver = new btSequentialImpulseConstraintSolver();
+      //m_solver = new btSequentialImpulseConstraintSolver;
+      //m_solver = new btNNCGConstraintSolver;
+      m_solver = new btMLCPSolver(new btSolveProjectedGaussSeidel());
+      //m_solver = new btMLCPSolver(new btDantzigSolver());
+      //m_solver = new btMLCPSolver(new btLemkeSolver());
 	}
 	else
 	{
@@ -845,6 +857,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_dynamicsWorld->getSolverInfo().m_damping = GetInitProperty("WorldDamping", m_dynamicsWorld->getSolverInfo().m_damping, btScalar(0.0), btScalar(1.0));
 	m_dynamicsWorld->getSolverInfo().m_linearSlop = GetInitProperty("LinearSlop", m_dynamicsWorld->getSolverInfo().m_linearSlop, btScalar(0.0), btScalar(BT_LARGE_FLOAT));
 	m_dynamicsWorld->getSolverInfo().m_warmstartingFactor = GetInitProperty("WarmstartingFactor", m_dynamicsWorld->getSolverInfo().m_warmstartingFactor, btScalar(0.0), btScalar(1.0));
+	m_dynamicsWorld->getSolverInfo().m_minimumSolverBatchSize = 1;
 
 	m_dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration = btScalar(0.0001);
 
@@ -1948,56 +1961,81 @@ palBulletConvexGeometry::palBulletConvexGeometry()
 
 void palBulletConvexGeometry::Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, Float mass) {
 	palConvexGeometry::Init(pos,pVertices,nVertices,mass);
-	InternalInit(pVertices, nVertices);
+	InternalInit(pVertices, nVertices, 0, 0);
 }
 
 void palBulletConvexGeometry::Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass){
 	palConvexGeometry::Init(pos,pVertices,nVertices,pIndices,nIndices,mass);
-	InternalInit(pVertices, nVertices);
+	InternalInit(pVertices, nVertices, pIndices, nIndices);
 }
 
-void palBulletConvexGeometry::InternalInit(const Float *pVertices, unsigned int nVertices)
+struct btVecLess
 {
-	//	btTriangleMesh* trimesh = new btTriangleMesh();
-	//
-	//	for (int i = 0; i < nVertices; i++)
-	//	{
-	//		btVector3 vertex0(pVertices[i * 3], pVertices[i*3+1], pVertices[i*3+2]);
-	//		btVector3 vertex1(pVertices[(i + 1) * 3], pVertices[(i + 1) * 3 + 1], pVertices[(i + 1) * 3 + 2]);
-	//		btVector3 vertex2(pVertices[(i + 2) * 3], pVertices[(i + 2) * 3 + 1], pVertices[(i + 2) * 3 + 2]);
-	//
-	//		trimesh->addTriangle(vertex0,vertex1,vertex2);
-	//	}
-	//
-	//
-	//	btConvexShape* tmpConvexShape = new btConvexTriangleMeshShape(trimesh);
-	//
-	//	//create a hull approximation
-	//	btShapeHull* hull = new btShapeHull(tmpConvexShape);
-	//	btScalar margin = tmpConvexShape->getMargin();
-	//	hull->buildHull(margin);
-	//	tmpConvexShape->setUserPointer(hull);
-	//
-	//	btConvexHullShape* convexShape = new btConvexHullShape();
-	//	for (int i=0;i<hull->numVertices();i++)
-	//	{
-	//		convexShape->addPoint(hull->getVertexPointer()[i]);
-	//	}
-	//
-	//	delete tmpConvexShape;
-	//	delete hull;
+	bool operator()( const btVector3& lhs, const btVector3& rhs ) const
+	{
+		if (lhs.getX() < rhs.getX())
+			return true;
+		else if (lhs.getX() == rhs.getX() && lhs.getY() < rhs.getY())
+			return true;
+		else if (lhs.getX() == rhs.getX() && lhs.getY() == rhs.getY() && lhs.getZ() < rhs.getZ())
+			return true;
+		return false;
+	}
+};
+
+void palBulletConvexGeometry::InternalInit(const Float *pVertices, unsigned int nVertices, const int *pIndices, int nIndices)
+{
+//	btVector3* supportPoints = new btVector3[nVertices];
+//
+//	for (unsigned i = 0; i < nVertices; ++i)
+//	{
+//		supportPoints[i] = btVector3(pVertices[3*i + 0], pVertices[3*i + 1], pVertices[3*i + 2]);
+//		printf("InVec: %lf, %lf, %lf\n", supportPoints[i].getX(), supportPoints[i].getY(), supportPoints[i].getZ());
+//	}
+//
+//	HullDesc hd;
+//	hd.mFlags = QF_TRIANGLES;
+//	hd.mVcount = nVertices;
+//
+//	hd.mVertices = supportPoints;
+//	hd.mVertexStride = sizeof(btVector3);
+//	hd.mMaxVertices = nVertices;
+//
+//	HullLibrary hl;
+//	HullResult hr;
+//	if (hl.CreateConvexHull (hd, hr) == QE_FAIL)
+//	{
+//		printf("Hull creation failed\n");
+//		return;
+//	}
+
 #if BT_FLOAT_IS_PAL_FLOAT
 	m_pbtConvexShape = new btConvexHullShape(pVertices,nVertices,sizeof(btScalar)*3);
 #else
 	m_pbtConvexShape = new btConvexHullShape();
-	for (unsigned i = 0; i < nVertices; ++i)
+
+	//for (unsigned i = 0; i < hr.mNumOutputVertices; ++i)
+	//{
+	//std::set<btVector3, btVecLess> theSet;
+	for (unsigned i = 0; i < nVertices/*unsigned(nIndices)*/; ++i)
 	{
+		//btVector3& nextv = hr.m_OutputVertices[i];
+		int idx = i;//pIndices[i];
+		btVector3 nextv(pVertices[3*idx + 0], pVertices[3*idx + 1], pVertices[3*idx + 2]);
+//		if (theSet.find(nextv) == theSet.end())
+//		{
+//			theSet.insert(nextv);
+				//printf("OutVec: %lf, %lf, %lf\n", nextv.getX(), nextv.getY(), nextv.getZ());
 #if BT_BULLET_VERSION < 282
-		m_pbtConvexShape->addPoint(btVector3(pVertices[3*i + 0], pVertices[3*i + 1], pVertices[3*i + 2]));
+		m_pbtConvexShape->addPoint(nextv);
 #else
-		m_pbtConvexShape->addPoint(btVector3(pVertices[3*i + 0], pVertices[3*i + 1], pVertices[3*i + 2]), false);
+		m_pbtConvexShape->addPoint(nextv, false);
 #endif
+//		}
 	}
+
+	//printf("nVerts %d vs AddedVerts %d\n", nVertices, m_pbtConvexShape->getNumPoints());
+
 #if BT_BULLET_VERSION > 281
 	m_pbtConvexShape->recalcLocalAabb();
 #endif
@@ -2007,6 +2045,9 @@ void palBulletConvexGeometry::InternalInit(const Float *pVertices, unsigned int 
 	//	m_pbtConvexShape = convexShape;
 	m_pbtShape = m_pbtConvexShape;
 	//m_pbtShape->setMargin(0.0f);
+	// free temporary hull result that we just copied
+//	hl.ReleaseResult (hr);
+//	delete[] supportPoints;
 }
 
 palBulletConcaveGeometry::palBulletConcaveGeometry()
@@ -2119,10 +2160,10 @@ Float palBulletPSDSensor::GetDistance() const {
 
 
 
-palBulletAngularMotor::palBulletAngularMotor()
+palBulletMotor::palBulletMotor()
 : m_updateFunc(0), m_revolute(0), m_6dof(0) {}
 
-void palBulletAngularMotor::Init(palLink *pLink, int axis) {
+void palBulletMotor::Init(palLink *pLink, int axis) {
 	m_axis = axis;
 	m_revolute = dynamic_cast<palBulletRevoluteLink *> (pLink);
 	if (m_revolute == 0)
@@ -2131,58 +2172,94 @@ void palBulletAngularMotor::Init(palLink *pLink, int axis) {
 		if (m_6dof != 0)
 		{
 			axis = std::max(0, axis);
-			axis = std::min(2, axis);
-			m_updateFunc = &palBulletAngularMotor::Update6DOF;
+			axis = std::min(5, axis);
+			m_updateFunc = &palBulletMotor::Update6DOF;
 		}
 	}
 	else
 	{
 		m_axis = -1;
-		m_updateFunc = &palBulletAngularMotor::UpdateRevolute;
+		m_updateFunc = &palBulletMotor::UpdateRevolute;
 	}
 }
 
-void palBulletAngularMotor::Update(Float targetVelocity, Float Max) {
+void palBulletMotor::Update(Float targetVelocity, Float Max) {
 	if (m_updateFunc != 0)
 		(this->*m_updateFunc)(targetVelocity, Max);
 }
 
-void palBulletAngularMotor::Update6DOF(Float targetVelocity, Float Max) {
-	btRotationalLimitMotor* motor = m_6dof->BulletGetGenericConstraint()->getRotationalLimitMotor(m_axis);
-	motor->m_enableMotor = true;
-	motor->m_targetVelocity = targetVelocity;
-	motor->m_maxMotorForce = Max;
+void palBulletMotor::Update6DOF(Float targetVelocity, Float Max) {
+#if BT_BULLET_VERSION < 283
+	typedef btRotationalLimitMotor RotationalMotor;
+	typedef btTranslationalLimitMotor TranslationalMotor;
+#else
+	typedef btRotationalLimitMotor2 RotationalMotor;
+	typedef btTranslationalLimitMotor2 TranslationalMotor;
+#endif
+	if (m_axis > 2)
+	{
+		RotationalMotor* motor = m_6dof->BulletGetGenericConstraint()->getRotationalLimitMotor(m_axis - PAL_AXIS_COUNT);
+		motor->m_enableMotor = true;
+		motor->m_targetVelocity = targetVelocity;
+		motor->m_maxMotorForce = Max;
+	}
+	else
+	{
+		TranslationalMotor* motor = m_6dof->BulletGetGenericConstraint()->getTranslationalLimitMotor();
+		motor->m_enableMotor[m_axis] = true;
+		motor->m_maxMotorForce[m_axis] = 0.0f;
+		motor->m_targetVelocity[m_axis] = 0.0f;
+	}
 	m_6dof->BulletGetGenericConstraint()->getRigidBodyA().activate();
 	m_6dof->BulletGetGenericConstraint()->getRigidBodyB().activate();
 }
 
-void palBulletAngularMotor::UpdateRevolute(Float targetVelocity, Float Max) {
+void palBulletMotor::UpdateRevolute(Float targetVelocity, Float Max) {
 	m_revolute->m_btHinge->enableAngularMotor(true,targetVelocity,Max);
 	m_revolute->m_btHinge->getRigidBodyA().activate();
 	m_revolute->m_btHinge->getRigidBodyB().activate();
 }
 
-void palBulletAngularMotor::DisableMotor() {
+void palBulletMotor::DisableMotor() {
+#if BT_BULLET_VERSION < 283
+	typedef btRotationalLimitMotor RotationalMotor;
+	typedef btTranslationalLimitMotor TranslationalMotor;
+#else
+	typedef btRotationalLimitMotor2 RotationalMotor;
+	typedef btTranslationalLimitMotor2 TranslationalMotor;
+#endif
 	if (m_revolute != 0) {
 		m_revolute->m_btHinge->enableAngularMotor(false, 0.0, 0.0);
 	}
 	else if (m_6dof != 0) {
-		btRotationalLimitMotor* motor = m_6dof->BulletGetGenericConstraint()->getRotationalLimitMotor(m_axis);
-		if (!motor->isLimited()) {
-			motor->m_enableMotor = false;
+		if (m_axis > 2)
+		{
+			RotationalMotor* motor = m_6dof->BulletGetGenericConstraint()->getRotationalLimitMotor(m_axis - PAL_AXIS_COUNT);
+			if (!motor->isLimited()) {
+				motor->m_enableMotor = false;
+			}
+			motor->m_maxMotorForce = 0.0f;
+			motor->m_targetVelocity = 0.0f;
 		}
-		motor->m_maxMotorForce = 0.0f;
-		motor->m_targetVelocity = 0.0f;
+		else
+		{
+			TranslationalMotor* motor = m_6dof->BulletGetGenericConstraint()->getTranslationalLimitMotor();
+			if (!motor->isLimited(m_axis)) {
+				motor->m_enableMotor[m_axis] = false;
+			}
+			motor->m_maxMotorForce[m_axis] = 0.0f;
+			motor->m_targetVelocity[m_axis] = 0.0f;
+		}
 	}
 }
 
-palLink *palBulletAngularMotor::GetLink() const {
+palLink *palBulletMotor::GetLink() const {
 	if (m_revolute != 0) return m_revolute;
 	if (m_6dof != 0) return m_6dof;
 	return 0;
 }
 
-void palBulletAngularMotor::Apply(float dt) {
+void palBulletMotor::Apply(float dt) {
 
 }
 

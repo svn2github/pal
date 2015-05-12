@@ -44,7 +44,7 @@ void Test_Motor::CreateChain(int xyz) {
 		}
 
 #if 1
-	palAngularMotor *pam = dynamic_cast<palAngularMotor *>(PF->CreateObject("palAngularMotor"));
+	palMotor *pam = dynamic_cast<palMotor *>(PF->CreateObject("palMotor"));
 	if (!pam) {
 		printf("Error: Could not create a Angular Motor\n");
 		return;
@@ -111,7 +111,7 @@ void Test_Motor::CreateSet() {
 	prl->Init(pb1,pb2,pos[0]+dim1[0]*0.5f,pos[1],pos[2],0,0,1, true);
 	
 #if 1
-	palAngularMotor *pam = dynamic_cast<palAngularMotor *>(PF->CreateObject("palAngularMotor"));
+	palMotor *pam = dynamic_cast<palMotor *>(PF->CreateObject("palMotor"));
 	if (!pam) {
 		printf("Error: Could not create a Angular Motor\n");
 		return;
@@ -157,7 +157,7 @@ void Test_Motor::CreateRobot() {
 			prl->Init(pb_last,pb,i-0.5f,1.5,0,0,0,1, true);
 
 #if 1
-		palAngularMotor *pam = dynamic_cast<palAngularMotor *>(PF->CreateObject("palAngularMotor"));
+		palMotor *pam = dynamic_cast<palMotor *>(PF->CreateObject("palMotor"));
 		if (!pam) {
 			printf("Error: Could not create a Angular Motor\n");
 			return;

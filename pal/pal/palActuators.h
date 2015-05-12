@@ -57,16 +57,16 @@ protected:
 		: m_Type(actuatorType) {}
 };
 
-/** A generic angular actuator.
-	Uses the engine-specific capabilities to achieve a target rotational velocity.
+/** A generic angular or linear actuator.
+	Uses the engine-specific capabilities to achieve a target linear or rotational velocity.
 */
-class palAngularMotor : public palActuator {
+class palMotor : public palActuator {
 public:
-	virtual ~palAngularMotor() {}
+	virtual ~palMotor() {}
 	/**
 	 * Initialize with a link that allows for an angular motor in the engine.
 	 * @param pLink The link to which to attach the motor.
-	 * @param axis the axis for the motor.
+	 * @param axis the axis for the motor 0-2 for linear, 3-5 for angular or -1 for the default for a given joint.
 	 */
 	virtual void Init(palLink *pLink, int axis = -1) = 0;
 
@@ -85,7 +85,7 @@ public:
 	virtual palLink *GetLink() const = 0;
 
 	virtual std::string toString() const {
-		std::string result("palAngularMotor[link=");
+		std::string result("palMotor[link=");
 		result.append(GetLink()->toString());
 		result.append("]");
 		return result;

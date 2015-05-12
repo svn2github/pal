@@ -486,10 +486,10 @@ palCompassSensor* palFactory::CreateCompassSensor() {
 	return Cast<palSensor *,palCompassSensor *>(pmFO);
 }
 
-palAngularMotor *palFactory::CreateAngularMotor(palLink *pLink, int axis)
+palMotor* palFactory::CreateMotor(palLink *pLink, int axis)
 {
-	palFactoryObject *pmFO = CreateObject("palAngularMotor");
-	palAngularMotor* angularMotor = Cast<palActuator*,palAngularMotor*>(pmFO);
+	palFactoryObject *pmFO = CreateObject("palMotor");
+	palMotor* angularMotor = Cast<palActuator*,palMotor*>(pmFO);
 	angularMotor->Init(pLink, axis);
 	return angularMotor;
 }

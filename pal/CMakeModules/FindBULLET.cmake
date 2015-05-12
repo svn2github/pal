@@ -30,7 +30,7 @@ FIND_PATH(BULLET_INCLUDE_DIR btBulletDynamicsCommon.h
 	PATH_SUFFIXES include src include/bullet
 )
 
-SET(BULLET_LIBS "BulletSoftBody" "BulletDynamics" "BulletCollision" "LinearMath" "BulletMultiThreaded")		# Tested with Bullet 2.82
+SET(BULLET_LIBS "BulletSoftBody" "BulletDynamics" "BulletCollision" "LinearMath" )		# Tested with Bullet 2.82
 
 SET(BULLET_LIBRARIES)
 

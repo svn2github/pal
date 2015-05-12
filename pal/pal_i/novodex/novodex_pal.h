@@ -479,7 +479,7 @@ protected:
 };
 
 class palNovodexRevoluteLink: public palRevoluteLink, public palNovodexLink {
-	friend class palNovodexAngularMotor;
+	friend class palNovodexMotor;
 public:
 	palNovodexRevoluteLink();
 	~palNovodexRevoluteLink();
@@ -494,7 +494,7 @@ protected:
 
 
 class palNovodexRevoluteSpringLink: public palRevoluteSpringLink, public palNovodexLink {
-	friend class palNovodexAngularMotor;
+	friend class palNovodexMotor;
 public:
 	palNovodexRevoluteSpringLink();
 	~palNovodexRevoluteSpringLink();
@@ -636,15 +636,15 @@ protected:
 };
 
 
-class palNovodexAngularMotor : public palAngularMotor {
+class palNovodexMotor : public palMotor {
 public:
-	palNovodexAngularMotor();
-	virtual void Init(palRevoluteLink *pLink, Float Max);
-	virtual void Update(Float targetVelocity);
+	palNovodexMotor();
+	virtual void Init(palRevoluteLink *pLink. int axis);
+	virtual void Update(Float targetVelocity. Float Max);
 	virtual void Apply(float dt);
 protected:
 	PxRevoluteJoint *m_j;
-	FACTORY_CLASS(palNovodexAngularMotor,palAngularMotor,Novodex,1)
+	FACTORY_CLASS(palNovodexMotor,palMotor,Novodex,1)
 };
 
 class palNovodexGenericLinkSpring : public palGenericLinkSpring {

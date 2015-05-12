@@ -529,10 +529,10 @@ protected:
 	FACTORY_CLASS(palODEPSDSensor,palPSDSensor,ODE,1)
 };
 
-class palODEAngularMotor : public palAngularMotor {
+class palODEMotor : public palMotor {
 public:
-	palODEAngularMotor();
-	virtual ~palODEAngularMotor();
+	palODEMotor();
+	virtual ~palODEMotor();
 	virtual void Init(palLink *pLink, int axis = -1);
 	virtual void Update(Float targetVelocity, Float Max);
 	virtual void DisableMotor();
@@ -541,6 +541,6 @@ public:
 protected:
 	palLink* m_Link;
 	dJointID odeJoint; //the ODE joint
-	FACTORY_CLASS(palODEAngularMotor,palAngularMotor,ODE,1)
+	FACTORY_CLASS(palODEMotor,palMotor,ODE,1)
 };
 #endif

@@ -307,7 +307,7 @@ class palFactory : private myFactory {
 		 * \param pLink the link that will use the motor.  It accepts a revolute link or, in some engines, a 6DOF.
 		 * \param axis The axis is only used if the link is a 6-DOF/GenericLink X=0,Y=1,or Z=2.
 		 */
-		palAngularMotor* CreateAngularMotor(palLink *pLink = 0, int axis = -1);
+		palMotor* CreateMotor(palLink *pLink = 0, int axis = -1);
 
 		//
 		//low-level creations, standard user shouldn't use these:

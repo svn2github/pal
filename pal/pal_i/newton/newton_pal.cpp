@@ -67,7 +67,7 @@ FACTORY_CLASS_IMPLEMENTATION_BEGIN_GROUP
 #endif
 
 	FACTORY_CLASS_IMPLEMENTATION(palNewtonForceActuator);
-	FACTORY_CLASS_IMPLEMENTATION(palNewtonAngularMotor);
+	FACTORY_CLASS_IMPLEMENTATION(palNewtonMotor);
 	FACTORY_CLASS_IMPLEMENTATION_END_GROUP;
 /*
  palNewtonMaterial::palNewtonMaterial() {
@@ -1139,23 +1139,23 @@ void palNewtonSphericalLink::SetLimits(Float cone_limit_rad, Float twist_limit_r
  */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-palNewtonAngularMotor::palNewtonAngularMotor()
+palNewtonMotor::palNewtonMotor()
 : m_pnrl(0)
 {
 }
 
-void palNewtonAngularMotor::Init(palLink *pLink, int axis) {
+void palNewtonMotor::Init(palLink *pLink, int axis) {
 	m_pnrl = dynamic_cast<palNewtonRevoluteLink *> (pLink);
 }
 
-void palNewtonAngularMotor::Update(Float targetVelocity, Float Max) {
+void palNewtonMotor::Update(Float targetVelocity, Float Max) {
 	if (m_pnrl) {
 		m_pnrl->m_callbackdata.motor_force = Max;
 		m_pnrl->m_callbackdata.motor_velocity = -targetVelocity;
 	}
 }
 
-void palNewtonAngularMotor::Apply(float dt) {
+void palNewtonMotor::Apply(float dt) {
 }
 
 palNewtonRevoluteLink::palNewtonRevoluteLink() {

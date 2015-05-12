@@ -447,7 +447,7 @@ protected:
 	using palConvexGeometry::GenericInit;
 	using palConvexGeometry::CalculateInertia;
 	btConvexHullShape *m_pbtConvexShape;
-	void InternalInit(const Float *pVertices, unsigned int nVertices);
+	void InternalInit(const Float *pVertices, unsigned int nVertices, const int *pIndices, int nIndices);
 	FACTORY_CLASS(palBulletConvexGeometry,palConvexGeometry,Bullet,1)
 };
 
@@ -487,10 +487,10 @@ class palBulletGenericLink;
 /**
  * This works with both revolute and 6dof links.  The axis only does anything with the 6dof.
  */
-class palBulletAngularMotor : public palAngularMotor {
+class palBulletMotor : public palMotor {
 public:
-	palBulletAngularMotor();
-	virtual ~palBulletAngularMotor() { DisableMotor(); }
+	palBulletMotor();
+	virtual ~palBulletMotor() { DisableMotor(); }
 	virtual void Init(palLink *pLink, int axis = -1);
 	virtual void Update(Float targetVelocity, Float Max);
 	virtual void DisableMotor();
@@ -500,11 +500,11 @@ protected:
 	void Update6DOF(Float targetVelocity, Float Max);
 	void UpdateRevolute(Float targetVelocity, Float Max);
 private:
-	void (palBulletAngularMotor::* m_updateFunc) (Float, Float);
+	void (palBulletMotor::* m_updateFunc) (Float, Float);
 	palBulletRevoluteLink *m_revolute;
 	palBulletGenericLink *m_6dof;
 	int m_axis; // for 6dof.
-	FACTORY_CLASS(palBulletAngularMotor,palAngularMotor,Bullet,1)
+	FACTORY_CLASS(palBulletMotor,palMotor,Bullet,1)
 };
 
 class palBulletSoftBody : virtual public palSoftBody {

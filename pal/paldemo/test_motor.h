@@ -27,7 +27,7 @@ protected:
 
 	PAL_VECTOR<PID *> pids; //vector of all PID controllers for the motors
 	PAL_VECTOR<float> desired; //vector of desired angles.
-	PAL_VECTOR<palAngularMotor*> motors; //vector of all motors for deletion
+	PAL_VECTOR<palMotor*> motors; //vector of all motors for deletion
 	PAL_VECTOR<palBody*> bodies; //vector of all bodies for deletion
 
 	FACTORY_CLASS(Test_Motor,Test_Motor,palTests,2);

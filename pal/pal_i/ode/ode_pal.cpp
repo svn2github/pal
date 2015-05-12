@@ -52,7 +52,7 @@ FACTORY_CLASS_IMPLEMENTATION(palODETerrainPlane);
 FACTORY_CLASS_IMPLEMENTATION(palODETerrainMesh);
 FACTORY_CLASS_IMPLEMENTATION(palODETerrainHeightmap);
 
-FACTORY_CLASS_IMPLEMENTATION(palODEAngularMotor);
+FACTORY_CLASS_IMPLEMENTATION(palODEMotor);
 
 FACTORY_CLASS_IMPLEMENTATION_END_GROUP;
 //PAL_MAP<dGeomID, ODE_MATINDEXLOOKUP> palODEMaterials::g_IndexMap;
@@ -2108,14 +2108,14 @@ void palODETerrainMesh::Init(Float px, Float py, Float pz, const Float *pVertice
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-palODEAngularMotor::palODEAngularMotor(): m_Link(0), odeJoint(0) {
+palODEMotor::palODEMotor(): m_Link(0), odeJoint(0) {
 }
 
-palODEAngularMotor::~palODEAngularMotor() {
+palODEMotor::~palODEMotor() {
 	DisableMotor();
 }
 
-void palODEAngularMotor::Init(palLink *pLink, int axis) {
+void palODEMotor::Init(palLink *pLink, int axis) {
 	palODERevoluteLink *porl = dynamic_cast<palODERevoluteLink *> (m_Link);
 	if (porl) {
 		m_Link = porl;
@@ -2125,7 +2125,7 @@ void palODEAngularMotor::Init(palLink *pLink, int axis) {
 	}
 }
 
-void palODEAngularMotor::Update(Float targetVelocity, Float Max) {
+void palODEMotor::Update(Float targetVelocity, Float Max) {
 	if (odeJoint != 0)
 	{
 		dJointSetHingeParam(odeJoint, dParamFMax, Max);
@@ -2133,9 +2133,9 @@ void palODEAngularMotor::Update(Float targetVelocity, Float Max) {
 	}
 }
 
-palLink *palODEAngularMotor::GetLink() const { return m_Link; }
+palLink *palODEMotor::GetLink() const { return m_Link; }
 
-void palODEAngularMotor::DisableMotor() {
+void palODEMotor::DisableMotor() {
 	if (odeJoint != 0) {
 		dJointSetHingeParam(odeJoint, dParamFMax, 0.0f);
 		dJointSetHingeParam(odeJoint, dParamVel, 0.0f);
@@ -2143,6 +2143,6 @@ void palODEAngularMotor::DisableMotor() {
 	}
 }
 
-void palODEAngularMotor::Apply(float dt) {
+void palODEMotor::Apply(float dt) {
 
 }

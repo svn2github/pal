@@ -374,7 +374,7 @@ protected:
 
 class palNewtonRevoluteLink: public palRevoluteLink, public palNewtonLink {
 public:
-	friend class palNewtonAngularMotor;
+	friend class palNewtonMotor;
 	palNewtonRevoluteLink();
 	void Init(palBodyBase *parent, palBodyBase *child, Float x, Float y, Float z, Float axis_x, Float axis_y, Float axis_z);
 	virtual void SetLimits(Float lower_limit_rad, Float upper_limit_rad);
@@ -487,16 +487,16 @@ protected:
 	FACTORY_CLASS(palNewtonConvex,palConvex,Newton,1)
 };
 
-class palNewtonAngularMotor : public palAngularMotor {
+class palNewtonMotor : public palMotor {
 public:
-	palNewtonAngularMotor();
+	palNewtonMotor();
 	virtual void Init(palLink *pLink, int axis);
 	virtual void Update(Float targetVelocity, Float Max);
 	virtual void Apply(float dt);
 	virtual palLink *GetLink() const { return m_pnrl; }
 protected:
 	palNewtonRevoluteLink *m_pnrl;
-	FACTORY_CLASS(palNewtonAngularMotor,palAngularMotor,Newton,1)
+	FACTORY_CLASS(palNewtonMotor,palMotor,Newton,1)
 };
 
 #ifdef STATIC_CALLHACK
