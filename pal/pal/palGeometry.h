@@ -69,8 +69,6 @@ public:
 	*/
 	virtual const palMatrix4x4& GetOffsetMatrix() const;
 
-	virtual void GenericInit(const palMatrix4x4& location, const void *param_array) = 0;
-
 	/** Generates a set of vertices that represent an approximation to the geometry.
 		This can be used for debug rendering, or generating the mesh for a convex object representation for some physics engines
 		\return An array of Floats (3 Floats is 1 Vertex), or null if the functionality is unsupported or there is an error
@@ -105,7 +103,6 @@ public:
 	 */
 	virtual bool SetMargin(Float margin);
 protected:
-	//virtual void iGenericInit(void *param,va_list arg_ptr) = 0;
 	virtual void SetPosition(const palMatrix4x4& location);
 	//recalculates the m_mOffset (local) matrix given the specified location and body
 	virtual void ReCalculateOffset();
@@ -147,7 +144,6 @@ public:
 	virtual void Init(const palMatrix4x4& pos, Float radius, Float mass);
 //	virtual void Init(Float x, Float y, Float z, Float radius, Float mass);
 	virtual void CalculateInertia();
-	virtual void GenericInit(const palMatrix4x4& location, const void *param_array);
 	Float m_fRadius; //< The radius of the sphere
 protected:
 	int hstrip;
@@ -178,7 +174,6 @@ public:
 	virtual void Init(const palMatrix4x4& pos, Float width, Float height, Float depth, Float mass);
 //	virtual void Init(Float x, Float y, Float z, Float width, Float height, Float depth, Float mass);
 	virtual void CalculateInertia();
-	virtual void GenericInit(const palMatrix4x4& location, const void *param_array);
 
 	/// Depending on when axis is up, x,y, and z maps differently to width depth, and height
 	palVector3 GetXYZDimensions() const;
@@ -187,8 +182,6 @@ public:
 	Float m_fHeight; //< The height of the box
 	Float m_fDepth; //< The depth of the box
 protected:
-	//virtual void iGenericInit(void *param,va_list arg_ptr);
-
 	virtual Float *GenerateMesh_Vertices();
 	virtual int *GenerateMesh_Indices();
 	virtual int GetNumberOfVertices() const;
@@ -218,7 +211,6 @@ public:
 	virtual void Init(const palMatrix4x4& pos, Float radius, Float length, Float mass);
 //	virtual void Init(Float x, Float y, Float z, Float radius, Float length, Float mass);
 	virtual void CalculateInertia();
-	virtual void GenericInit(const palMatrix4x4& location, const void *param_array);
 	Float m_fRadius; //< The radius of the Capsule
 	Float m_fLength; //< The length of the Capsule
 protected:
@@ -249,7 +241,6 @@ public:
    virtual void Init(const palMatrix4x4& pos, Float radius, Float length, Float mass);
 // virtual void Init(Float x, Float y, Float z, Float radius, Float length, Float mass);
    virtual void CalculateInertia();
-   virtual void GenericInit(const palMatrix4x4& location, const void *param_array);
    Float m_fRadius; //< The radius of the Capsule
    Float m_fLength; //< The length of the Capsule
 protected:
@@ -327,7 +318,6 @@ public:
 	static void GenerateHull_Indices(const Float *const srcVerts, const int nVerts, int **outIndices, int& nIndices);
 protected:
 	virtual void CalculateInertia();
-	virtual void GenericInit(const palMatrix4x4& location, const void *param_array) {};
 private:
 	void Subexpressions(Float &w0,Float &w1,Float &w2,Float &f1,Float &f2,Float &f3,Float &g0,Float &g1,Float &g2);
 	void ComputeIntegral(palVector3 p[], int tmax, int index[], Float& mass, palVector3& cm);
@@ -365,9 +355,55 @@ public:
 protected:
 	Float *m_pUntransformedVertices;
 	virtual void CalculateInertia();
-	virtual void GenericInit(const palMatrix4x4& location, const void *param_array) {};
 	Float *GenerateMesh_Vertices();
 };
+
+/**
+ * The user must override this to implement the palCustomConcaveGeometry.
+ */
+class palCustomGeometryCallback
+{
+public:
+	typedef PAL_VECTOR<palTriangle> TriangleVector;
+
+	palCustomGeometryCallback(const palBoundingBox& shapeBoundingBox);
+	virtual ~palCustomGeometryCallback();
+
+	/**
+	 * Override this to return the triangles within the given axis aligned bounding box.
+	 */
+	virtual void operator()(const palBoundingBox& bbBox, TriangleVector& trianglesOut) = 0;
+	const palBoundingBox& GetBoundingBox() const { return m_BoundingBox; }
+private:
+	palBoundingBox m_BoundingBox;
+
+	palCustomGeometryCallback(palCustomGeometryCallback&);
+	palCustomGeometryCallback& operator=(palCustomGeometryCallback&);
+};
+
+class palCustomConcaveGeometry : virtual public palGeometry {
+public:
+	palCustomConcaveGeometry();
+	virtual ~palCustomConcaveGeometry();
+
+	/** Initializes an object that can pretend to be a triangle mesh by returning triangles that appear in an axis aligned
+	 *  bounding box.
+	 *
+	 *
+	 * \param pos The transformation matrix representing the position and orientation of the concave object
+	 * \param mass the mass of this geometry, to be used when calculating the inertia tensor.
+	 * \param callback This does the actual work and must be implemented by the user
+	 * \see palCustomConcaveGeometryCallback
+	 */
+	virtual void Init(const palMatrix4x4& pos, Float mass, palCustomGeometryCallback& callback);
+
+	virtual int *GenerateMesh_Indices();
+	virtual Float *GenerateMesh_Vertices();
+protected:
+	virtual void CalculateInertia();
+	palCustomGeometryCallback* m_pCallback;
+};
+
 #if 0
 /** A plane geometry.
 	This represents a plane, defined by a point and a normal vector

@@ -171,6 +171,12 @@ class palFactory : private myFactory {
 				int nIndices,
 				Float mass);
 
+		/**
+		 * Creates a concave mesh geometry that is agnostic of the datastructure behind it. This is a means
+		 * to create a custom concave shape.
+		 */
+		palCustomConcaveGeometry *CreateCustomConcaveGeometry();
+
 
 		/**
 		 * Creates an uninitialized link with the given type.

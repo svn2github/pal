@@ -99,8 +99,19 @@ struct palVector3 {
 	palVector3 operator+(const palVector3& v) const;
 	palVector3 operator/(const Float& f) const;
 	palVector3 operator-() const;
+	palVector3 operator-(const palVector3& v) const;
 
 	friend std::ostream& operator<<(std::ostream &os, const palVector3& v);
+};
+
+struct palTriangle
+{
+	palVector3 vertices[3];
+};
+
+struct palBoundingBox
+{
+	palVector3 min,max;
 };
 
 #ifdef _WIN32

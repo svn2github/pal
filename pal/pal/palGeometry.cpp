@@ -139,14 +139,6 @@ bool palGeometry::SetMargin(Float margin) {
 	return false;
 }
 
-/*
-void palGeometry::GenericInit(void* params, ...) {
-	va_list arg_ptr;
-	va_start(params, arg_ptr);
-	iGenericInit(params, arg_ptr);
-	va_end(arg_ptr);
-};
-*/
 //palSphereGeometry::palSphereGeometry(palBody *pbody) {	m_pBody = pbody;}
 
 //void palSphereGeometry::Init(Float x, Float y, Float z, Float radius, Float mass) {
@@ -158,34 +150,6 @@ void palSphereGeometry::Init(const palMatrix4x4 &pos, Float radius, Float mass) 
 	palGeometry::SetMass(mass);
 	CalculateInertia();
 }
-
-void palSphereGeometry::GenericInit(const palMatrix4x4& pos, const void *param_array) {
-	Float *p = (Float *)param_array;
-	Init(pos,p[0],p[1]);
-}
-
-void palBoxGeometry::GenericInit(const palMatrix4x4& pos, const void *param_array) {
-#ifdef INTERNAL_DEBUG
-	std::cout << "palBoxGeometry::GenericInit: pos=" << pos << std::endl;
-#endif
-	Float *p = (Float *)param_array;
-	Init(pos,p[0],p[1],p[2],p[3]);
-}
-
-void palCapsuleGeometry::GenericInit(const palMatrix4x4& pos, const void *param_array) {
-	Float *p = (Float *)param_array;
-	Init(pos,p[0],p[1],p[2]);
-}
-
-void palCylinderGeometry::GenericInit(const palMatrix4x4& pos, const void *param_array) {
-   Float *p = (Float *)param_array;
-   Init(pos,p[0],p[1],p[2]);
-}
-
-/*
-void palSphereGeometry::iGenericInit(void *param,va_list arg_ptr) {
-}
-*/
 
 void palSphereGeometry::CalculateInertia() {
 	Float i = 2 * m_fRadius *  m_fRadius / 5;
@@ -798,7 +762,9 @@ int *palCapsuleGeometry::GenerateMesh_Indices() {
 	return m_pIndices;
 }
 ////////////////////////////////////////////////////////////////////////////////
-palCylinderGeometry::palCylinderGeometry() {
+palCylinderGeometry::palCylinderGeometry()
+: m_fRadius(), m_fLength(), tppos()
+{
    hstrip = 10;
    vslice = 10;
 
@@ -1004,5 +970,67 @@ int *palConvexGeometry::GenerateMesh_Indices(){
 
 int palConvexGeometry::GetNumberOfVertices() const {
 	return (int)(m_vfVertices.size()/3);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+palCustomGeometryCallback::palCustomGeometryCallback(const palBoundingBox& shapeBoundingBox) : m_BoundingBox(shapeBoundingBox) {}
+palCustomGeometryCallback::~palCustomGeometryCallback() {}
+
+palCustomGeometryCallback::palCustomGeometryCallback(palCustomGeometryCallback&) {}
+palCustomGeometryCallback& palCustomGeometryCallback::operator=(palCustomGeometryCallback&) { return *this; }
+////////////////////////////////////////////////////////////////////////////////
+
+palCustomConcaveGeometry::palCustomConcaveGeometry(): m_pCallback() {}
+palCustomConcaveGeometry::~palCustomConcaveGeometry() {}
+void palCustomConcaveGeometry::Init(const palMatrix4x4& pos, Float mass, palCustomGeometryCallback& callback)
+{
+	m_Type = PAL_GEOM_CONCAVE;
+	m_pCallback = &callback;
+	SetPosition(pos);
+	SetMass(mass);
+	CalculateInertia();
+}
+
+void palCustomConcaveGeometry::CalculateInertia() {
+	palVector3 out, size = m_pCallback->GetBoundingBox().max - m_pCallback->GetBoundingBox().min;
+	CalculateBoxInertia(size, GetMass(), out);
+	m_fInertiaXX = out.x;
+	m_fInertiaYY = out.y;
+	m_fInertiaZZ = out.z;
+}
+
+int* palCustomConcaveGeometry::GenerateMesh_Indices()
+{
+	return NULL;
+}
+
+Float* palCustomConcaveGeometry::GenerateMesh_Vertices() {
+	if (m_pVertices)
+		return m_pVertices;
+
+	palCustomGeometryCallback::TriangleVector untransformedTriangles;
+	(*m_pCallback)(m_pCallback->GetBoundingBox(), untransformedTriangles);
+	m_pVertices = new Float[untransformedTriangles.size()*9];
+	m_nVertices = untransformedTriangles.size() * 3U;
+	Float* curVert = m_pVertices;
+	for (palCustomGeometryCallback::TriangleVector::const_iterator i = untransformedTriangles.begin(), iend = untransformedTriangles.end() ;
+			i != iend ; ++i, curVert += 9)
+	{
+		const palTriangle& pt = *i;
+		palVector3 v;
+		for (unsigned n = 0 ; n < 3 ; ++n)
+		{
+			v[0] = pt.vertices[n][0];
+			v[1] = pt.vertices[n][1];
+			v[2] = pt.vertices[n][2];
+			palVector3 r;
+			vec_mat_transform(&r,&m_mOffset,&v);
+			curVert[n*3+0] = r.x;
+			curVert[n*3+1] = r.y;
+			curVert[n*3+2] = r.z;
+		}
+	}
+
+	return m_pVertices;
 }
 

@@ -64,6 +64,7 @@ FACTORY_CLASS_IMPLEMENTATION(palBulletCapsuleGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palBulletCylinderGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palBulletConvexGeometry);
 FACTORY_CLASS_IMPLEMENTATION(palBulletConcaveGeometry);
+FACTORY_CLASS_IMPLEMENTATION(palBulletCustomConcaveGeometry);
 
 FACTORY_CLASS_IMPLEMENTATION(palBulletGenericBody);
 
@@ -1523,8 +1524,6 @@ bool palBulletGenericBody::IsUsingConcaveShape() const {
 void palBulletGenericBody::RebuildConcaveShapeFromGeometry() {
 	DeleteBvhTriangleShape(m_pConcave);
 
-	//btTriangleMesh* tmesh = new btTriangleMesh(true, false);
-
 	btTriangleIndexVertexArray *trimesh = new btTriangleIndexVertexArray();
 
 	for (size_t i = 0; i < m_Geometries.size(); ++i) {
@@ -1534,26 +1533,8 @@ void palBulletGenericBody::RebuildConcaveShapeFromGeometry() {
 		int nIndices = pGeom->GetNumberOfIndices();
 
 		AddMeshToTrimesh(trimesh, pVertices, pGeom->GetNumberOfVertices(), pIndices, nIndices);
-
-		//		int pi = 0;
-		//		for (int j = 0;j < nIndices/3; ++j) {
-		//			pi = pIndices[j*3+0];
-		//			btVector3 v0(  pVertices[pi*3+0],
-		//						pVertices[pi*3+1],
-		//						pVertices[pi*3+2]);
-		//			pi = pIndices[j*3+1];
-		//			btVector3 v1(  pVertices[pi*3+0],
-		//						pVertices[pi*3+1],
-		//						pVertices[pi*3+2]);
-		//			pi = pIndices[j*3+2];
-		//			btVector3 v2(  pVertices[pi*3+0],
-		//						pVertices[pi*3+1],
-		//						pVertices[pi*3+2]);
-		//			tmesh->addTriangle(v0,v1,v2);
-		//		}
 	}
 	m_pConcave = new btBvhTriangleMeshShape(trimesh, true, true);
-	//m_pConcave = new btBvhTriangleMeshShape(tmesh, true, true);
 }
 
 void palBulletGenericBody::ConnectGeometry(palGeometry* pGeom) {
@@ -2051,8 +2032,8 @@ void palBulletConvexGeometry::InternalInit(const Float *pVertices, unsigned int 
 }
 
 palBulletConcaveGeometry::palBulletConcaveGeometry()
-: m_pbtTriMeshShape(0)
-, m_pInternalEdgeInfo(0)
+: m_pbtTriMeshShape()
+, m_pInternalEdgeInfo()
 {
 }
 
@@ -2084,8 +2065,92 @@ void palBulletConcaveGeometry::Init(const palMatrix4x4 &pos, const Float *pVerti
 }
 
 
-palBulletPSDSensor::palBulletPSDSensor() {
-	;
+
+class CustomBulletConcaveShape: public btConcaveShape
+{
+public:
+	CustomBulletConcaveShape(palCustomGeometryCallback& callback)
+	: m_pCallback(&callback)
+	, m_localScaling(btScalar(1.0),btScalar(1.0),btScalar(1.0))
+	{
+		m_shapeType = CUSTOM_CONCAVE_SHAPE_TYPE;
+	}
+
+	virtual void calculateLocalInertia(btScalar mass,btVector3& inertia) const
+	{
+		palVector3 out, size = m_pCallback->GetBoundingBox().max - m_pCallback->GetBoundingBox().min;
+		palGeometry::CalculateBoxInertia(size, Float(mass), out);
+		inertia.setValue(btScalar(out.x), btScalar(out.y), btScalar(out.z));
+	}
+
+	void setLocalScaling(const btVector3& scaling)
+	{
+		m_localScaling = scaling;
+	}
+
+	const btVector3& getLocalScaling() const
+	{
+		return m_localScaling;
+	}
+
+	//debugging
+	virtual const char*	getName()const {return "CustomBulletConcaveShape";}
+
+	virtual void processAllTriangles(btTriangleCallback* callback, const btVector3& aabbMin, const btVector3& aabbMax) const
+	{
+		palBoundingBox bb;
+		bb.min.Set( Float(aabbMin.x()), Float(aabbMin.y()), Float(aabbMin.z()) );
+		bb.max.Set( Float(aabbMax.x()), Float(aabbMax.y()), Float(aabbMax.z()) );
+		palCustomGeometryCallback::TriangleVector out(30);
+		(*m_pCallback)(bb, out);
+		int which = 0;
+		btVector3 btTri[3];
+		std::for_each(out.begin(), out.end(),
+			[&](const palTriangle& tri)
+			{
+				for (unsigned i = 0; i < 3; ++i)
+				{
+					btTri[i].setValue(tri.vertices[i][0], tri.vertices[i][1], tri.vertices[i][2]);
+				}
+				callback->processTriangle(btTri, 0, which++);
+			} );
+	}
+
+	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const
+	{
+		const palBoundingBox& pbb = m_pCallback->GetBoundingBox();
+		aabbMin.setValue(btScalar(pbb.min.x), btScalar(pbb.min.y), btScalar(pbb.min.z));
+		aabbMax.setValue(btScalar(pbb.max.x), btScalar(pbb.max.y), btScalar(pbb.max.z));
+		aabbMin = t(aabbMin);
+		aabbMax = t(aabbMax);
+	}
+
+	palCustomGeometryCallback* m_pCallback;
+	btVector3 m_localScaling;
+};
+
+palBulletCustomConcaveGeometry::palBulletCustomConcaveGeometry()
+: m_pCustomShape()
+, m_pInternalEdgeInfo()
+{
+}
+
+palBulletCustomConcaveGeometry::~palBulletCustomConcaveGeometry()
+{
+}
+
+void palBulletCustomConcaveGeometry::Init(const palMatrix4x4& pos, Float mass, palCustomGeometryCallback& callback)
+{
+	palCustomConcaveGeometry::Init(pos, mass, callback);
+	m_pCustomShape = new CustomBulletConcaveShape(callback);
+	m_pbtShape = m_pCustomShape;
+}
+
+palBulletPSDSensor::palBulletPSDSensor()
+: m_fRelativePosX()
+, m_fRelativePosY()
+, m_fRelativePosZ()
+{
 }
 
 void palBulletPSDSensor::Init(palBody *body, Float x, Float y, Float z, Float dx, Float dy, Float dz, Float range) {

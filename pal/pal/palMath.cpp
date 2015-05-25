@@ -104,6 +104,15 @@ palVector3 palVector3::operator+(const palVector3& b) const {
 	return c;
 }
 
+palVector3 palVector3::operator-(const palVector3& b) const
+{
+	palVector3 c;
+	c.x = x - b.x;
+	c.y = y - b.y;
+	c.z = z - b.z;
+	return c;
+}
+
 palVector3 palVector3::operator/(const Float& f) const {
 	palVector3 result(x / f, y / f, z / f);
 	return result;

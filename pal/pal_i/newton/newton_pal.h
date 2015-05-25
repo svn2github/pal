@@ -259,10 +259,6 @@ public:
 
 	void Init(Float x, Float y, Float z, Float width, Float height, Float depth, Float mass);
 //	using void palNewtonBody::SetPosition;
-//	using void palBox::GenericInit(void *param, ...); //mmm internal compiler errors
-//	void impGenericInit(void *param, va_list arg_ptr) {
-//		palBox::GenericInit(param,arg_ptr);
-//	}
 	//extra methods provided by newton abilities:
 	virtual void SetMass(Float mass);
 protected:

@@ -273,6 +273,12 @@ palConcaveGeometry *palFactory::CreateConcaveGeometry(palMatrix4x4 &pos,
 	return geom;
 }
 
+palCustomConcaveGeometry *palFactory::CreateCustomConcaveGeometry() {
+	palFactoryObject *pmFO = CreateObject("palCustomConcaveGeometry");
+	return Cast<palGeometry *,palCustomConcaveGeometry *>(pmFO);
+}
+
+
 palLink *palFactory::CreateLink(palLinkType type)
 {
 	palLink *result = 0;

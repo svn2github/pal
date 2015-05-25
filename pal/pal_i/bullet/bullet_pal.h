@@ -349,7 +349,6 @@ class palBulletBoxGeometry : public palBulletGeometry, public palBoxGeometry  {
 public:
 	palBulletBoxGeometry();
 	virtual void Init(const palMatrix4x4 &pos, Float width, Float height, Float depth, Float mass);
-	using palBoxGeometry::GenericInit;
 	using palBoxGeometry::CalculateInertia;
 	btBoxShape *m_pbtBoxShape; // freed by our superclass
 protected:
@@ -361,7 +360,6 @@ public:
 	palBulletSphereGeometry();
 	virtual void Init(const palMatrix4x4 &pos, Float radius, Float mass);
 	using palSphereGeometry::CalculateInertia;
-	using palSphereGeometry::GenericInit;
 	btSphereShape *m_btSphereShape;
 protected:
 	FACTORY_CLASS(palBulletSphereGeometry,palSphereGeometry,Bullet,1)
@@ -372,7 +370,6 @@ public:
 	palBulletCapsuleGeometry();
 	virtual void Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass);
 	using palCapsuleGeometry::CalculateInertia;
-	using palCapsuleGeometry::GenericInit;
 	btCapsuleShape *m_btCapsuleShape;
 protected:
 	FACTORY_CLASS(palBulletCapsuleGeometry,palCapsuleGeometry,Bullet,1)
@@ -383,7 +380,6 @@ public:
 	palBulletCylinderGeometry();
 	virtual void Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass);
 	using palCylinderGeometry::CalculateInertia;
-	using palCylinderGeometry::GenericInit;
 	btCylinderShape *m_btCylinderShape;
 protected:
 	FACTORY_CLASS(palBulletCylinderGeometry,palCylinderGeometry,Bullet,1)
@@ -444,7 +440,6 @@ public:
 	virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, Float mass);
 	virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass);
 protected:
-	using palConvexGeometry::GenericInit;
 	using palConvexGeometry::CalculateInertia;
 	btConvexHullShape *m_pbtConvexShape;
 	void InternalInit(const Float *pVertices, unsigned int nVertices, const int *pIndices, int nIndices);
@@ -458,14 +453,25 @@ public:
 	palBulletConcaveGeometry();
 	virtual ~palBulletConcaveGeometry();
 	virtual void Init(const palMatrix4x4 &pos, const Float *pVertices, int nVertices, const int *pIndices, int nIndices, Float mass);
-	btBvhTriangleMeshShape *m_pbtTriMeshShape;
 protected:
+	btBvhTriangleMeshShape *m_pbtTriMeshShape;
 	using palConcaveGeometry::CalculateInertia;
-	using palConcaveGeometry::GenericInit;
-	PAL_VECTOR<int> m_Indices;
-	PAL_VECTOR<Float> m_Vertices;
 	btTriangleInfoMap* m_pInternalEdgeInfo;
 	FACTORY_CLASS(palBulletConcaveGeometry,palConcaveGeometry,Bullet,1)
+};
+
+class CustomBulletConcaveShape;
+
+class palBulletCustomConcaveGeometry : public palBulletGeometry, public palCustomConcaveGeometry  {
+public:
+	palBulletCustomConcaveGeometry();
+	virtual ~palBulletCustomConcaveGeometry();
+	virtual void Init(const palMatrix4x4& pos, Float mass, palCustomGeometryCallback& callback);
+protected:
+	CustomBulletConcaveShape *m_pCustomShape;
+	using palCustomConcaveGeometry::CalculateInertia;
+	btTriangleInfoMap* m_pInternalEdgeInfo;
+	FACTORY_CLASS(palBulletCustomConcaveGeometry,palCustomConcaveGeometry,Bullet,1)
 };
 
 
