@@ -2265,15 +2265,15 @@ void palBulletMotor::Update6DOF(Float targetVelocity, Float Max) {
 	{
 		RotationalMotor* motor = m_6dof->BulletGetGenericConstraint()->getRotationalLimitMotor(m_axis - PAL_AXIS_COUNT);
 		motor->m_enableMotor = true;
-		motor->m_targetVelocity = targetVelocity;
-		motor->m_maxMotorForce = Max;
+		motor->m_targetVelocity = btScalar(targetVelocity);
+		motor->m_maxMotorForce = btScalar(Max);
 	}
 	else
 	{
 		TranslationalMotor* motor = m_6dof->BulletGetGenericConstraint()->getTranslationalLimitMotor();
 		motor->m_enableMotor[m_axis] = true;
-		motor->m_maxMotorForce[m_axis] = 0.0f;
-		motor->m_targetVelocity[m_axis] = 0.0f;
+		motor->m_maxMotorForce[m_axis] = btScalar(Max);
+		motor->m_targetVelocity[m_axis] = btScalar(targetVelocity);
 	}
 	m_6dof->BulletGetGenericConstraint()->getRigidBodyA().activate();
 	m_6dof->BulletGetGenericConstraint()->getRigidBodyB().activate();
