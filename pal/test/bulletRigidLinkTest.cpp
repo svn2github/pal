@@ -28,13 +28,34 @@ int main(int argc, char* argv[])
 	desc.m_vGravity = palVector3(0.0f, 0.0f, 0.0f);
 	pp->Init(desc); //initialize it, set the main gravity vector
 
-	palBox* boxA = PF->CreateBox();
-	boxA->Init(0.0f, 0.0f, 6.0f, 10.0f, 10.0f, 10.0f, 100.0f);
-	boxA->SetOrientation(M_PI, 0, 0);
+	palMatrix4x4 mat;
+	mat_identity(&mat);
+	mat_set_translation(&mat, 0.0f, 0.0f, 6.0f);
+	mat_set_rotation(&mat, M_PI, 0.0f, 0.0f);
 
-	palBox* boxB = PF->CreateBox();
-	boxB->Init(20.0f, 0.0f, 5.0f, 1.0f, 1.0f, 1.0f, 1.0f);
-	boxB->SetOrientation(M_PI, M_PI, M_PI);
+	palCustomConcaveGeometry* pcc = PF->CreateCustomConcaveGeometry();
+	if (pcc == NULL)
+	{
+		std::cerr << "Failed to create a custom concave geometry" << std::endl;
+	}
+
+	palGenericBody* boxA = PF->CreateGenericBody();
+	palBoxGeometry* boxGeom = PF->CreateBoxGeometry();
+	boxA->SetMass(100.0f);
+	boxGeom->Init(mat, 10.0f, 10.0f, 10.0f, 100.0f);
+	boxA->Init(mat);
+	boxA->ConnectGeometry(boxGeom);
+
+	mat_identity(&mat);
+	mat_set_translation(&mat, 20.0f, 0.0f, 5.0f);
+	mat_set_rotation(&mat, M_PI, M_PI, M_PI);
+
+	palGenericBody* boxB = PF->CreateGenericBody();
+	palBoxGeometry* boxGeomB = PF->CreateBoxGeometry();
+	boxGeomB->Init(mat, 1.0f, 1.0f, 1.0f, 1.0f);
+	boxB->SetMass(1.0f);
+	boxB->Init(mat);
+	boxB->ConnectGeometry(boxGeomB);
 
 	palRigidLink* link = PF->CreateRigidLink(boxA, boxB);
 
