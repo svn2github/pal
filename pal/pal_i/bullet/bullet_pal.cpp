@@ -210,7 +210,7 @@ static bool CustomMaterialCombinerCallback(btManifoldPoint& mp, const btCollisio
 {
 	if (g_bEnableCustomMaterials && colObj1->getCollisionShape()->getShapeType() != CUSTOM_CONCAVE_SHAPE_TYPE)
 	{
-		btAdjustInternalEdgeContacts(mp,colObj1,colObj0, partId1,index1);
+		//btAdjustInternalEdgeContacts(mp,colObj1,colObj0, partId1,index1);
 		//btAdjustInternalEdgeContacts(cp,colObj1,colObj0, partId1,index1, BT_TRIANGLE_CONVEX_BACKFACE_MODE);
 		//btAdjustInternalEdgeContacts(cp,colObj1,colObj0, partId1,index1, BT_TRIANGLE_CONVEX_DOUBLE_SIDED+BT_TRIANGLE_CONCAVE_DOUBLE_SIDED);
 	}
@@ -2072,8 +2072,10 @@ public:
 	CustomBulletConcaveShape(palCustomGeometryCallback& callback)
 	: m_pCallback(&callback)
 	, m_localScaling(btScalar(1.0),btScalar(1.0),btScalar(1.0))
+	, m_vOutTriangles(24)
 	{
 		m_shapeType = CUSTOM_CONCAVE_SHAPE_TYPE;
+
 	}
 
 	virtual void calculateLocalInertia(btScalar mass,btVector3& inertia) const
@@ -2101,19 +2103,19 @@ public:
 		palBoundingBox bb;
 		bb.min.Set( Float(aabbMin.x()), Float(aabbMin.y()), Float(aabbMin.z()) );
 		bb.max.Set( Float(aabbMax.x()), Float(aabbMax.y()), Float(aabbMax.z()) );
-		palCustomGeometryCallback::TriangleVector out(30);
-		(*m_pCallback)(bb, out);
+		(*m_pCallback)(bb, m_vOutTriangles);
 		int which = 0;
 		btVector3 btTri[3];
-		std::for_each(out.begin(), out.end(),
+		std::for_each(m_vOutTriangles.begin(), m_vOutTriangles.end(),
 			[&](const palTriangle& tri)
 			{
 				for (unsigned i = 0; i < 3; ++i)
 				{
-					btTri[i].setValue(tri.vertices[i][0], tri.vertices[i][1], tri.vertices[i][2]);
+					btTri[i].setValue(btScalar(tri.vertices[i][0]), btScalar(tri.vertices[i][1]), btScalar(tri.vertices[i][2]));
 				}
 				callback->processTriangle(btTri, 0, which++);
 			} );
+		m_vOutTriangles.clear();
 	}
 
 	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const
@@ -2127,6 +2129,8 @@ public:
 
 	palCustomGeometryCallback* m_pCallback;
 	btVector3 m_localScaling;
+	// This would be really bad if we ran multithreaded.
+	mutable palCustomGeometryCallback::TriangleVector m_vOutTriangles;
 };
 
 palBulletCustomConcaveGeometry::palBulletCustomConcaveGeometry()
