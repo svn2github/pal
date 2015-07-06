@@ -210,7 +210,7 @@ static bool CustomMaterialCombinerCallback(btManifoldPoint& mp, const btCollisio
 {
 	if (g_bEnableCustomMaterials && colObj1->getCollisionShape()->getShapeType() != CUSTOM_CONCAVE_SHAPE_TYPE)
 	{
-		//btAdjustInternalEdgeContacts(mp,colObj1,colObj0, partId1,index1);
+		btAdjustInternalEdgeContacts(mp,colObj1,colObj0, partId1,index1);
 		//btAdjustInternalEdgeContacts(cp,colObj1,colObj0, partId1,index1, BT_TRIANGLE_CONVEX_BACKFACE_MODE);
 		//btAdjustInternalEdgeContacts(cp,colObj1,colObj0, partId1,index1, BT_TRIANGLE_CONVEX_DOUBLE_SIDED+BT_TRIANGLE_CONCAVE_DOUBLE_SIDED);
 	}
@@ -737,9 +737,9 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 
 	if (GetInitProperty("Bullet_UseAxisSweepBroadphase") == "true")
 	{
-		btScalar maxX = GetInitProperty<btScalar>("Bullet_AxisSweepBroadphase_RangeX", 1000.0f, 0.0f, PAL_FLOAT_EPSILON);
-		btScalar maxY = GetInitProperty<btScalar>("Bullet_AxisSweepBroadphase_RangeY", 1000.0f, 0.0f, PAL_FLOAT_EPSILON);
-		btScalar maxZ = GetInitProperty<btScalar>("Bullet_AxisSweepBroadphase_RangeZ", 1000.0f, 0.0f, PAL_FLOAT_EPSILON);
+		btScalar maxX = GetInitProperty<btScalar>("Bullet_AxisSweepBroadphase_RangeX", 1000.0f, PAL_FLOAT_EPSILON, PAL_MAX_FLOAT);
+		btScalar maxY = GetInitProperty<btScalar>("Bullet_AxisSweepBroadphase_RangeY", 1000.0f, PAL_FLOAT_EPSILON, PAL_MAX_FLOAT);
+		btScalar maxZ = GetInitProperty<btScalar>("Bullet_AxisSweepBroadphase_RangeZ", 1000.0f, PAL_FLOAT_EPSILON, PAL_MAX_FLOAT);
 		btVector3 worldMin(-maxX,-maxY,-maxZ);
 		btVector3 worldMax(maxX,maxY,maxZ);
 		broadphase = new btAxisSweep3(worldMin,worldMax);
@@ -818,11 +818,10 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 
 	if (GetInitProperty("Bullet_UseInternalEdgeUtility") == "true") {
 		g_bEnableCustomMaterials = true;
-		gContactAddedCallback = &CustomMaterialCombinerCallback;
 	} else {
 		g_bEnableCustomMaterials = false;
-		gContactAddedCallback = NULL;
 	}
+	gContactAddedCallback = &CustomMaterialCombinerCallback;
 
 	//m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher,broadphase,m_solver, m_collisionConfiguration);
 
@@ -2096,9 +2095,9 @@ public:
 	}
 
 	//debugging
-	virtual const char*	getName()const {return "CustomBulletConcaveShape";}
+	const char*	getName() const override {return "CustomBulletConcaveShape";}
 
-	virtual void processAllTriangles(btTriangleCallback* callback, const btVector3& aabbMin, const btVector3& aabbMax) const
+	void processAllTriangles(btTriangleCallback* callback, const btVector3& aabbMin, const btVector3& aabbMax) const override
 	{
 		palBoundingBox bb;
 		bb.min.Set( Float(aabbMin.x()), Float(aabbMin.y()), Float(aabbMin.z()) );
@@ -2118,7 +2117,7 @@ public:
 		m_vOutTriangles.clear();
 	}
 
-	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const
+	void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const override
 	{
 		const palBoundingBox& pbb = m_pCallback->GetBoundingBox();
 		aabbMin.setValue(btScalar(pbb.min.x), btScalar(pbb.min.y), btScalar(pbb.min.z));
