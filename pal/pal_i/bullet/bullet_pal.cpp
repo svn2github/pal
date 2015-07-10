@@ -491,6 +491,7 @@ void palBulletPhysics::RemoveRigidBody(palBulletBodyBase* body) {
 	if (body != nullptr && body->m_pbtBody != nullptr) {
 		//ClearBroadPhaseCachePairs(body);
 		m_dynamicsWorld->removeRigidBody(body->m_pbtBody);
+		body->m_pbtBody->setBroadphaseHandle(nullptr);
 	}
 }
 
@@ -1521,6 +1522,8 @@ bool palBulletGenericBody::IsUsingConcaveShape() const {
 void palBulletGenericBody::RebuildConcaveShapeFromGeometry() {
 	DeleteBvhTriangleShape(m_pConcave);
 
+	printf("Building concave shape with offset.\n");
+
 	btTriangleIndexVertexArray *trimesh = new btTriangleIndexVertexArray();
 
 	for (size_t i = 0; i < m_Geometries.size(); ++i) {
@@ -1539,10 +1542,6 @@ void palBulletGenericBody::ConnectGeometry(palGeometry* pGeom) {
 
 	if (m_pbtBody != NULL)
 	{
-		// what about just clearing the broadphase cache?
-		palBulletPhysics* physics = static_cast<palBulletPhysics*>(GetParent());
-		physics->RemoveRigidBody(this);
-
 		if (IsUsingOneCenteredGeometry()) {
 			palBulletGeometry *pbtg=dynamic_cast<palBulletGeometry *> (pGeom);
 			btCollisionShape* shape = pbtg->BulletGetCollisionShape();
@@ -1557,6 +1556,9 @@ void palBulletGenericBody::ConnectGeometry(palGeometry* pGeom) {
 			m_pbtBody->setCollisionShape(m_pCompound);
 		}
 
+		// what about just clearing the broadphase cache?
+		palBulletPhysics* physics = static_cast<palBulletPhysics*>(GetParent());
+		physics->RemoveRigidBody(this);
 		physics->AddRigidBody(this);
 	}
 }
@@ -1565,9 +1567,6 @@ void palBulletGenericBody::RemoveGeometry(palGeometry* pGeom)
 {
 	palGenericBody::RemoveGeometry(pGeom);
 	if (m_pbtBody != NULL) {
-		palBulletPhysics* physics = static_cast<palBulletPhysics*>(GetParent());
-		physics->RemoveRigidBody(this);
-
 		if (IsUsingOneCenteredGeometry()) {
 			delete m_pCompound;
 			m_pCompound = NULL;
@@ -1588,6 +1587,8 @@ void palBulletGenericBody::RemoveGeometry(palGeometry* pGeom)
 			m_pbtBody->setCollisionShape(m_pCompound);
 		}
 		// what about just clearing the broadphase cache?
+		palBulletPhysics* physics = static_cast<palBulletPhysics*>(GetParent());
+		physics->RemoveRigidBody(this);
 		physics->AddRigidBody(this);
 	}
 }
