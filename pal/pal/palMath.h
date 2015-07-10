@@ -30,6 +30,7 @@
 #include <vector>
 #include <iosfwd>
 #include <cfloat>
+#include <limits>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -40,13 +41,39 @@
 
 #ifdef DOUBLE_PRECISION
 	typedef double Float;
-	#define PAL_FLOAT_EPSILON  DBL_EPSILON  /* smallest such that 1.0+FLT_EPSILON != 1.0 */
-	#define PAL_MAX_FLOAT DBL_MAX
 #else
 	typedef float Float;
-	#define PAL_FLOAT_EPSILON  FLT_EPSILON  /* smallest such that 1.0+FLT_EPSILON != 1.0 */
-	#define PAL_MAX_FLOAT FLT_MAX
 #endif
+
+#define PAL_MAX_FLOAT std::numeric_limits<Float>::max()
+#define PAL_FLOAT_EPSILON std::numeric_limits<Float>::epsilon()
+
+template <typename Real>
+Real Min(Real a, Real b)
+{
+	return (a < b) ? a : b;
+}
+
+template <typename Real>
+Real Max(Real a, Real b)
+{
+	return (a > b) ? a : b;
+}
+
+/**
+ * This does a relative comparison of floats. The epsilon is scaled
+ * based on the precision of the numbers passed in.  This was taken from
+ * Christer Ericson's GDC '07 presentation:
+ * http://realtimecollisiondetection.net/pubs/GDC06_Ericson_Physics_Tutorial_Numerical_Robustness.ppt
+ * Note - This should be used when comparing very large and/or very small numbers.
+ * @param float1 The first float
+ * @param float2 The second float
+ * @return True if the values are equal within the relative precision of their values.
+ */
+inline bool Equivalent(Float float1, Float float2, Float baseEpsilon = PAL_FLOAT_EPSILON)
+{
+   return (std::abs(float1 - float2) <= baseEpsilon * Max(1.0f, Max(float1, float2)));
+}
 
 struct palVector3 {
 	static const unsigned int num_components = 3;

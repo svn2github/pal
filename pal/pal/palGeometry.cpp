@@ -112,8 +112,24 @@ void palGeometry::ReCalculateOffset() {
 	if (m_pBody) {
 		palMatrix4x4 temp;
 		palMatrix4x4 bodyloc=m_pBody->GetLocationMatrix();
-		mat_invert(&temp,&bodyloc);
-		mat_multiply(&m_mOffset,&temp,&m_mLoc);
+		// The vast majority of the time, these two matrices will be identical
+		// but floating point error can make the invert and multiply produce something that is not quite
+		// the identity matrix.
+		bool equivalent = true;
+		for(unsigned i = 0; equivalent && i < 16; ++i)
+		{
+			equivalent = equivalent && Equivalent(bodyloc._mat[i], m_mLoc._mat[i]);
+		}
+
+		if (!equivalent)
+		{
+			mat_invert(&temp,&bodyloc);
+			mat_multiply(&m_mOffset,&temp,&m_mLoc);
+		}
+		else
+		{
+			mat_identity(&m_mOffset);
+		}
 	}
 }
 

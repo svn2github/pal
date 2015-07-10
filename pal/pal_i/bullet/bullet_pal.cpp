@@ -480,7 +480,7 @@ void palBulletPhysics::RayCast(Float x, Float y, Float z,
 }
 
 void palBulletPhysics::AddRigidBody(palBulletBodyBase* body) {
-	if (body && body->m_pbtBody != NULL) {
+	if (body != nullptr && body->m_pbtBody != nullptr) {
 		//reset the group to get rid of the default groups.
 		palGroup group = body->GetGroup();
 		m_dynamicsWorld->addRigidBody(body->m_pbtBody, convert_group(group), m_CollisionMasks[group]);
@@ -488,15 +488,15 @@ void palBulletPhysics::AddRigidBody(palBulletBodyBase* body) {
 }
 
 void palBulletPhysics::RemoveRigidBody(palBulletBodyBase* body) {
-	if (body && body->m_pbtBody) {
+	if (body != nullptr && body->m_pbtBody != nullptr) {
+		//ClearBroadPhaseCachePairs(body);
 		m_dynamicsWorld->removeRigidBody(body->m_pbtBody);
-		body->m_pbtBody->setBroadphaseHandle(NULL);
 	}
 }
 
 void palBulletPhysics::ClearBroadPhaseCachePairs(palBulletBodyBase *body) {
 	btBroadphaseProxy *proxy = body->BulletGetRigidBody()->getBroadphaseProxy();
-	if (proxy != NULL) {
+	if (proxy != nullptr) {
 		proxy->m_collisionFilterMask = m_CollisionMasks[body->GetGroup()];
 		m_dynamicsWorld->getBroadphase()->getOverlappingPairCache()->cleanProxyFromPairs(proxy,
 				m_dynamicsWorld->getDispatcher());
@@ -743,6 +743,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 		btVector3 worldMin(-maxX,-maxY,-maxZ);
 		btVector3 worldMax(maxX,maxY,maxZ);
 		broadphase = new btAxisSweep3(worldMin,worldMax);
+		//broadphase = new btSimpleBroadphase();
 	}
 	else
 	{
@@ -1155,7 +1156,7 @@ const palMatrix4x4& palBulletBodyBase::GetLocationMatrixInterpolated() const
 		return m_mLoc;
 	}
 	return GetLocationMatrix();
-}                                        
+}
 
 const palMatrix4x4& palBulletBodyBase::GetLocationMatrix() const {
 	if (m_pbtBody) {
@@ -1182,9 +1183,6 @@ void palBulletBodyBase::SetGroup(palGroup group) {
 	m_pbtBody->getBroadphaseProxy()->m_collisionFilterGroup = convert_group(group);
 
 	bulletPhysics->ClearBroadPhaseCachePairs(this);
-
-	//bulletPhysics->RemoveRigidBody(this);
-	//bulletPhysics->AddRigidBody(this);
 }
 
 Float palBulletBodyBase::GetSkinWidth() const {
@@ -1541,6 +1539,10 @@ void palBulletGenericBody::ConnectGeometry(palGeometry* pGeom) {
 
 	if (m_pbtBody != NULL)
 	{
+		// what about just clearing the broadphase cache?
+		palBulletPhysics* physics = static_cast<palBulletPhysics*>(GetParent());
+		physics->RemoveRigidBody(this);
+
 		if (IsUsingOneCenteredGeometry()) {
 			palBulletGeometry *pbtg=dynamic_cast<palBulletGeometry *> (pGeom);
 			btCollisionShape* shape = pbtg->BulletGetCollisionShape();
@@ -1554,9 +1556,7 @@ void palBulletGenericBody::ConnectGeometry(palGeometry* pGeom) {
 			InitCompoundIfNull();
 			m_pbtBody->setCollisionShape(m_pCompound);
 		}
-		// what about just clearing the broadphase cache?
-		palBulletPhysics* physics = static_cast<palBulletPhysics*>(GetParent());
-		physics->RemoveRigidBody(this);
+
 		physics->AddRigidBody(this);
 	}
 }
@@ -1565,6 +1565,9 @@ void palBulletGenericBody::RemoveGeometry(palGeometry* pGeom)
 {
 	palGenericBody::RemoveGeometry(pGeom);
 	if (m_pbtBody != NULL) {
+		palBulletPhysics* physics = static_cast<palBulletPhysics*>(GetParent());
+		physics->RemoveRigidBody(this);
+
 		if (IsUsingOneCenteredGeometry()) {
 			delete m_pCompound;
 			m_pCompound = NULL;
@@ -1585,8 +1588,6 @@ void palBulletGenericBody::RemoveGeometry(palGeometry* pGeom)
 			m_pbtBody->setCollisionShape(m_pCompound);
 		}
 		// what about just clearing the broadphase cache?
-		palBulletPhysics* physics = static_cast<palBulletPhysics*>(GetParent());
-		physics->RemoveRigidBody(this);
 		physics->AddRigidBody(this);
 	}
 }
