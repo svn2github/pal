@@ -359,20 +359,28 @@ protected:
 };
 
 /**
+ * The engine must implement this interface to be passed into the palCustomGeometryCallback
+ */
+class palTriangleCallback
+{
+public:
+	virtual ~palTriangleCallback() {}
+	virtual void ProcessTriangle(palTriangle, int partId, int triangleIndex) = 0;
+};
+
+/**
  * The user must override this to implement the palCustomConcaveGeometry.
  */
 class palCustomGeometryCallback
 {
 public:
-	typedef PAL_VECTOR<palTriangle> TriangleVector;
-
 	palCustomGeometryCallback(const palBoundingBox& shapeBoundingBox);
 	virtual ~palCustomGeometryCallback();
 
 	/**
 	 * Override this to return the triangles within the given axis aligned bounding box.
 	 */
-	virtual void operator()(const palBoundingBox& bbBox, TriangleVector& trianglesOut) = 0;
+	virtual void operator()(const palBoundingBox& bbBox, palTriangleCallback& callback) = 0;
 	const palBoundingBox& GetBoundingBox() const { return m_BoundingBox; }
 private:
 	palBoundingBox m_BoundingBox;

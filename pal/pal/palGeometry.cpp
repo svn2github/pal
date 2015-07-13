@@ -1020,32 +1020,60 @@ int* palCustomConcaveGeometry::GenerateMesh_Indices()
 	return NULL;
 }
 
+class DebugTriangleCallback: public palTriangleCallback
+{
+public:
+	DebugTriangleCallback(Float*& verts, int& vertCount, size_t allocated, palMatrix4x4& transform)
+	: m_pVertices(verts)
+	, m_nVertices(vertCount)
+	, m_nAllocated(allocated)
+	, m_mTransform(transform)
+	{
+
+	}
+
+	~DebugTriangleCallback() override {}
+
+	void ProcessTriangle(palTriangle tri, int partId, int triangleIndex) override
+	{
+		palVector3 v;
+		for (unsigned n = 0 ; n < 3 ; ++n)
+		{
+			v[0] = tri.vertices[n][0];
+			v[1] = tri.vertices[n][1];
+			v[2] = tri.vertices[n][2];
+			palVector3 r;
+			vec_mat_transform(&r,&m_mTransform,&v);
+			if (m_nAllocated <= n*3+2)
+			{
+				Float* newVertices = new Float[m_nAllocated * 2];
+				if (m_pVertices != nullptr)
+				{
+					std::copy(m_pVertices, m_pVertices + (m_nAllocated), newVertices);
+					delete[] m_pVertices;
+					m_pVertices = newVertices;
+				}
+				m_nAllocated *= 2;
+			}
+			m_pVertices[n*3+0] = r.x;
+			m_pVertices[n*3+1] = r.y;
+			m_pVertices[n*3+2] = r.z;
+		}
+	}
+
+	Float*& m_pVertices;
+	int& m_nVertices;
+	size_t m_nAllocated;
+	palMatrix4x4& m_mTransform;
+};
+
 Float* palCustomConcaveGeometry::GenerateMesh_Vertices() {
 	if (m_pVertices)
 		return m_pVertices;
 
-	palCustomGeometryCallback::TriangleVector untransformedTriangles;
-	(*m_pCallback)(m_pCallback->GetBoundingBox(), untransformedTriangles);
-	m_pVertices = new Float[untransformedTriangles.size()*9];
-	m_nVertices = untransformedTriangles.size() * 3U;
-	Float* curVert = m_pVertices;
-	for (palCustomGeometryCallback::TriangleVector::const_iterator i = untransformedTriangles.begin(), iend = untransformedTriangles.end() ;
-			i != iend ; ++i, curVert += 9)
-	{
-		const palTriangle& pt = *i;
-		palVector3 v;
-		for (unsigned n = 0 ; n < 3 ; ++n)
-		{
-			v[0] = pt.vertices[n][0];
-			v[1] = pt.vertices[n][1];
-			v[2] = pt.vertices[n][2];
-			palVector3 r;
-			vec_mat_transform(&r,&m_mOffset,&v);
-			curVert[n*3+0] = r.x;
-			curVert[n*3+1] = r.y;
-			curVert[n*3+2] = r.z;
-		}
-	}
+	DebugTriangleCallback triCallback(m_pVertices, m_nVertices, m_nVertices, m_mOffset);
+
+	(*m_pCallback)(m_pCallback->GetBoundingBox(), triCallback);
 
 	return m_pVertices;
 }

@@ -2064,7 +2064,28 @@ void palBulletConcaveGeometry::Init(const palMatrix4x4 &pos, const Float *pVerti
 	//m_pbtShape->setMargin(0.0f);
 }
 
+class BulletTriangleCallbackAdapter: public palTriangleCallback
+{
+public:
+	BulletTriangleCallbackAdapter(btTriangleCallback* bulletTriCallback)
+	: m_BulletTriCallback(bulletTriCallback)
+	{
+	}
 
+	~BulletTriangleCallbackAdapter() override {}
+
+	void ProcessTriangle(palTriangle palTri, int partId, int triangleIndex) override
+	{
+		btVector3 btTri[3];
+		for (unsigned i = 0; i < 3; ++i)
+		{
+			btTri[i].setValue(btScalar(palTri.vertices[i][0]), btScalar(palTri.vertices[i][1]), btScalar(palTri.vertices[i][2]));
+		}
+		m_BulletTriCallback->processTriangle(btTri, partId, triangleIndex);
+	}
+
+	btTriangleCallback* m_BulletTriCallback;
+};
 
 class CustomBulletConcaveShape: public btConcaveShape
 {
@@ -2072,7 +2093,6 @@ public:
 	CustomBulletConcaveShape(palCustomGeometryCallback& callback)
 	: m_pCallback(&callback)
 	, m_localScaling(btScalar(1.0),btScalar(1.0),btScalar(1.0))
-	, m_vOutTriangles(24)
 	{
 		m_shapeType = CUSTOM_CONCAVE_SHAPE_TYPE;
 
@@ -2103,22 +2123,11 @@ public:
 		palBoundingBox bb;
 		bb.min.Set( Float(aabbMin.x()), Float(aabbMin.y()), Float(aabbMin.z()) );
 		bb.max.Set( Float(aabbMax.x()), Float(aabbMax.y()), Float(aabbMax.z()) );
-		(*m_pCallback)(bb, m_vOutTriangles);
-		int which = 0;
-		btVector3 btTri[3];
-		std::for_each(m_vOutTriangles.begin(), m_vOutTriangles.end(),
-			[&](const palTriangle& tri)
-			{
-				for (unsigned i = 0; i < 3; ++i)
-				{
-					btTri[i].setValue(btScalar(tri.vertices[i][0]), btScalar(tri.vertices[i][1]), btScalar(tri.vertices[i][2]));
-				}
-				callback->processTriangle(btTri, 0, which++);
-			} );
-		m_vOutTriangles.clear();
+		BulletTriangleCallbackAdapter adapter(callback);
+		(*m_pCallback)(bb, adapter);
 	}
 
-	void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const override
+	void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const override
 	{
 		const palBoundingBox& pbb = m_pCallback->GetBoundingBox();
 		aabbMin.setValue(btScalar(pbb.min.x), btScalar(pbb.min.y), btScalar(pbb.min.z));
@@ -2129,8 +2138,6 @@ public:
 
 	palCustomGeometryCallback* m_pCallback;
 	btVector3 m_localScaling;
-	// This would be really bad if we ran multithreaded.
-	mutable palCustomGeometryCallback::TriangleVector m_vOutTriangles;
 };
 
 palBulletCustomConcaveGeometry::palBulletCustomConcaveGeometry()
