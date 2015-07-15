@@ -208,9 +208,9 @@ static bool CustomMaterialCombinerCallback(btManifoldPoint& mp, const btCollisio
 static bool CustomMaterialCombinerCallback(btManifoldPoint& mp, const btCollisionObjectWrapper* colObj0,int partId0,int index0,const btCollisionObjectWrapper* colObj1,int partId1,int index1)
 #endif
 {
-	if (g_bEnableCustomMaterials && colObj1->getCollisionShape()->getShapeType() != CUSTOM_CONCAVE_SHAPE_TYPE)
+	if (g_bEnableCustomMaterials && colObj1->getCollisionObject()->getCollisionShape()->getShapeType() != CUSTOM_CONCAVE_SHAPE_TYPE)
 	{
-		btAdjustInternalEdgeContacts(mp,colObj1,colObj0, partId1,index1);
+		btAdjustInternalEdgeContacts(mp, colObj1, colObj0, partId1, index1);
 		//btAdjustInternalEdgeContacts(cp,colObj1,colObj0, partId1,index1, BT_TRIANGLE_CONVEX_BACKFACE_MODE);
 		//btAdjustInternalEdgeContacts(cp,colObj1,colObj0, partId1,index1, BT_TRIANGLE_CONVEX_DOUBLE_SIDED+BT_TRIANGLE_CONCAVE_DOUBLE_SIDED);
 	}
