@@ -673,15 +673,15 @@ inline void convertPalMatToBtTransform(btTransform& xform, const palMatrix4x4& p
 
 inline void convertBtTransformToPalMat(palMatrix4x4& palMat, const btTransform& xform)
 {
-#if BT_SCALAR_IS_PAL_FLOAT
-	xform.getOpenGLMatrix(palMat._mat);
-#else
+//#if BT_SCALAR_IS_PAL_FLOAT
+//	xform.getOpenGLMatrix(palMat._mat);
+//#else
 	btScalar mat[4*4];
 	xform.getOpenGLMatrix(mat);
 	for (unsigned i = 0; i < 16; ++i) {
 		palMat._mat[i] = Float(mat[i]);
 	}
-#endif
+//#endif
 }
 
 #ifdef STATIC_CALLHACK
