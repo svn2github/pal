@@ -414,8 +414,13 @@ void palBulletRevoluteSpringLink::Init(palBodyBase *parent, palBodyBase *child, 
 void palBulletRevoluteSpringLink::SetSpring(const palSpringDesc& springDesc) {
 	bool enable = springDesc.m_fSpringCoef > SIMD_EPSILON || springDesc.m_fDamper > SIMD_EPSILON;
 	m_bt6Dof->enableSpring(5, enable);
+#if BT_BULLET_VERSION > 282
+	m_bt6Dof->setStiffness(5, springDesc.m_fSpringCoef, false);
+	m_bt6Dof->setDamping(5, springDesc.m_fDamper, false);
+#else
 	m_bt6Dof->setStiffness(5, springDesc.m_fSpringCoef);
 	m_bt6Dof->setDamping(5, springDesc.m_fDamper);
+#endif
 	m_bt6Dof->setEquilibriumPoint(5, springDesc.m_fTarget);
 #if BT_BULLET_VERSION > 282
 	//m_bt6Dof->setBounce(5, enable ? btScalar(1.0): btScalar(0.0));
@@ -887,8 +892,13 @@ void palBulletGenericLinkSpring::Init(palGenericLink* link) {
 void palBulletGenericLinkSpring::SetLinearSpring(palAxis axis, const palSpringDesc& spring) {
 	BaseClass::SetLinearSpring(axis, spring);
 	if (axis >= PAL_AXIS_COUNT) return;
+#if BT_BULLET_VERSION > 282
+	m_pBulletLink->BulletGetGenericConstraint()->setStiffness(axis, spring.m_fSpringCoef, false);
+	m_pBulletLink->BulletGetGenericConstraint()->setDamping(axis, spring.m_fDamper, false);
+#else
 	m_pBulletLink->BulletGetGenericConstraint()->setStiffness(axis, spring.m_fSpringCoef);
 	m_pBulletLink->BulletGetGenericConstraint()->setDamping(axis, spring.m_fDamper);
+#endif
 	m_pBulletLink->BulletGetGenericConstraint()->setEquilibriumPoint(axis, spring.m_fTarget);
 	bool enable = spring.m_fSpringCoef > FLT_EPSILON;
 	m_pBulletLink->BulletGetGenericConstraint()->enableSpring(axis, enable);
@@ -905,8 +915,13 @@ void palBulletGenericLinkSpring::SetAngularSpring(palAxis axis, const palSpringD
 	BaseClass::SetAngularSpring(axis, spring);
 	if (axis >= PAL_AXIS_COUNT) return;
 	unsigned axisIndex = int(axis) + int(PAL_AXIS_COUNT);
+#if BT_BULLET_VERSION > 282
+	m_pBulletLink->BulletGetGenericConstraint()->setStiffness(axisIndex, spring.m_fSpringCoef, false);
+	m_pBulletLink->BulletGetGenericConstraint()->setDamping(axisIndex, spring.m_fDamper, false);
+#else
 	m_pBulletLink->BulletGetGenericConstraint()->setStiffness(axisIndex, spring.m_fSpringCoef);
 	m_pBulletLink->BulletGetGenericConstraint()->setDamping(axisIndex, spring.m_fDamper);
+#endif
 	m_pBulletLink->BulletGetGenericConstraint()->setEquilibriumPoint(axisIndex, spring.m_fTarget);
 	bool enable = spring.m_fSpringCoef > FLT_EPSILON;
 	m_pBulletLink->BulletGetGenericConstraint()->enableSpring(axisIndex, enable);
