@@ -45,7 +45,6 @@ typedef enum {
 	PAL_LINK_PARAM_CFM, //!< Constraint force mixing.  0 allows for no error, > 0 .. 1 allows for some error, and it cause the joints to be more stable.
 	PAL_LINK_PARAM_STOP_CFM, //!< Constraint force mixing, but for the stop on a joint.
 	PAL_LINK_PARAM_BREAK_IMPULSE, //!< The impulse value that will cause the constraint to break.
-
 	/*
 	 * Joint degrees of freedom, also called Limits.  Min < Max means the degree is limited.  Min = Max means it is locked.  Min > Max means free movement.
 	 * The Axis is passed into the function separately. Angular values are in radians.
@@ -109,6 +108,21 @@ public:
 	palBodyBase *GetParentBody() const { return m_pParent; }
 	palBodyBase *GetChildBody() const { return m_pChild; }
 
+	/**
+	 * \return true if this link is enabled, i.e. limiting velocity and relative position
+	 */
+	virtual bool GetEnabled() const { return true; }
+
+	/**
+	 * \enable true if this link should be enabled, or false if not.
+	 * \return true if changing the value was successful.  By default, this is not implemented, return false if you try to disable it.
+	 */
+	virtual bool SetEnabled(bool enable)
+	{
+		if (enable)
+			return true;
+		return false;
+	}
 
 	/**
 	 * @param posOut Fills this vec3 with the current world position of the joint according to the parent body.

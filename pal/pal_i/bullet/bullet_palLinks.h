@@ -19,6 +19,14 @@ public:
 	/*override*/ bool SupportsParameters() const;
 	/*override*/ bool SupportsParametersPerAxis() const;
 
+	/*override*/ bool GetEnabled() const { return m_btConeTwist->isEnabled(); }
+	/*override*/ bool SetEnabled(bool enable)
+	{
+		m_btConeTwist->setEnabled(enable);
+		return true;
+	}
+
+
 	btConeTwistConstraint *m_btConeTwist;
 protected:
 	FACTORY_CLASS(palBulletSphericalLink,palSphericalLink,Bullet,1)
@@ -53,6 +61,12 @@ public:
 	/*override*/ bool SupportsParameters() const;
 	/*override*/ bool SupportsParametersPerAxis() const;
 
+	/*override*/ bool GetEnabled() const { return m_btHinge->isEnabled(); }
+	/*override*/ bool SetEnabled(bool enable)
+	{
+		m_btHinge->setEnabled(enable);
+		return true;
+	}
 
 	virtual palLinkFeedback* GetFeedback() const throw(palIllegalStateException);
 	btHingeConstraint *m_btHinge;
@@ -107,6 +121,13 @@ public:
 	/*override*/ bool SupportsParameters() const;
 	/*override*/ bool SupportsParametersPerAxis() const;
 
+	/*override*/ bool GetEnabled() const { return m_bt6Dof->isEnabled(); }
+	/*override*/ bool SetEnabled(bool enable)
+	{
+		m_bt6Dof->setEnabled(enable);
+		return true;
+	}
+
 protected:
 #if BT_BULLET_VERSION < 283
 	SubbtGeneric6DofSpringConstraint *m_bt6Dof;
@@ -131,6 +152,14 @@ public:
 	/*override*/ Float GetParam(int parameterCode, int axis);
 	/*override*/ bool SupportsParameters() const;
 	/*override*/ bool SupportsParametersPerAxis() const;
+
+	/*override*/ bool GetEnabled() const { return m_btSlider->isEnabled(); }
+	/*override*/ bool SetEnabled(bool enable)
+	{
+		m_btSlider->setEnabled(enable);
+		return true;
+	}
+
 	btSliderConstraint* m_btSlider;
 protected:
 	FACTORY_CLASS(palBulletPrismaticLink,palPrismaticLink,Bullet,1)
@@ -151,6 +180,13 @@ public:
 	/*override*/ Float GetParam(int parameterCode, int axis);
 	/*override*/ bool SupportsParameters() const;
 	/*override*/ bool SupportsParametersPerAxis() const;
+
+	/*override*/ bool GetEnabled() const { return genericConstraint->isEnabled(); }
+	/*override*/ bool SetEnabled(bool enable)
+	{
+		genericConstraint->setEnabled(enable);
+		return true;
+	}
 
 #if BT_BULLET_VERSION < 283
 	SubbtGeneric6DofSpringConstraint* BulletGetGenericConstraint() { return genericConstraint; }
@@ -179,15 +215,23 @@ public:
 	/*override*/ Float GetParam(int parameterCode, int axis);
 	/*override*/ bool SupportsParameters() const;
 	/*override*/ bool SupportsParametersPerAxis() const;
+
+	/*override*/ bool GetEnabled() const { return m_btFixed->isEnabled(); }
+	/*override*/ bool SetEnabled(bool enable)
+	{
+		m_btFixed->setEnabled(enable);
+		return true;
+	}
+
 protected:
 	FACTORY_CLASS(palBulletRigidLink,palRigidLink,Bullet,1)
 private:
 // there are a few issues with the fixed constraint such as unsupported parameters and no access to the frames.
-//#if BT_BULLET_VERSION > 281
-//	btFixedConstraint *m_btFixed;
-//#else
+#if BT_BULLET_VERSION > 281
+	btFixedConstraint *m_btFixed;
+#else
 	btHingeConstraint *m_btFixed;
-//#endif
+#endif
 };
 
 class palBulletGenericLinkSpring : public palGenericLinkSpring {

@@ -33,7 +33,8 @@
 #include <iostream>
 #endif
 
-#if BT_BULLET_VERSION >= 283
+
+#if BT_BULLET_VERSION >= 283 && defined(BULLET_MULTITHREADING)
 #include "bullet_multithreaded.h"
 #endif
 
@@ -716,7 +717,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	palPhysics::Init(desc);
 
 
-#if BT_BULLET_VERSION >= 283
+#if BT_BULLET_VERSION >= 283 && defined(BULLET_MULTITHREADING)
 	bool parallel_solver = GetInitProperty("Bullet_UseMultithreadedDispatcher") == "true";
 #else
 	bool parallel_solver = false;
@@ -775,7 +776,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 			m_solver = new btSequentialImpulseConstraintSolver;
 		}
 	}
-#if BT_BULLET_VERSION >= 283
+#if BT_BULLET_VERSION >= 283 && defined(BULLET_MULTITHREADING)
 	else
 	{
 		m_dispatcher = NULL;
