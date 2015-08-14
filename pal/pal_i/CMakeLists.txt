@@ -98,6 +98,7 @@ ENDIF()
 IF(PAL_BUILD_BULLET)
         if (BULLET_MULTITHREADING)
            ADD_DEFINITIONS(-DBULLET_MULTITHREADING)
+           ADD_DEFINITIONS(-DBT_THREADSAFE)
         endif()
 	PREPARE_PACKAGE(bullet 
                         "bullet/bullet_pal.h;bullet/bullet_palLinks.h;bullet/bullet_palVehicle.h;bullet/bullet_palCharacter.h;"

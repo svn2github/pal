@@ -67,7 +67,7 @@ enum TaskApi
 };
 
 
-static TaskApi gTaskApi = apiNone;
+static TaskApi gTaskApi = apiTbb;
 
 static void setTaskApi( TaskApi api )
 {

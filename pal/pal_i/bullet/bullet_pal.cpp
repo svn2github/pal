@@ -773,9 +773,14 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 		else
 #endif
 		{
+			if (solverName != "btSequentialImpulseConstraintSolver" && solverName != "fast" && solverName != "default")
+			{
+				printf("Pal-bullet: bullet solver named \"%s\" is not one of the options. Pal provides palPhysics::GetPropertyDocumentation(...) to get a listing of available options.", solverName.c_str());
+			}
 			m_solver = new btSequentialImpulseConstraintSolver;
 		}
 	}
+
 #if BT_BULLET_VERSION >= 283 && defined(BULLET_MULTITHREADING)
 	else
 	{
@@ -788,7 +793,53 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 		// (this may no longer be an issue, not sure)
 		m_dispatcher->setDispatcherFlags( btCollisionDispatcher::CD_DISABLE_CONTACTPOOL_DYNAMIC_ALLOCATION );
 
-		m_solver = new ParallelConstraintSolverPool( set_pe );
+		btAlignedObjectArray<btConstraintSolver*> solvers;
+		solvers.reserve( set_pe );
+
+		std::string solverName = GetInitProperty("Bullet_Solver", "btSequentialImpulseConstraintSolver");
+		if (solverName == "btNNCGConstraintSolver")
+		{
+			for ( int i = 0; i < set_pe; ++i )
+			{
+				solvers.push_back( new btNNCGConstraintSolver);
+			}
+		}
+		else if (solverName == "btMLCPSolver - btSolveProjectedGaussSeidel" || solverName == "accurate")
+		{
+			for ( int i = 0; i < set_pe; ++i )
+			{
+				solvers.push_back( new btMLCPSolver(new btSolveProjectedGaussSeidel()));
+			}
+		}
+		else if (solverName == "btMLCPSolver - btDantzigSolver")
+		{
+			for ( int i = 0; i < set_pe; ++i )
+			{
+				solvers.push_back( new btMLCPSolver(new btDantzigSolver()));
+			}
+		}
+		else if (solverName == "btMLCPSolver - btLemkeSolver")
+		{
+			for ( int i = 0; i < set_pe; ++i )
+			{
+				solvers.push_back( new btMLCPSolver(new btLemkeSolver()));
+			}
+		}
+		else
+		{
+			if (solverName != "btSequentialImpulseConstraintSolver" && solverName != "fast" && solverName != "default")
+			{
+				printf("Pal-bullet: bullet solver named \"%s\" is not one of the options. Pal provides palPhysics::GetPropertyDocumentation(...) to get a listing of available options.", solverName.c_str());
+			}
+
+			for ( int i = 0; i < set_pe; ++i )
+			{
+				solvers.push_back( new btSequentialImpulseConstraintSolver );
+			}
+		}
+
+		m_solver = new ParallelConstraintSolverPool(&solvers[ 0 ], solvers.size() );
+
 		btDiscreteDynamicsWorld* world = new ParallelDiscreteDynamicsWorld( m_dispatcher, broadphase, m_solver, m_collisionConfiguration );
 		m_dynamicsWorld = world;
 
@@ -844,7 +895,7 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_dynamicsWorld->getSolverInfo().m_damping = GetInitProperty("WorldDamping", m_dynamicsWorld->getSolverInfo().m_damping, btScalar(0.0), btScalar(1.0));
 	m_dynamicsWorld->getSolverInfo().m_linearSlop = GetInitProperty("LinearSlop", m_dynamicsWorld->getSolverInfo().m_linearSlop, btScalar(0.0), btScalar(BT_LARGE_FLOAT));
 	m_dynamicsWorld->getSolverInfo().m_warmstartingFactor = GetInitProperty("WarmstartingFactor", m_dynamicsWorld->getSolverInfo().m_warmstartingFactor, btScalar(0.0), btScalar(1.0));
-	m_dynamicsWorld->getSolverInfo().m_minimumSolverBatchSize = 1;
+	m_dynamicsWorld->getSolverInfo().m_minimumSolverBatchSize = 16;
 
 	m_dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration = btScalar(0.0001);
 

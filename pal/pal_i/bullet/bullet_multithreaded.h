@@ -17,7 +17,6 @@ subject to the following restrictions:
 #include "LinearMath/btQuickprof.h"
 #include "LinearMath/btIDebugDraw.h"
 
-#include <stdio.h> //printf debugging
 #include <algorithm>
 
 class btCollisionShape;
