@@ -889,7 +889,7 @@ void palBulletRigidLink::Init(palBodyBase *parent, palBodyBase *child,
 	btTransform frameInA, frameInB;
 
 	convertPalMatToBtTransform(frameInA, parentFrame);
-	convertPalMatToBtTransform(frameInA, childFrame);
+	convertPalMatToBtTransform(frameInB, childFrame);
 
 #if BT_BULLET_VERSION > 281
 	m_btFixed = new btFixedConstraint(*parentBulletBody, *childBulletBody, frameInA, frameInB);
