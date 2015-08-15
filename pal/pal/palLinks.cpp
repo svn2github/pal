@@ -314,14 +314,27 @@ void palRigidLink::Init(palBodyBase *parent, palBodyBase *child, bool disableCol
 {
 	SetBodies(parent, child);
 	palVector3 parentPos, childPos;
+	const palMatrix4x4& locParent(parent->GetLocationMatrix());
+	const palMatrix4x4& locChild(child->GetLocationMatrix());
+	mat_get_translation(&locParent, &parentPos);
+	mat_get_translation(&locChild, &childPos);
+
+	palAxis upAxis = dynamic_cast<palPhysics*>(GetParent())->GetUpAxis();
+
+	palMatrix4x4 locParentInv, locChildInv, locPivot;
+	mat_invert(&locParentInv, &locParent);
+	mat_invert(&locChildInv, &locChild);
+
 	parent->GetPosition(parentPos);
 	child->GetPosition(childPos);
 	palVector3 pivot = (parentPos + childPos) / 2;
+	mat_identity(&locPivot);
+	mat_set_translation(&locPivot, pivot.x, pivot.y, pivot.z);
 	palMatrix4x4 frameA, frameB;
-	palAxis upAxis = dynamic_cast<palPhysics*>(GetParent())->GetUpAxis();
-	palVector3 axis;
-	axis._vec[upAxis] = Float(1.0);
-	ComputeFramesFromPivot(frameA, frameB, pivot, axis, axis);
+
+	mat_multiply(&frameA, &locParentInv, &locPivot);
+	mat_multiply(&frameB, &locChildInv, &locPivot);
+
 	Init(parent, child, frameA, frameB, disableCollisionsBetweenLinkedBodies);
 }
 
