@@ -997,7 +997,7 @@ palCustomGeometryCallback& palCustomGeometryCallback::operator=(palCustomGeometr
 ////////////////////////////////////////////////////////////////////////////////
 
 palCustomConcaveGeometry::palCustomConcaveGeometry(): m_pCallback() {}
-palCustomConcaveGeometry::~palCustomConcaveGeometry() {}
+palCustomConcaveGeometry::~palCustomConcaveGeometry() { delete m_pCallback; }
 void palCustomConcaveGeometry::Init(const palMatrix4x4& pos, Float mass, palCustomGeometryCallback& callback)
 {
 	m_Type = PAL_GEOM_CONCAVE;
