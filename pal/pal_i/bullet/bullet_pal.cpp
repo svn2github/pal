@@ -295,9 +295,9 @@ static void AddMeshToTrimesh(btTriangleIndexVertexArray *trimesh, const Float *p
 class palBulletAction : public btActionInterface {
 public:
 	palBulletAction(palAction& action)
-: mAction(action)
-{
-}
+	: mAction(action)
+	{
+	}
 
 	virtual ~palBulletAction() {}
 
@@ -949,7 +949,7 @@ void palBulletPhysics::StartIterate(Float timestep) {
 			m_dynamicsWorld->setDebugDrawer(NULL);
 		}
 
-		if (m_fFixedTimeStep > 0) {
+		if (m_fFixedTimeStep > 0.0) {
 			m_dynamicsWorld->stepSimulation(timestep,set_substeps,m_fFixedTimeStep);
 		} else {
 			m_dynamicsWorld->stepSimulation(timestep,0);
