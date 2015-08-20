@@ -856,7 +856,7 @@ bool palBulletGenericLink::SupportsParametersPerAxis() const {
 
 
 palBulletRigidLink::palBulletRigidLink()
-:  palLink(PAL_LINK_RIGID), palRigidLink(), m_btFixed(0)
+:  palLink(PAL_LINK_RIGID), palRigidLink(), m_btFixed(), m_disableCollisionsBetweenLinkedBodies()
 {
 }
 
@@ -874,13 +874,6 @@ void palBulletRigidLink::Init(palBodyBase *parent, palBodyBase *child,
 {
 	SetBodies(parent, child);
 
-	//reinit
-	if (m_btFixed) {
-		static_cast<palBulletPhysics*>(GetParent())->RemoveBulletConstraint(m_btFixed);
-		delete m_btFixed;
-		m_btFixed = NULL;
-	}
-
 	const palBulletBodyBase *parentBodyBase = dynamic_cast<palBulletBodyBase *> (parent);
 	const palBulletBodyBase *childBodyBase = dynamic_cast<palBulletBodyBase *> (child);
 	btRigidBody* parentBulletBody = parentBodyBase->BulletGetRigidBody();
@@ -891,16 +884,42 @@ void palBulletRigidLink::Init(palBodyBase *parent, palBodyBase *child,
 	convertPalMatToBtTransform(frameInA, parentFrame);
 	convertPalMatToBtTransform(frameInB, childFrame);
 
-#if BT_BULLET_VERSION > 281
-	m_btFixed = new btFixedConstraint(*parentBulletBody, *childBulletBody, frameInA, frameInB);
+#if BT_BULLET_VERSION > 282
+	//reinit. It doesn't allow changing the bodies, so if those change, it all must be deleted.
+	if (m_btFixed && (&m_btFixed->getRigidBodyA() != parentBulletBody || &m_btFixed->getRigidBodyB() != childBulletBody)) {
+		static_cast<palBulletPhysics*>(GetParent())->RemoveBulletConstraint(m_btFixed);
+		delete m_btFixed;
+		m_btFixed = NULL;
+	}
 
-	static_cast<palBulletPhysics*>(GetParent())->AddBulletConstraint(m_btFixed, disableCollisionsBetweenLinkedBodies);
+	if (m_btFixed) {
+		// Frames can be reset, but if disableCollisionsBetweenLinkedBodies changes, it has to be removed from the engine
+		// and readded.
+		if (m_disableCollisionsBetweenLinkedBodies != disableCollisionsBetweenLinkedBodies) {
+			static_cast<palBulletPhysics*>(GetParent())->RemoveBulletConstraint(m_btFixed);
+		}
+		m_btFixed->setFrames(frameInA, frameInB);
+		m_btFixed->setEnabled(true);
+		if (m_disableCollisionsBetweenLinkedBodies != disableCollisionsBetweenLinkedBodies) {
+			static_cast<palBulletPhysics*>(GetParent())->AddBulletConstraint(m_btFixed, disableCollisionsBetweenLinkedBodies);
+		}
+		m_disableCollisionsBetweenLinkedBodies = disableCollisionsBetweenLinkedBodies;
+	} else {
+		m_btFixed = new btFixedConstraint(*parentBulletBody, *childBulletBody, frameInA, frameInB);
+		static_cast<palBulletPhysics*>(GetParent())->AddBulletConstraint(m_btFixed, disableCollisionsBetweenLinkedBodies);
+	}
+
 #else
+	if (m_btFixed) {
+		static_cast<palBulletPhysics*>(GetParent())->RemoveBulletConstraint(m_btFixed);
+		delete m_btFixed;
+		m_btFixed = NULL;
+	}
 	// No fixed joint exists before 2.82, so just use a locked hinge.
 	m_btFixed = new btHingeConstraint(*parentBulletBody, *childBulletBody, frameInA, frameInB, false);
 	const btScalar epsilon = SIMD_EPSILON;
 	// Lock the joint
-	m_btFixed->setLimit(epsilon, -epsilon);
+	m_btFixed->setLimit(epsilon, epsilon);
 
 	static_cast<palBulletPhysics*>(GetParent())->AddBulletConstraint(m_btFixed, disableCollisionsBetweenLinkedBodies);
 #endif
@@ -908,14 +927,6 @@ void palBulletRigidLink::Init(palBodyBase *parent, palBodyBase *child,
 
 void palBulletRigidLink::Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies)
 {
-	SetBodies(parent, child);
-
-	if (m_btFixed) {
-		static_cast<palBulletPhysics*>(GetParent())->RemoveBulletConstraint(m_btFixed);
-		delete m_btFixed;
-		m_btFixed = NULL;
-	}
-
 	palMatrix4x4 frameA, frameB;
 	palVector3 defaultAxis(0.0, 0.0, 1.0);
 	ComputeFramesFromPivot(frameA, frameB, pos, axis, defaultAxis);
