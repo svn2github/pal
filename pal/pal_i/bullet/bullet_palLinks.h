@@ -3,6 +3,23 @@
 
 #include "bullet_pal.h"
 
+#define PAL_BT_COMMON_LINK_DECL(MMBR_NAME) \
+	virtual void ComputeFrameParent(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, MMBR_NAME->getFrameOffsetA()); } \
+	virtual void ComputeFrameChild(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, MMBR_NAME->getFrameOffsetB()); } \
+\
+	/*override*/ bool SetParam(int parameterCode, Float value, int axis);\
+	/*override*/ Float GetParam(int parameterCode, int axis);\
+	/*override*/ bool SupportsParameters() const;\
+	/*override*/ bool SupportsParametersPerAxis() const;\
+\
+	/*override*/ bool GetEnabled() const { return MMBR_NAME->isEnabled(); }\
+	/*override*/ bool SetEnabled(bool enable)\
+	{\
+	   MMBR_NAME->setEnabled(enable);\
+		return true;\
+	}\
+
+
 class palBulletSphericalLink : public palSphericalLink {
 public:
 	palBulletSphericalLink();
@@ -11,21 +28,7 @@ public:
 			const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame, bool disableCollisionsBetweenLinkedBodies);
 	virtual void Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies);
 
-	virtual void ComputeFrameParent(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, m_btConeTwist->getFrameOffsetA()); }
-	virtual void ComputeFrameChild(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, m_btConeTwist->getFrameOffsetB()); }
-
-	/*override*/ bool SetParam(int parameterCode, Float value, int axis);
-	/*override*/ Float GetParam(int parameterCode, int axis);
-	/*override*/ bool SupportsParameters() const;
-	/*override*/ bool SupportsParametersPerAxis() const;
-
-	/*override*/ bool GetEnabled() const { return m_btConeTwist->isEnabled(); }
-	/*override*/ bool SetEnabled(bool enable)
-	{
-		m_btConeTwist->setEnabled(enable);
-		return true;
-	}
-
+	PAL_BT_COMMON_LINK_DECL(m_btConeTwist)
 
 	btConeTwistConstraint *m_btConeTwist;
 protected:
@@ -53,20 +56,7 @@ public:
 	virtual Float GetAngle() const;
 	virtual void GetPosition(palVector3& pos) const;
 
-	virtual void ComputeFrameParent(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, m_btHinge->getFrameOffsetA()); }
-	virtual void ComputeFrameChild(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, m_btHinge->getFrameOffsetB()); }
-
-	/*override*/ bool SetParam(int parameterCode, Float value, int axis);
-	/*override*/ Float GetParam(int parameterCode, int axis);
-	/*override*/ bool SupportsParameters() const;
-	/*override*/ bool SupportsParametersPerAxis() const;
-
-	/*override*/ bool GetEnabled() const { return m_btHinge->isEnabled(); }
-	/*override*/ bool SetEnabled(bool enable)
-	{
-		m_btHinge->setEnabled(enable);
-		return true;
-	}
+	PAL_BT_COMMON_LINK_DECL(m_btHinge)
 
 	virtual palLinkFeedback* GetFeedback() const throw(palIllegalStateException);
 	btHingeConstraint *m_btHinge;
@@ -110,23 +100,10 @@ public:
 			const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame, bool disableCollisionsBetweenLinkedBodies);
 	virtual void Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies);
 
-	virtual void ComputeFrameParent(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, m_bt6Dof->getFrameOffsetA()); }
-	virtual void ComputeFrameChild(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, m_bt6Dof->getFrameOffsetB()); }
-
 	virtual void SetSpring(const palSpringDesc& springDesc);
 	virtual void GetSpring(palSpringDesc& springDescOut) const;
 
-	/*override*/ bool SetParam(int parameterCode, Float value, int axis);
-	/*override*/ Float GetParam(int parameterCode, int axis);
-	/*override*/ bool SupportsParameters() const;
-	/*override*/ bool SupportsParametersPerAxis() const;
-
-	/*override*/ bool GetEnabled() const { return m_bt6Dof->isEnabled(); }
-	/*override*/ bool SetEnabled(bool enable)
-	{
-		m_bt6Dof->setEnabled(enable);
-		return true;
-	}
+	PAL_BT_COMMON_LINK_DECL(m_bt6Dof)
 
 protected:
 #if BT_BULLET_VERSION < 283
@@ -145,20 +122,7 @@ public:
 			const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame, bool disableCollisionsBetweenLinkedBodies);
 	virtual void Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies);
 
-	virtual void ComputeFrameParent(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, m_btSlider->getFrameOffsetA()); }
-	virtual void ComputeFrameChild(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, m_btSlider->getFrameOffsetB()); }
-
-	/*override*/ bool SetParam(int parameterCode, Float value, int axis);
-	/*override*/ Float GetParam(int parameterCode, int axis);
-	/*override*/ bool SupportsParameters() const;
-	/*override*/ bool SupportsParametersPerAxis() const;
-
-	/*override*/ bool GetEnabled() const { return m_btSlider->isEnabled(); }
-	/*override*/ bool SetEnabled(bool enable)
-	{
-		m_btSlider->setEnabled(enable);
-		return true;
-	}
+	PAL_BT_COMMON_LINK_DECL(m_btSlider)
 
 	btSliderConstraint* m_btSlider;
 protected:
@@ -173,20 +137,7 @@ public:
 			const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame, bool disableCollisionsBetweenLinkedBodies);
 	virtual void Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies);
 
-	virtual void ComputeFrameParent(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, genericConstraint->getFrameOffsetA()); }
-	virtual void ComputeFrameChild(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, genericConstraint->getFrameOffsetB()); }
-
-	/*override*/ bool SetParam(int parameterCode, Float value, int axis);
-	/*override*/ Float GetParam(int parameterCode, int axis);
-	/*override*/ bool SupportsParameters() const;
-	/*override*/ bool SupportsParametersPerAxis() const;
-
-	/*override*/ bool GetEnabled() const { return genericConstraint->isEnabled(); }
-	/*override*/ bool SetEnabled(bool enable)
-	{
-		genericConstraint->setEnabled(enable);
-		return true;
-	}
+	PAL_BT_COMMON_LINK_DECL(genericConstraint)
 
 #if BT_BULLET_VERSION < 283
 	SubbtGeneric6DofSpringConstraint* BulletGetGenericConstraint() { return genericConstraint; }
@@ -208,20 +159,7 @@ public:
 			const palMatrix4x4& parentFrame, const palMatrix4x4& childFrame, bool disableCollisionsBetweenLinkedBodies);
 	virtual void Init(palBodyBase *parent, palBodyBase *child, const palVector3& pos, const palVector3& axis, bool disableCollisionsBetweenLinkedBodies);
 
-	virtual void ComputeFrameParent(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, m_btFixed->getFrameOffsetA()); }
-	virtual void ComputeFrameChild(palMatrix4x4& frameOut) const { convertBtTransformToPalMat(frameOut, m_btFixed->getFrameOffsetB()); }
-
-	/*override*/ bool SetParam(int parameterCode, Float value, int axis);
-	/*override*/ Float GetParam(int parameterCode, int axis);
-	/*override*/ bool SupportsParameters() const;
-	/*override*/ bool SupportsParametersPerAxis() const;
-
-	/*override*/ bool GetEnabled() const { return m_btFixed->isEnabled(); }
-	/*override*/ bool SetEnabled(bool enable)
-	{
-		m_btFixed->setEnabled(enable);
-		return true;
-	}
+	PAL_BT_COMMON_LINK_DECL(m_btFixed)
 
 protected:
 	FACTORY_CLASS(palBulletRigidLink,palRigidLink,Bullet,1)
@@ -229,6 +167,7 @@ private:
 // there are a few issues with the fixed constraint such as unsupported parameters and no access to the frames.
 #if BT_BULLET_VERSION > 281
 	btFixedConstraint *m_btFixed;
+	bool m_disableCollisionsBetweenLinkedBodies;
 #else
 	btHingeConstraint *m_btFixed;
 #endif
