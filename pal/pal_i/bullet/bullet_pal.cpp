@@ -744,8 +744,8 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	m_ghostPairCallback = new btGhostPairCallback;
 	broadphase->getOverlappingPairCache()->setInternalGhostPairCallback(m_ghostPairCallback);
 	btDefaultCollisionConstructionInfo cci;
-	cci.m_defaultMaxPersistentManifoldPoolSize = 32768;
-	cci.m_defaultMaxCollisionAlgorithmPoolSize = 32768;
+	cci.m_defaultMaxPersistentManifoldPoolSize = 65536;
+	cci.m_defaultMaxCollisionAlgorithmPoolSize = 65536;
 	m_collisionConfiguration = //new btDefaultCollisionConfiguration(cci);
 			new btSoftBodyRigidBodyCollisionConfiguration(cci);
 
