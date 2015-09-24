@@ -163,7 +163,6 @@ typedef ListenMap::iterator ListenIterator;
 typedef ListenMap::const_iterator ListenConstIterator;
 ListenMap pallisten;
 #define MAX_CONTACTS 8 // maximum number of contact points per body
-static PAL_VECTOR<palContactPoint> g_contacts;
 dContact g_contactArray[MAX_CONTACTS];
 
 
@@ -236,11 +235,26 @@ static void nearCallback(void *data, dGeomID o1, dGeomID o2) {
 	if (b2)
 		response = response && IsCollisionResponseEnabled(b2);
 
-	palMaterials* materials = palFactory::GetInstance()->GetActivePhysics()->GetMaterials();
+
+
 
 	palMaterialDesc finalMaterial;
 	palMaterial * pm1 = pb1->GetMaterial();
-	palMaterial * pm2 = pb1->GetMaterial();
+	palMaterial * pm2 = pb2->GetMaterial();
+
+	palPhysics* curPhysics = static_cast<palPhysics*>(pb1->GetParent());
+	palCollisionDetection* curCollision = curPhysics->asCollisionDetection();
+	if (curCollision == nullptr) {
+		static bool printed = false;
+		if (!printed)
+		{
+			perror("Internal Error: The Collision detection interface in the ODE plugin returned NULL.  Collision detection won't work.");
+			printed = true;
+		}
+		return;
+	}
+
+	palMaterials* materials = curPhysics->GetMaterials();
 
 	int numc = dCollide(o1, o2, MAX_CONTACTS, &g_contactArray[0].geom, sizeof(dContact));
 
@@ -309,7 +323,7 @@ static void nearCallback(void *data, dGeomID o1, dGeomID o2) {
 
 			if (!dolisten) continue;
 
-			g_contacts.push_back(cp);
+			curPhysics->asCollisionDetection()->EmitContact(cp);
 		}
 	}
 
@@ -492,31 +506,6 @@ void palODEPhysics::CleanupNotifications(palBodyBase *pBody) {
 			}
 		}
 	}
-}
-
-void palODEPhysics::GetContacts(palBodyBase *pBody, palContact& contact) const {
-	contact.m_ContactPoints.clear();
-	for (unsigned int i = 0; i < g_contacts.size(); i++) {
-		if (g_contacts[i].m_pBody1 == pBody || g_contacts[i].m_pBody2 == pBody) {
-			contact.m_ContactPoints.push_back(g_contacts[i]);
-		}
-	}
-}
-void palODEPhysics::GetContacts(palBodyBase *a, palBodyBase *b, palContact& contact) const {
-	contact.m_ContactPoints.clear();
-	for (unsigned int i=0;i<g_contacts.size();i++) {
-		if ((g_contacts[i].m_pBody1 == a) && (g_contacts[i].m_pBody2 == b)) {
-			contact.m_ContactPoints.push_back(g_contacts[i]);
-		}
-		else if ((g_contacts[i].m_pBody2 == a) && (g_contacts[i].m_pBody1 == b)) {
-			contact.m_ContactPoints.push_back(g_contacts[i]);
-		}
-	}
-}
-
-void palODEPhysics::ClearContacts()
-{
-	g_contacts.clear();
 }
 
 dWorldID palODEPhysics::ODEGetWorld() const {
@@ -1019,13 +1008,12 @@ void palODESphereGeometry::CalculateMassParams(dMass& odeMass, Float massScalar)
 	dMassSetSphereTotal(&odeMass, massScalar, m_fRadius);
 }
 
-palODECapsuleGeometry::palODECapsuleGeometry() {
-	m_upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
+palODECapsuleGeometry::palODECapsuleGeometry() : m_upAxis(1) {
 }
 
 void palODECapsuleGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
-	m_upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
 	palCapsuleGeometry::Init(pos,radius,length,mass);
+	m_upAxis = static_cast<palPhysics*>(GetParent())->GetUpAxis();
 	memset(&odeGeom ,0,sizeof(odeGeom));
 	odeGeom = dCreateCapsule(g_space, m_fRadius, m_fLength+m_fRadius);
 	//odeGeom = dCreateCylinder(g_space, m_fRadius, m_fLength);
@@ -1087,13 +1075,12 @@ void palODECapsuleGeometry::CalculateMassParams(dMass& odeMass, Float massScalar
 	dMassSetCapsuleTotal(&odeMass, massScalar, m_upAxis, m_fRadius, m_fLength);
 }
 
-palODECylinderGeometry::palODECylinderGeometry() {
-	m_upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
+palODECylinderGeometry::palODECylinderGeometry() : m_upAxis(1) {
 }
 
 void palODECylinderGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
-	m_upAxis = palFactory::GetInstance()->GetActivePhysics()->GetUpAxis();
 	palCylinderGeometry::Init(pos,radius,length,mass);
+	m_upAxis = static_cast<palPhysics*>(GetParent())->GetUpAxis();
 	memset(&odeGeom ,0,sizeof(odeGeom));
 	odeGeom = dCreateCylinder(g_space, m_fRadius, m_fLength);
 

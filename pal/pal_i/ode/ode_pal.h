@@ -99,9 +99,6 @@ public:
 	virtual void NotifyCollision(palBodyBase *a, palBodyBase *b, bool enabled);
 	virtual void NotifyCollision(palBodyBase *pBody, bool enabled);
 	void CleanupNotifications(palBodyBase* geom);
-	virtual void GetContacts(palBodyBase *pBody, palContact& contact) const;
-	virtual void GetContacts(palBodyBase *a, palBodyBase *b, palContact& contact) const;
-	virtual void ClearContacts();
 
 	//	void SetDefaultMaterial(palMaterial *pmat);
 	//	void SetGroundPlane(bool enabled, Float size);

@@ -166,9 +166,6 @@ public:
 	         palRayHitCallback& callback, palGroupFlags groupFilter = ~0);
 	virtual void NotifyCollision(palBodyBase *a, palBodyBase *b, bool enabled);
 	virtual void NotifyCollision(palBodyBase *pBody, bool enabled);
-	virtual void GetContacts(palBodyBase *pBody, palContact& contact) const;
-	virtual void GetContacts(palBodyBase *a, palBodyBase *b, palContact& contact) const;
-	virtual void ClearContacts();
 
 	//solver functionality
 	virtual void StartIterate(Float timestep);
@@ -189,6 +186,7 @@ protected:
 private:
 	void PopulateDebugDraw();
 	palNovodexErrorReportingSystem m_UserReport;
+	PxUserContactReport m_ContactReport;
 	Float m_fFixedTimeStep;
 	bool m_bSetUseHardware;
 	int m_iSetSubsteps;

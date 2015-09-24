@@ -80,8 +80,6 @@ static PxPhysicsSDK*	gPhysicsSDK = NULL;
 static PxScene*			gScene = NULL;
 
 #include <deque>
-//std::deque<PxVec3> g_contacts;
-PAL_VECTOR<palContactPoint> g_contacts;
 #if 0
 PAL_MAP<PxActor*, palBodyBase* > g_Bodies;
 
@@ -108,8 +106,9 @@ palBodyBase* LookupActor(PxActor *a) {
 class ContactReport : public PxUserContactReport
 {
 public:
-   ContactReport()
+   ContactReport(palCollisionDetection* collisionInterface)
    : mLastTimeStep(0.0f)
+   , m_pCollisionInterface(collisionInterface)
    {
    }
 
@@ -141,8 +140,6 @@ public:
 			//user can also call getShape() and getNumPatches() here
 			while(i.goNextPatch())
 			{
-				g_contacts.reserve(g_contacts.size() + i.getNumPoints());
-
 				//user can also call getPatchNormal() and getNumPoints() here
 				const PxVec3& nn = i.getPatchNormal();
 				while(i.goNextPoint())
@@ -151,7 +148,6 @@ public:
 
 					//user can also call getShape() and getNumPatches() here
 					const PxVec3& np = i.getPoint();
-					//g_contacts.push_back(contactPoint);
 
 					PxShape *s0 = i.getShape(0);
 					PxShape *s1 = i.getShape(1);
@@ -177,13 +173,14 @@ public:
 					cp.m_vImpulseLateral1.x = sumFrictionImpulse.x;
 					cp.m_vImpulseLateral1.y = sumFrictionImpulse.y;
 					cp.m_vImpulseLateral1.z = sumFrictionImpulse.z;
-					g_contacts.push_back(cp);
+					m_pCollisionInterface->EmitContact(cp);
 				}
 			}
 		}
 	}
 	Float mLastTimeStep;
-} gContactReport;
+	palCollisionDetection* m_pCollisionInterface;
+};
 
 PxScene* palNovodexPhysics::PxGetScene() {
 	return gScene;
@@ -194,7 +191,8 @@ PxPhysicsSDK* palNovodexPhysics::PxGetPhysicsSDK() {
 }
 
 palNovodexPhysics::palNovodexPhysics()
-: m_fFixedTimeStep(0.0f)
+: m_ContactReport(this)
+, m_fFixedTimeStep(0.0f)
 , m_bSetUseHardware(false)
 , m_iSetSubsteps(1)
 , m_iSetPe(1)
@@ -258,7 +256,7 @@ void palNovodexPhysics::Init(const palPhysicsDesc& desc) {
 		sceneDesc.simType = PX_SIMULATION_SW;
 	}
 
-	sceneDesc.userContactReport     = &gContactReport;
+	sceneDesc.userContactReport     = &m_ContactReport;
 	sceneDesc.flags |= PX_SF_SIMULATE_SEPARATE_THREAD;
 
 	if (m_iSetPe > 1)
@@ -421,10 +419,10 @@ void palNovodexPhysics::Iterate(Float timestep) {
 #endif
 	if (m_fFixedTimeStep > 0.0) {
 		gScene->setTiming(m_fFixedTimeStep, m_iSetSubsteps, PX_TIMESTEP_FIXED);
-		gContactReport.mLastTimeStep = m_fFixedTimeStep;
+		m_ContactReport.mLastTimeStep = m_fFixedTimeStep;
    } else {
 		gScene->setTiming(timestep, m_iSetSubsteps, PX_TIMESTEP_FIXED);
-		gContactReport.mLastTimeStep = timestep;
+		m_ContactReport.mLastTimeStep = timestep;
 	}
 	StartIterate(timestep);
 
@@ -550,32 +548,6 @@ void palNovodexPhysics::NotifyCollision(palBodyBase *a, bool enabled) {
 //				gScene->setActorPairFlags(*(b0->m_Actor),*(ppact[i]),PX_IGNORE_PAIR);
 //			}
 //	}
-}
-
-void palNovodexPhysics::GetContacts(palBodyBase *pBody, palContact& contact) const {
-	contact.m_ContactPoints.clear();
-	for (unsigned int i=0;i<g_contacts.size();i++) {
-		if (g_contacts[i].m_pBody1 == pBody) {
-			contact.m_ContactPoints.push_back(g_contacts[i]);
-		}
-		if (g_contacts[i].m_pBody2 == pBody) {
-			contact.m_ContactPoints.push_back(g_contacts[i]);
-		}
-	}
-}
-void palNovodexPhysics::GetContacts(palBodyBase *a, palBodyBase *b, palContact& contact) const {
-	contact.m_ContactPoints.clear();
-	for (unsigned int i=0;i<g_contacts.size();i++) {
-		if (((g_contacts[i].m_pBody1 == a) && (g_contacts[i].m_pBody2 == b))
-				|| ((g_contacts[i].m_pBody1 == b) && (g_contacts[i].m_pBody2 == a))) {
-			contact.m_ContactPoints.push_back(g_contacts[i]);
-		}
-	}
-}
-
-void palNovodexPhysics::ClearContacts()
-{
-	g_contacts.clear();
 }
 
 

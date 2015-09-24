@@ -57,7 +57,7 @@ bool palFactory::SelectEngine(const PAL_STRING& name) {
 }
 
 void palFactory::Cleanup() {
-	std::list<myFactoryBase *>::iterator it;
+	MMOType::iterator it;
 
 	//delete all items, except the physics class
 	it=pMMO.begin();
@@ -627,7 +627,7 @@ void palFactory::DumpObjects(const PAL_STRING& separator) {
 }
 
 void palFactory::DumpObjects(std::ostream& out, const PAL_STRING& separator) {
-	for (std::list<myFactoryBase *>::iterator iter = pMMO.begin();
+	for (MMOType::iterator iter = pMMO.begin();
 			iter != pMMO.end();
 			iter++) {
 		myFactoryBase* objPtr = *iter;

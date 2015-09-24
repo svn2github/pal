@@ -14,6 +14,37 @@
 palCollisionDetection::palCollisionDetection(){
 }
 
+void palCollisionDetection::GetContacts(palBodyBase *pBody, palContact& contact) const {
+	for (auto i = m_vContacts.begin(), iend = m_vContacts.end(); i != iend; ++i) {
+		const palContactPoint& curContact = *i;
+		if (curContact.m_pBody1 == pBody ||  curContact.m_pBody2 == pBody)
+		{
+			contact.m_ContactPoints.push_back(curContact);
+		}
+	}
+}
+
+void palCollisionDetection::GetContacts(palBodyBase *a, palBodyBase *b, palContact& contact) const {
+	for (auto i = m_vContacts.begin(), iend = m_vContacts.end(); i != iend; ++i) {
+		const palContactPoint& curContact = *i;
+		if ((curContact.m_pBody1 == a && curContact.m_pBody2 == b) || (curContact.m_pBody1 == b && curContact.m_pBody2 == a))
+		{
+			contact.m_ContactPoints.push_back(curContact);
+		}
+	}
+}
+
+void palCollisionDetection::EmitContact(palContactPoint& contactPoint)
+{
+	m_vContacts.push_back(contactPoint);
+}
+
+void palCollisionDetection::ClearContacts()
+{
+	m_vContacts.clear();
+}
+
+
 palContactPoint::palContactPoint()
 : m_pBody1(NULL)
 , m_pBody2(NULL)

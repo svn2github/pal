@@ -22,6 +22,7 @@
 #include "empty.h"
 #include "pal/palStringable.h"
 #include <cstdio>
+#include <unordered_set>
 #include <typeinfo>
 
 template <typename MemoryBase> class MemoryObjectManager;
@@ -53,8 +54,8 @@ public:
 	virtual void FreeAll();
 protected:
 //private:
-	//this should be private: need to find a way to friend a template class
-	PAL_LIST<ManagedMemoryObject<MemoryBase> *> pMMO;
+	typedef std::unordered_set<ManagedMemoryObject<MemoryBase>*> MMOType;
+	MMOType pMMO;
 };
 
 //code:
@@ -82,23 +83,19 @@ template <typename MemoryBase> std::string ManagedMemoryObject<MemoryBase>::toSt
 //mom
 template <typename MemoryBase>
 void MemoryObjectManager<MemoryBase>::Add(ManagedMemoryObject<MemoryBase> *item) {
-	pMMO.push_back(item);
+	pMMO.insert(item);
 	item->pMOM=this;
 }
 
 template <typename MemoryBase>
 void MemoryObjectManager<MemoryBase>::Remove(ManagedMemoryObject<MemoryBase> *item) {
-	typename PAL_LIST<ManagedMemoryObject<MemoryBase>*>::iterator obj;
-	obj = std::find(pMMO.begin(), pMMO.end(), item);
-	if(obj != pMMO.end()) {
-		pMMO.erase(obj);
-	}
+	pMMO.erase(item);
 }
 
 template <typename MemoryBase>
 void MemoryObjectManager<MemoryBase>::FreeAll() {
 	while (!pMMO.empty() ) {
-		delete *(pMMO.begin());
+		delete *pMMO.begin();
 		//no need to erase() because the MMO takes care of it.
 	}
 }

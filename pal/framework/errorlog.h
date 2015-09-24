@@ -52,7 +52,7 @@ public:
 	static ErrorLog *GetInstance();
 private:
 	// change to make a deep copy before making this public
-	ErrorLog& operator=(const ErrorLog& log) { return *this; }
+	ErrorLog& operator=(const ErrorLog& /*log*/) { return *this; }
 protected:
 	bool error;
 	PAL_STRING m_infoFileName;

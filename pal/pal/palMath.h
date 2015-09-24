@@ -183,6 +183,7 @@ struct palVector4 {
 		x = X;
 		y = Y;
 		z = Z;
+		w = W;
 	}
 
 	void Get(Float& X, Float& Y, Float& Z, Float& W)

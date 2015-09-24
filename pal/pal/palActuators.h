@@ -319,7 +319,7 @@ public:
 		m_Voltage=voltage;
 	}
 
-	virtual void Apply(Float dt) {
+	virtual void Apply(Float /*dt*/) {
 		Float torque =  m_torque_constant*(m_Voltage -
                         m_pRLink->GetAngularVelocity()*m_back_EMF_constant)/m_armature_resistance;	
 		m_pRLink->ApplyTorque(torque);

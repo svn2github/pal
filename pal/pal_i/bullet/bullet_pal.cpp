@@ -534,8 +534,6 @@ typedef ListenMap::iterator ListenIterator;
 typedef ListenMap::const_iterator ListenConstIterator;
 ListenMap pallisten;
 
-static PAL_VECTOR<palContactPoint> g_contacts;
-
 #ifdef USE_LISTEN_COLLISION
 static bool listenCollision(palBodyBase *body1, palBodyBase *body2) {
 	ListenConstIterator itr;
@@ -609,35 +607,6 @@ void palBulletPhysics::CleanupNotifications(palBodyBase *pBody) {
 			}
 		}
 	}
-}
-
-
-void palBulletPhysics::GetContacts(palBodyBase *pBody, palContact& contact) const {
-	contact.m_ContactPoints.clear();
-	for (unsigned int i=0;i<g_contacts.size();i++) {
-		if (g_contacts[i].m_pBody1 == pBody) {
-			contact.m_ContactPoints.push_back(g_contacts[i]);
-		}
-		else if (g_contacts[i].m_pBody2 == pBody) {
-			contact.m_ContactPoints.push_back(g_contacts[i]);
-		}
-	}
-}
-void palBulletPhysics::GetContacts(palBodyBase *a, palBodyBase *b, palContact& contact) const {
-	contact.m_ContactPoints.clear();
-	for (unsigned int i=0;i<g_contacts.size();i++) {
-		if ((g_contacts[i].m_pBody1 == a) && (g_contacts[i].m_pBody2 == b)) {
-			contact.m_ContactPoints.push_back(g_contacts[i]);
-		}
-		else if ((g_contacts[i].m_pBody2 == a) && (g_contacts[i].m_pBody1 == b)) {
-			contact.m_ContactPoints.push_back(g_contacts[i]);
-		}
-	}
-}
-
-void palBulletPhysics::ClearContacts()
-{
-	g_contacts.clear();
 }
 
 
@@ -986,7 +955,7 @@ void palBulletPhysics::StartIterate(Float timestep) {
 					cp.m_pBody2=body2;
 					convertManifoldPtToContactPoint(pt, cp);
 
-					g_contacts.push_back(cp);
+					EmitContact(cp);
 				}
 #ifdef USE_LISTEN_COLLISION
 			}
@@ -1746,7 +1715,6 @@ palBulletCapsuleGeometry::palBulletCapsuleGeometry()
 void palBulletCapsuleGeometry::Init(const palMatrix4x4 &pos, Float radius, Float length, Float mass) {
 	palCapsuleGeometry::Init(pos,radius,length,mass);
 	palAxis upAxis = static_cast<palPhysics*>(GetParent())->GetUpAxis();
-
 
 	switch (upAxis) {
 	case PAL_Z_AXIS:

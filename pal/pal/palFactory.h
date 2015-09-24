@@ -349,6 +349,8 @@ class palFactory : private myFactory {
 
 		void DumpObjects(const PAL_STRING& separator = "\n");
 		void DumpObjects(std::ostream& out, const PAL_STRING& separator = "\n");
+	protected:
+		typedef MemoryObjectManager<StatusObject>::MMOType MMOType;
 	private:
 		palPhysics *m_active;
 	public:

@@ -153,21 +153,35 @@ public:
 	*/
 	virtual void NotifyCollision(palBodyBase *pBody, bool enabled) = 0;
 
-	/** Returns the contact points.
-	A collision notification must be set up before any contact points can be returned.
-	*/
-	virtual void GetContacts(palBodyBase *pBody, palContact& contact) const = 0;
+	template <typename Functor>
+	void ForEachContact(Functor f)
+	{
+		std::for_each(m_vContacts.begin(), m_vContacts.end(), f);
+	}
 
 	/** Returns the contact points.
 	A collision notification must be set up before any contact points can be returned.
 	*/
-	virtual void GetContacts(palBodyBase *a, palBodyBase *b, palContact& contact) const = 0;
+	virtual void GetContacts(palBodyBase *pBody, palContact& contact) const;
+
+	/** Returns the contact points.
+	A collision notification must be set up before any contact points can be returned.
+	*/
+	virtual void GetContacts(palBodyBase *a, palBodyBase *b, palContact& contact) const;
+
+	/**
+	 * This is called by the physics engine to register contacts as they are generated.
+	 */
+	void EmitContact(palContactPoint& contactPoint);
 
 	/**
 	 This is an accessor to clear all the saved contacts.  The code for each engine has to do this anyway, and there
 	 some use to be able to clear in externally.
 	 */
-	virtual void ClearContacts() = 0;
+	virtual void ClearContacts();
+protected:
+private:
+	PAL_VECTOR<palContactPoint> m_vContacts;
 };
 
 class palCollisionDetectionExtended: public palCollisionDetection {
