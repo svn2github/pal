@@ -78,10 +78,10 @@ ENDMACRO()
 # Option for DLL/so copy
 IF(WIN32)
 	SET(MODULE_EXT ".dll")
-	OPTION(PAL_MODULE_COPY "(EXPERIMENTAL) Set to ON to make PAL build copy the dependencies' modules (DLL/so) to the output directory." ON)
+	OPTION(PAL_MODULE_COPY "(EXPERIMENTAL) Set to ON to make PAL build copy the dependencies' modules (DLL/so) to the output directory." OFF)
 # ELSEIF(UNIX)
 	# SET(MODULE_EXT ".so")
-	# OPTION(PAL_MODULE_COPY "(EXPERIMENTAL) Set to ON to make PAL build copy the dependencies' modules (DLL/so) to the output directory." ON)
+	# OPTION(PAL_MODULE_COPY "(EXPERIMENTAL) Set to ON to make PAL build copy the dependencies' modules (DLL/so) to the output directory." OFF)
 ELSE()
 	SET(MODULE_EXT )
 	SET(PAL_MODULE_COPY OFF)
@@ -111,7 +111,7 @@ ENDIF()
 
 OPTION(PAL_BUILD_BULLET "Set to ON to build PAL BULLET." ${DEPENDENCIES_DEFAULT_OPTION})
 IF(PAL_BUILD_BULLET AND PAL_CONFIG_HAS_BEEN_RUN_BEFORE)
-	SET_ADDITIONAL_SEARCH_PATHS("bullet"  "bullet3-2.83.4" "bullet-2.82"  "bullet-2.81" "bullet-2.80" "bullet-2.79")
+	SET_ADDITIONAL_SEARCH_PATHS("bullet"  "bullet3-2.83.5" "bullet-2.82"  "bullet-2.81" "bullet-2.80" "bullet-2.79")
 	FIND_PACKAGE(BULLET)
 ENDIF()
 
@@ -183,7 +183,7 @@ ENDIF()
 
 #OPTION(BUILD_EXAMPLES "Set to ON to build PAL examples." ON)
 
-OPTION(PAL_EXAMPLES_DISPLAY "Set to ON to build PAL examples and tests that display something, using dependencies (like OpenGL, SDL...)." ON)
+OPTION(PAL_EXAMPLES_DISPLAY "Set to ON to build PAL examples and tests that display something, using dependencies (like OpenGL, SDL...)." OFF)
 
 IF(PAL_EXAMPLES_DISPLAY AND PAL_CONFIG_HAS_BEEN_RUN_BEFORE)
 	FIND_PACKAGE(OpenGL)
@@ -197,10 +197,6 @@ OPTION(PAL_STATIC "Set to ON to build static libraries (lib) instead of shared o
 IF(PAL_STATIC)
 	ADD_DEFINITIONS(-DPAL_STATIC)
 ENDIF()
-
-
-#OPTION(BUILD_OUTPUT_DIR_RELEASE_DEBUG "Set to OFF to build binaries in the same directory (ex: /bin or /lib), instead of separating them (ex: /bin/debug, /bin/release, /lib/debug, /lib/release)." ON)
-#MARK_AS_ADVANCED(BUILD_OUTPUT_DIR_RELEASE_DEBUG)
 
 
 ################################################################################
@@ -236,19 +232,6 @@ INCLUDE_DIRECTORIES(
 )
 
 ################################################################################
-# CMake doesn't set this itself :(
-#
-# LIB_SUFFIX is more standard, but our ModuleInstall.cmake uses LIB_POSTFIX
-IF(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SIZEOF_VOID_P EQUAL 8)
-	SET(LIB_SUFFIX 64)
-	SET(LIB_POSTFIX 64)
-	SET(FIND_LIBRARY_USE_LIB64_PATHS TRUE)
-ELSE()
-	SET(LIB_SUFFIX "")
-	SET(LIB_POSTFIX "")
-ENDIF()
-
-################################################################################
 # Create bin and lib directories if required
 SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
 MAKE_DIRECTORY(${OUTPUT_BINDIR})
@@ -271,14 +254,12 @@ IF (WIN32)
    SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
 ENDIF()
 
-#ADD_DEFINITIONS(-DOSG_DEBUG_POSTFIX=${CMAKE_DEBUG_POSTFIX})
-
 IF(MSVC)
 	ADD_DEFINITIONS("-D_CRT_SECURE_NO_DEPRECATE")
 ENDIF()
 
 IF(APPLE)
-	SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,-single_module -flat_namespace -compatibility_version 3 -current_version 3" )
+	SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,-single_module -flat_namespace -compatibility_version 4 -current_version 4" )
 	INCLUDE_DIRECTORIES(${CMAKE_OSX_SYSROOT}/usr/include/malloc)
 ENDIF()
 
@@ -545,6 +526,41 @@ SET(PAL_CONFIG_HEADER "${PROJECT_BINARY_DIR}/pal/Config.h")
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/pal/Config.h.in" "${PAL_CONFIG_HEADER}")
 SET(PAL_CONFIG_STATIC_HEADER "${PROJECT_BINARY_DIR}/pal/ConfigStatic.h")
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/pal/ConfigStatic.h.in" "${PAL_CONFIG_STATIC_HEADER}")
+
+
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+
+SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
+MAKE_DIRECTORY(${OUTPUT_BINDIR})
+SET(EXECUTABLE_OUTPUT_PATH ${OUTPUT_BINDIR})
+
+SET(OUTPUT_LIBDIR ${PROJECT_BINARY_DIR}/lib)
+MAKE_DIRECTORY(${OUTPUT_LIBDIR})
+SET(LIBRARY_OUTPUT_PATH ${OUTPUT_LIBDIR})
+
+SET (CMAKE_ARCHIVE_OUTPUT_DIRECTORY  ${OUTPUT_LIBDIR} CACHE PATH "build directory")
+SET (CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${OUTPUT_BINDIR} CACHE PATH "build directory")
+IF(MSVC_IDE)
+  SET (CMAKE_LIBRARY_OUTPUT_DIRECTORY  ${OUTPUT_BINDIR} CACHE PATH "build directory")
+ELSE(MSVC_IDE)
+  SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_LIBDIR} CACHE PATH "build directory")
+ENDIF(MSVC_IDE)
+
+
+# For each configuration (Debug, Release, MinSizeRel... and/or anything the
+# user chooses)
+FOREACH(CONF ${CMAKE_CONFIGURATION_TYPES})
+  # Go uppercase (DEBUG, RELEASE...)
+  STRING(TOUPPER "${CONF}" CONF)
+  SET("CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONF}" "${OUTPUT_LIBDIR}")
+  SET("CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONF}" "${OUTPUT_BINDIR}")
+  IF(MSVC_IDE)
+    SET("CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONF}" "${OUTPUT_BINDIR}")
+  ELSE()
+    SET("CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONF}" "${OUTPUT_LIBDIR}")
+  ENDIF()
+ENDFOREACH()
 
 
 ################################################################################

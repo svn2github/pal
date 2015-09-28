@@ -138,14 +138,6 @@ IF(UNIX)
 ENDIF()
 ADD_INTERNAL_DEBUG_DEFINITIONS(${LIB_NAME})
 
-IF(MSVC_IDE)
-	IF(NOT BUILD_OUTPUT_DIR_RELEASE_DEBUG)
-		# Ugly workaround to remove the "/debug" or "/release" in each output
-		SET_TARGET_PROPERTIES(${LIB_NAME} PROPERTIES PREFIX "../")
-		SET_TARGET_PROPERTIES(${LIB_NAME} PROPERTIES IMPORT_PREFIX "../")
-	ENDIF(NOT BUILD_OUTPUT_DIR_RELEASE_DEBUG)
-ENDIF(MSVC_IDE)
-
 INCLUDE(ModuleInstall OPTIONAL)
 
 # If MSVC, cannot resolve cmake vars at compile time, have to do it now

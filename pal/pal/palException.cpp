@@ -11,6 +11,10 @@
 #include <malloc.h>
 #include <stdlib.h>
 
+#ifdef _MSC_VER
+#define strdup _strdup
+#endif
+
 palException::palException() throw()
     : m_message(0), m_cause(0)
 {
