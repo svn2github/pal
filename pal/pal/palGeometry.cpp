@@ -365,9 +365,15 @@ void palConvexGeometry::ComputeIntegral(palVector3 p[], int tmax, int index[], F
 }
 
 void palConvexGeometry::CalculateInertia() {
-	m_fInertiaXX = 1;
-	m_fInertiaYY = 1;
-	m_fInertiaZZ = 1;
+	palBoundingBox pbb;
+	for (unsigned i=0;i<m_vfVertices.size();i+=3) {
+		pbb.Expand(palVector3(m_vfVertices[i], m_vfVertices[i+1], m_vfVertices[i+2]));
+	}
+	palVector3 out;
+	CalculateBoxInertia(pbb.GetSize(), GetMass(), out);
+	m_fInertiaXX = out.x;
+	m_fInertiaYY = out.y;
+	m_fInertiaZZ = out.z;
 }
 
 ////////////////////////
