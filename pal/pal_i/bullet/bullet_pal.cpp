@@ -1471,7 +1471,7 @@ Float palBulletGenericBody::GetMaxAngularVelocity() const
 
 void palBulletGenericBody::InitCompoundIfNull() {
 	if (m_pCompound == NULL) {
-		m_pCompound = new btCompoundShape(true);
+		m_pCompound = new btCompoundShape(false);
 		for (unsigned i = 0; i < m_Geometries.size(); ++i)
 			AddShapeToCompound(m_Geometries[i]);
 	}
@@ -1550,13 +1550,19 @@ void palBulletGenericBody::ConnectGeometry(palGeometry* pGeom) {
 		physics->RemoveRigidBody(this);
 
 		if (IsUsingOneCenteredGeometry()) {
+			delete m_pCompound;
+			m_pCompound = NULL;
+			DeleteBvhTriangleShape(m_pConcave);
 			palBulletGeometry *pbtg=dynamic_cast<palBulletGeometry *> (pGeom);
 			btCollisionShape* shape = pbtg->BulletGetCollisionShape();
 			m_pbtBody->setCollisionShape(shape);
 		} else if (IsUsingConcaveShape()) {
+			delete m_pCompound;
+			m_pCompound = NULL;
 			RebuildConcaveShapeFromGeometry();
 			m_pbtBody->setCollisionShape(m_pConcave);
 		} else {
+			DeleteBvhTriangleShape(m_pConcave);
 			AddShapeToCompound(pGeom);
 			// This is done after the above on purpose
 			InitCompoundIfNull();
