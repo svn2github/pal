@@ -5,7 +5,32 @@
 #include <ostream>
 #include <limits>
 
+
+palBoundingBox::palBoundingBox()
+: min(PAL_MAX_FLOAT, PAL_MAX_FLOAT, PAL_MAX_FLOAT)
+, max(-PAL_MAX_FLOAT, -PAL_MAX_FLOAT, -PAL_MAX_FLOAT)
+{
+}
+
+palVector3 palBoundingBox::GetSize() const
+{
+	return palVector3(max-min);
+}
+
+void palBoundingBox::Expand(const palVector3& pos)
+{
+	for (unsigned i = 0; i < 3; ++i)
+	{
+		if (min[i] > pos[i])
+			min[i] = pos[i];
+		if (max[i] < pos[i])
+			max[i] = pos[i];
+	}
+}
+
+
 //(c) 2004 Adrian Boeing, Some code based from Mesa3d (C) 1999-2003  Brian Paul
+
 
 Float clamp_angle(Float angle)
 {

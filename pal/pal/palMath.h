@@ -138,6 +138,9 @@ struct palTriangle
 
 struct palBoundingBox
 {
+	palBoundingBox();
+	void Expand(const palVector3& pos);
+	palVector3 GetSize() const;
 	palVector3 min,max;
 };
 
