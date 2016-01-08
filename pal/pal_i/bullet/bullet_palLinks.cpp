@@ -986,7 +986,7 @@ void palBulletGenericLinkSpring::SetLinearSpring(palAxis axis, const palSpringDe
 	bool enable = spring.m_fSpringCoef > FLT_EPSILON;
 	m_pBulletLink->BulletGetGenericConstraint()->enableSpring(axis, enable);
 #if BT_BULLET_VERSION > 282
-	m_pBulletLink->BulletGetGenericConstraint()->setBounce(axis, enable ? btScalar(1.0): btScalar(0.0));
+	m_pBulletLink->BulletGetGenericConstraint()->setBounce(axis, enable ? btScalar(0.3): btScalar(0.0));
 #endif
 }
 
@@ -1009,7 +1009,7 @@ void palBulletGenericLinkSpring::SetAngularSpring(palAxis axis, const palSpringD
 	bool enable = spring.m_fSpringCoef > FLT_EPSILON;
 	m_pBulletLink->BulletGetGenericConstraint()->enableSpring(axisIndex, enable);
 #if BT_BULLET_VERSION > 282
-	m_pBulletLink->BulletGetGenericConstraint()->setBounce(axis, enable ? btScalar(1.0): btScalar(0.0));
+	m_pBulletLink->BulletGetGenericConstraint()->setBounce(axis, enable ? btScalar(0.3): btScalar(0.0));
 #endif
 }
 
