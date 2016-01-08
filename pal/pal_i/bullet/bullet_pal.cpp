@@ -472,7 +472,6 @@ void palBulletPhysics::AddRigidBody(palBulletBodyBase* body) {
 
 void palBulletPhysics::RemoveRigidBody(palBulletBodyBase* body) {
 	if (body != nullptr && body->m_pbtBody != nullptr) {
-		//ClearBroadPhaseCachePairs(body);
 		m_dynamicsWorld->removeRigidBody(body->m_pbtBody);
 	}
 }
@@ -705,7 +704,12 @@ void palBulletPhysics::Init(const palPhysicsDesc& desc) {
 	}
 	else
 	{
-		broadphase = new btDbvtBroadphase();
+		btDbvtBroadphase* dbvtBroadphase = new btDbvtBroadphase();
+		// otherwise static/kinematic collisions can be detected that are unintentional and impact performance
+		// and lead to inconsistent behavior.
+		dbvtBroadphase->m_deferedcollide = true;
+		broadphase = dbvtBroadphase;
+
 	}
 	m_overlapCallback = new CustomOverlapFilterCallback(this);
 	broadphase->getOverlappingPairCache()->setOverlapFilterCallback(m_overlapCallback);
