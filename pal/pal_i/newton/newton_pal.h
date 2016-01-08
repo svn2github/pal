@@ -122,6 +122,7 @@ public:
 	virtual void NotifyCollision(palBodyBase *pBody, bool enabled);
 	virtual void GetContacts(palBodyBase *pBody, palContact& contact) const;
 	virtual void GetContacts(palBodyBase *a, palBodyBase *b, palContact& contact) const;
+	virtual void ClearContacts(palBodyBase *pBody);
 	virtual void ClearContacts();
 	//Newton specific:
 	//extra methods provided by newton abilities:

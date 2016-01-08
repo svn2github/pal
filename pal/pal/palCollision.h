@@ -179,6 +179,11 @@ public:
 	 some use to be able to clear in externally.
 	 */
 	virtual void ClearContacts();
+
+	/**
+	 * Deletes any saved contacts for the given body.  This is called when the body is deleted.
+	 */
+	virtual void ClearContacts(palBodyBase* pBody);
 protected:
 private:
 	PAL_VECTOR<palContactPoint> m_vContacts;

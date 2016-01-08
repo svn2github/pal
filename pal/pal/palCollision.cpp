@@ -39,6 +39,14 @@ void palCollisionDetection::EmitContact(palContactPoint& contactPoint)
 	m_vContacts.push_back(contactPoint);
 }
 
+void palCollisionDetection::ClearContacts(palBodyBase* pBody)
+{
+	m_vContacts.erase(std::remove_if(m_vContacts.begin(), m_vContacts.end(), [pBody](const palContactPoint& curContact)
+	{
+		return curContact.m_pBody1 == pBody ||  curContact.m_pBody2 == pBody;
+	}), m_vContacts.end());
+}
+
 void palCollisionDetection::ClearContacts()
 {
 	m_vContacts.clear();

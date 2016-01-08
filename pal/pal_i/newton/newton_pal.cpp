@@ -449,6 +449,14 @@ void palNewtonPhysics::GetContacts(palBodyBase *a, palBodyBase *b, palContact& c
 	}
 }
 
+void palNewtonPhysics::ClearContacts(palBodyBase* pBody)
+{
+   // This is here because it may need to be implemented for this plugin to work right.
+   // it is known to cause a build error (not in the header), but it can be commented out if it works properly without it.
+#error needs to be implemented.
+}
+
+
 void palNewtonPhysics::ClearContacts()
 {
 	//clear out old contact points. TODO why can't this just call clear on the whole map?

@@ -1,6 +1,7 @@
 
 #include "palBodies.h"
 #include "palFactory.h"
+#include "palCollision.h"
 #include <string.h>
 #include <sstream>
 #ifdef INTERNAL_DEBUG	
@@ -19,7 +20,9 @@
 	TODO:
 */
 
-palBodyBase::palBodyBase() {
+palBodyBase::palBodyBase()
+: m_Type(PAL_BODY_NONE)
+{
 	m_pMaterial=NULL;
 	memset((void*)&m_mLoc,0,sizeof(palMatrix4x4));
 	m_mLoc._11 = 1;
@@ -103,9 +106,14 @@ void palBodyBase::SetPosition(const palMatrix4x4 &location) {
 	m_mLoc = location;
 }
 
-
 void palBodyBase::Cleanup() {
 	m_Geometries.clear();
+	palCollisionDetection* collisionInterface = dynamic_cast<palCollisionDetection*>(GetParent());
+	if (collisionInterface != nullptr)
+	{
+		// The contacts have pointers to this object, and deferencing them would cause a crash.
+		collisionInterface->ClearContacts(this);
+	}
 }
 
 std::string palBodyBase::toString() const {
